@@ -15,15 +15,15 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Bvh.h">
+    <ClInclude Include="src\Bvh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="InfluenceArea.h">
+    <ClInclude Include="src\InfluenceArea.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Bvh.cpp">
+    <ClCompile Include="src\Bvh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
