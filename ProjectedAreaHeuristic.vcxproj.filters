@@ -21,9 +21,15 @@
     <ClInclude Include="src\InfluenceArea.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Utilities.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Bvh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\InfluenceArea.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

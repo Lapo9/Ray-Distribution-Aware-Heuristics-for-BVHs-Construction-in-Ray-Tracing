@@ -21,9 +21,11 @@
   <ItemGroup>
     <ClInclude Include="src\Bvh.h" />
     <ClInclude Include="src\InfluenceArea.h" />
+    <ClInclude Include="src\Utilities.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Bvh.cpp" />
+    <ClCompile Include="src\InfluenceArea.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
