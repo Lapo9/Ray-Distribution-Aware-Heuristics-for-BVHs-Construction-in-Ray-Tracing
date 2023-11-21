@@ -1,4 +1,7 @@
 #pragma once
+
+#include <vector>
+#include <tuple>
 #include <functional>
 
 #include "Utilities.h"
