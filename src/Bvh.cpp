@@ -2,6 +2,8 @@
 #include <limits>
 #include <chrono>
 
+using namespace pah::utilities;
+
 pah::Bvh::Bvh(const Properties& properties, const InfluenceArea& influenceArea, const ComputeCostType& computeCost, const ChooseSplittingPlanesType& chooseSplittingPlanes, const ShouldStopType& shouldStop)
 	: properties{ properties }, influenceArea{ make_unique<InfluenceArea>(influenceArea) }, computeCost{ computeCost }, chooseSplittingPlanes{ chooseSplittingPlanes }, shouldStop{ shouldStop } {
 }

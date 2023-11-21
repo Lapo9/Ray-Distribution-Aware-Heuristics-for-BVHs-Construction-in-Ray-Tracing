@@ -9,6 +9,7 @@
 #include <random>
 
 #include "Utilities.h"
+#include "InfluenceArea.h"
 
 namespace pah {
 	class Bvh {
@@ -189,7 +190,7 @@ namespace pah {
 
 			Axis max = percs.x >= percs.y && percs.x >= percs.z ? Axis::X : percs.y >= percs.x && percs.y >= percs.z ? Axis::Y : Axis::Z;
 			Axis min = percs.x < percs.y && percs.x < percs.z ? Axis::X : percs.y <= percs.x && percs.y <= percs.z ? Axis::Y : Axis::Z; //the first comparison is < and not <= so that if all axis are equal, then max != min
-			Axis mid = utilities::third(max, min);
+			Axis mid = third(max, min);
 
 			return addPlanes(max, at(percs, max), mid, at(percs, mid), 0.05f);
 		}
