@@ -3,8 +3,6 @@
 using namespace std;
 using namespace pah;
 
-pah::InfluenceArea::InfluenceArea() {}
-
 pah::PlaneInfluenceArea::PlaneInfluenceArea(Plane plane, Vector2 size, float density) : plane{ plane }, size{ size }, density{ density } {
 }
 

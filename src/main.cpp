@@ -1,8 +1,10 @@
 #include "Bvh.h"
 #include "InfluenceArea.h"
 #include "Utilities.h"
+#include "BvhAnalyzer.h"
 
 #include <iostream>
+#include <memory>
 
 using namespace std;
 using namespace pah;
@@ -21,8 +23,11 @@ int main() {
 	Uniform3dDistribution otherDistribution3d{ -1,1, -1,1 , -1,1 };
 	auto triangles = Triangle::generateRandom(20, rng, mainDistribution3d, otherDistribution3d);
 
-	Bvh bvh{ properties, planeInfluenceArea, Bvh::computeCostSah, Bvh::chooseSplittingPlanesLongest, Bvh::shouldStopThresholdOrLevel };
+	Bvh bvh{ properties, planeInfluenceArea, Bvh::computeCostPah, Bvh::chooseSplittingPlanesLongest, Bvh::shouldStopThresholdOrLevel };
 	bvh.build(triangles);
 
-	std::cout << "End";
+	BvhAnalyzer analyzer{ BvhAnalyzer::sahAnalyzer, BvhAnalyzer::pahAnalyzer };
+	nlohmann::json analysis = analyzer.analyze(bvh);
+
+	std::cout << std::setw(1) << analysis;
 }

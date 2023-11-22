@@ -342,7 +342,7 @@ namespace pah {
 			 */
 			static vector<Vector2> projectPoints(const vector<Vector3>& points, Plane plane) {
 				vector<Vector2> projectedPoints;
-				for (int i = 0; i < 8; ++i) {
+				for (int i = 0; i < points.size(); ++i) {
 					projectedPoints.emplace_back(projectPoint(points[i], plane));
 				}
 				return projectedPoints;
@@ -493,7 +493,7 @@ namespace pah {
 			 */
 			static vector<Vector2> projectPoints(const vector<Vector3>& points, Pov pov, tuple<float, float> fovs = tuple{ 90.0f, 90.0f }, float far = 1000.0f, float near = 0.1f) {
 				vector<Vector2> projectedPoints;
-				for (int i = 0; i < 8; ++i) {
+				for (int i = 0; i < points.size(); ++i) {
 					projectedPoints.emplace_back(projectPoint(points[i], pov, fovs, far, near));
 				}
 				return projectedPoints;

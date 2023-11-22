@@ -6,8 +6,8 @@
 using namespace std;
 using namespace pah::utilities;
 
-pah::Bvh::Bvh(const Properties& properties, const InfluenceArea& influenceArea, const ComputeCostType& computeCost, const ChooseSplittingPlanesType& chooseSplittingPlanes, const ShouldStopType& shouldStop)
-	: properties{ properties }, influenceArea{ unique_ptr<const InfluenceArea>{&influenceArea} }, computeCost{ computeCost }, chooseSplittingPlanes{ chooseSplittingPlanes }, shouldStop{ shouldStop } {
+pah::Bvh::Bvh(const Properties& properties, const InfluenceArea& influenceArea, ComputeCostType computeCost, ChooseSplittingPlanesType chooseSplittingPlanes, ShouldStopType shouldStop)
+	: properties{ properties }, influenceArea{ &influenceArea }, computeCost{ computeCost }, chooseSplittingPlanes{ chooseSplittingPlanes }, shouldStop{ shouldStop } {
 	//note that we MUST instantiate the unique_ptr this way (a.k.a. we cannot use make_unique), because make_unique tries to allocate the base class, which is abstract
 }
 
@@ -17,6 +17,7 @@ void pah::Bvh::build(const vector<Triangle>& triangles) {
 }
 
 void pah::Bvh::build(const vector<Triangle>& triangles, unsigned int seed) {
+	id = chrono::duration_cast<std::chrono::milliseconds>(chrono::system_clock::now().time_since_epoch()).count(); //set the id based on current time: the id is just used to check for equality betweeen 2 BVHs (and this is the only non const function)
 	rng = mt19937{ seed }; //initialize random number generator
 	//from an array of triangles, to an array to pointers
 	vector<const Triangle*> trianglesPointers(triangles.size()); std::transform(triangles.begin(), triangles.end(), trianglesPointers.begin(), [](const Triangle& t) { return &t; });
@@ -62,10 +63,14 @@ void pah::Bvh::splitNode(Node& node, Axis fatherSplittingAxis, int currentLevel)
 
 	//recurse on children
 	currentLevel++;
-	if (!shouldStop(properties, *node.leftChild, currentLevel, bestLeftSoFar)) splitNode(*node.leftChild, usedAxis, 1);
-	if (!shouldStop(properties, *node.rightChild, currentLevel, bestRightSoFar)) splitNode(*node.rightChild, usedAxis, 1);
+	if (!shouldStop(properties, *node.leftChild, currentLevel, bestLeftSoFar)) splitNode(*node.leftChild, usedAxis, currentLevel);
+	if (!shouldStop(properties, *node.rightChild, currentLevel, bestRightSoFar)) splitNode(*node.rightChild, usedAxis, currentLevel);
 }
 
 const pah::Bvh::Node& pah::Bvh::getRoot() const {
 	return root;
+}
+
+const pah::InfluenceArea& pah::Bvh::getInfluenceArea() const {
+	return *influenceArea;
 }

@@ -10,8 +10,6 @@ namespace pah{
 
 	class InfluenceArea {
 	public:
-		InfluenceArea();
-
 		virtual float getProjectedArea(const Aabb& aabb) const = 0;
 		virtual float getInfluence(const Aabb& aabb) const = 0;
 		virtual Vector3 getRayDirection(const Aabb& aabb) const = 0;

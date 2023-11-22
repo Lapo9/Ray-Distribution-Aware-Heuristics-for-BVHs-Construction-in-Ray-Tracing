@@ -58,17 +58,22 @@ namespace pah {
 		};
 
 		//custom types
-		using ComputeCostReturnType = float;																using ComputeCostType = function<ComputeCostReturnType(const Node&, const InfluenceArea&, float rootMetric)>;
-		using ChooseSplittingPlanesReturnType = vector<tuple<Axis, function<bool(float bestCostSoFar)>>>;	using ChooseSplittingPlanesType = function<ChooseSplittingPlanesReturnType(const Aabb&, const InfluenceArea&, Axis father, mt19937& rng)>;
-		using ShouldStopReturnType = bool;																	using ShouldStopType = function<ShouldStopReturnType(const Properties&, const Node&, int currentLevel, float nodeCost)>;
+		using ComputeCostReturnType = float;																using ComputeCostType = ComputeCostReturnType(const Node&, const InfluenceArea&, float rootMetric);
+		using ChooseSplittingPlanesReturnType = vector<tuple<Axis, function<bool(float bestCostSoFar)>>>;	using ChooseSplittingPlanesType = ChooseSplittingPlanesReturnType(const Aabb&, const InfluenceArea&, Axis father, mt19937& rng);
+		using ShouldStopReturnType = bool;																	using ShouldStopType = ShouldStopReturnType(const Properties&, const Node&, int currentLevel, float nodeCost);
 
 
-		Bvh(const Properties&, const InfluenceArea&, const ComputeCostType& computeCost, const ChooseSplittingPlanesType& chooseSplittingPlanes, const ShouldStopType& shouldStop);
+		Bvh(const Properties&, const InfluenceArea&, ComputeCostType computeCost, ChooseSplittingPlanesType chooseSplittingPlanes, ShouldStopType shouldStop);
+
+		friend bool operator==(const Bvh& bvh1, const Bvh& bvh2) {
+			return bvh1.id == bvh2.id;
+		}
 
 		void build(const vector<Triangle>& triangles);
 		void build(const vector<Triangle>& triangles, unsigned int seed);
 
 		const Node& getRoot() const;
+		const InfluenceArea& getInfluenceArea() const;
 
 
 		/**
@@ -212,16 +217,17 @@ namespace pah {
 		Node root;
 		float rootMetric; //stores the cost metric of the root (e.g. surface area if we use SAH, projected area if we use PAH, ...)
 		Properties properties;
-		unique_ptr<const InfluenceArea> influenceArea;
+		const InfluenceArea* influenceArea;
 
 		//customizable functions
-		ComputeCostType computeCost;
+		function<ComputeCostType> computeCost;
 
 		//the idea is that this function returns a list of suitable axis to try to subdivide the AABB into, and a set of corresponding predicates.
 		//these predicates take into account the "quality" of the axis, and the results obtained from previous axis; and they decide whether is it worth it to try the next axis
-		ChooseSplittingPlanesType chooseSplittingPlanes;
-		ShouldStopType shouldStop;
+		function<ChooseSplittingPlanesType> chooseSplittingPlanes;
+		function<ShouldStopType> shouldStop;
 
 		mt19937 rng; //random number generator
+		unsigned long long int id; //id of this BVH: it is a cheap way to check if 2 BVHs are equals
 	};
 }

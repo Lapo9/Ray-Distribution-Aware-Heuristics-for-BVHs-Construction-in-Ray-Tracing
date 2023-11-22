@@ -1,4 +1,4 @@
-<mxfile host="Electron" modified="2023-11-21T12:03:30.196Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/22.1.2 Chrome/114.0.5735.289 Electron/25.9.4 Safari/537.36" etag="TPRIWLXlUArh1riIIVYH" version="22.1.2" type="device">
+<mxfile host="Electron" modified="2023-11-22T16:26:28.395Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/22.1.2 Chrome/114.0.5735.289 Electron/25.9.4 Safari/537.36" etag="SfzSe8HujWZOiknMNrIa" version="22.1.2" type="device">
   <diagram name="Page-1" id="UeCKQ2ETd-JVx08tFbrD">
     <mxGraphModel dx="2634" dy="1636" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
@@ -21,7 +21,7 @@
         <mxCell id="4qsJYq8-U3NOCzstwBSM-33" value="- properties: Properties" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;rounded=0;" parent="4qsJYq8-U3NOCzstwBSM-22" vertex="1">
           <mxGeometry y="52" width="670" height="26" as="geometry" />
         </mxCell>
-        <mxCell id="9SnqpX8Zt-VI2CEst9Rp-31" value="- influenceArea: InfluenceArea" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;rounded=0;" parent="4qsJYq8-U3NOCzstwBSM-22" vertex="1">
+        <mxCell id="9SnqpX8Zt-VI2CEst9Rp-31" value="- influenceArea: InfluenceArea*" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;rounded=0;" parent="4qsJYq8-U3NOCzstwBSM-22" vertex="1">
           <mxGeometry y="78" width="670" height="26" as="geometry" />
         </mxCell>
         <mxCell id="9SnqpX8Zt-VI2CEst9Rp-32" value="- chooseSplittingPlanes: ChooseSplittingPlanesType" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;rounded=0;" parent="4qsJYq8-U3NOCzstwBSM-22" vertex="1">
