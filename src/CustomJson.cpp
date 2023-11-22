@@ -19,12 +19,6 @@ void pah::to_json(json& j, const Triangle& triangle) {
 	j["v3"] = triangle.v3;
 }
 
-void pah::to_json(json& j, const BvhAnalyzer::GlobalInfo& globalInfo) {
-	j["numberOfNodes"] = globalInfo.numberOfNodes;
-	j["numberOfLeaves"] = globalInfo.numberOfLeaves;
-	j["maxLevel"] = globalInfo.maxLevel;
-}
-
 void glm::to_json(json& j, const pah::Vector3& vector) {
 	j["coords"] = { vector.x, vector.y, vector.z };
 }

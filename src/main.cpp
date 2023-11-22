@@ -9,6 +9,15 @@
 using namespace std;
 using namespace pah;
 
+void test(int& a, float b) {
+	
+}
+
+void testF(int& a) {
+
+}
+
+
 int main() {
 	Bvh::Properties properties{};
 	properties.maxLevels = 100;
@@ -26,7 +35,7 @@ int main() {
 	Bvh bvh{ properties, planeInfluenceArea, Bvh::computeCostPah, Bvh::chooseSplittingPlanesLongest, Bvh::shouldStopThresholdOrLevel };
 	bvh.build(triangles);
 
-	BvhAnalyzer analyzer{ BvhAnalyzer::sahAnalyzer, BvhAnalyzer::pahAnalyzer };
+	BvhAnalyzer analyzer{ vector{sahAnalyzer, pahAnalyzer}, pair{function<void(int&, float)>(test), function<void(int&)>(testF)}};
 	nlohmann::json analysis = analyzer.analyze(bvh);
 
 	std::cout << std::setw(1) << analysis;

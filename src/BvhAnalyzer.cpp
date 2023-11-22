@@ -1,38 +1,30 @@
 #include "BvhAnalyzer.h"
-#include "CustomJson.h"
-#include "../libs/json.hpp"
 
 using namespace std;
-using json = nlohmann::json;
+using namespace pah;
 
-json pah::BvhAnalyzer::analyze(const Bvh& bvh) {
-    log = json{}; //initialize log string
-    globalInfo = GlobalInfo{};
 
-    analyzeNode(bvh.getRoot(), bvh, 0);
-
-    //log["globalInfo"] = globalInfo;
-    return log;
+/**
+ * @brief Adds the section \c metric to the node Json object, and adds the node SAH and surface area in the new section.
+ */
+static void pah::sahAnalyzer(const Bvh::Node& node, const Bvh& bvh, json& localLog) {
+	localLog["metrics"]["sah"] = Bvh::computeCostSah(node, bvh.getInfluenceArea(), bvh.getRoot().aabb.surfaceArea());
+	localLog["metrics"]["sa"] = node.aabb.surfaceArea();
 }
 
-void pah::BvhAnalyzer::analyzeNode(const Bvh::Node& node, const Bvh& bvh, int currentLevel) {
-    json localLog;
-    coreAction(node, currentLevel, localLog);
-    for (const auto& action : actions) {
-        action(node, bvh, localLog);
-    }
-    
-    log.push_back(localLog); //add log of this node to the global log
+/**
+ * @brief Adds the section \c metric to the node Json object, and adds the node PAH and projected area in the new section.
+ */
+static void pah::pahAnalyzer(const Bvh::Node& node, const Bvh& bvh, json& localLog) {
+	//in order not to compute the projected area of the root each time, we keep the last projected area across calls...
+	static const Bvh* lastBvh = &bvh;
+	static float lastRootProjectedArea = bvh.getInfluenceArea().getProjectedArea(bvh.getRoot().aabb);
+	//...and check whether we are calculating the PAH for a node of the same BVH as in the last call
+	if (bvh != *lastBvh) {
+		lastBvh = &bvh;
+		lastRootProjectedArea = bvh.getInfluenceArea().getProjectedArea(bvh.getRoot().aabb);
+	}
 
-    //recursion
-    if (node.leftChild != nullptr) analyzeNode(*node.leftChild, bvh, currentLevel);
-    if (node.rightChild != nullptr) analyzeNode(*node.rightChild, bvh, currentLevel);
-}
-
-void pah::BvhAnalyzer::coreAction(const Bvh::Node& node, int currentLevel, json& localLog) {
-    globalInfo.maxLevel = currentLevel > globalInfo.maxLevel ? currentLevel : globalInfo.maxLevel;
-    globalInfo.numberOfNodes++;
-    globalInfo.numberOfLeaves += node.isLeaf();
-
-    localLog["core"] = node;
+	localLog["metrics"]["pah"] = Bvh::computeCostPah(node, bvh.getInfluenceArea(), lastRootProjectedArea);
+	localLog["metrics"]["pa"] = lastRootProjectedArea;
 }
