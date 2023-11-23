@@ -13,7 +13,10 @@
 namespace pah::analyzerActions {
 
 	/** Creates a pair of analyzer actions based on name (if an action with such name doesn't exist it fails at compile-time. */
-	#define ACTIONS_PAIR(actionName) pair{ function{ pah::analyzerActions::perNode::actionName }, function{ pah::analyzerActions::finals::actionName } } 
+	#define MAKE_ACTIONS_PAIR(actionName) pair{ function{ pah::analyzerActions::perNode::actionName }, function{ pah::analyzerActions::finals::actionName } } 
+	
+	/** Creates an argument list of analyzer actions based on name (if an action with such name doesn't exist it fails at compile-time. */
+	#define MAKE_ACTIONS_ARGS(actionName) function{ pah::analyzerActions::perNode::actionName }, function{ pah::analyzerActions::finals::actionName }
 
 	namespace perNode {
 		/**

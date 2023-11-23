@@ -34,7 +34,7 @@ namespace pah {
 		 * @param finalFunction Function to perform at the end.
 		 */
 		template<std::size_t Pos, same_as<tuple_element_t<Pos, tuple<GlobalObject...>>> T> requires (Pos >= 0 && Pos < tuple_size_v<tuple<GlobalObject...>>)
-		void addActionIndex(function<void(T&, const Bvh::Node&, const Bvh&, int currLvl, json&)> perNodeFunction, function<void(T&, json&)> finalFunction) {
+		void addAction(function<void(T&, const Bvh::Node&, const Bvh&, int currLvl, json&)> perNodeFunction, function<void(T&, json&)> finalFunction) {
 			pair functions{ perNodeFunction, finalFunction };
 			std::get<Pos>(actions) = functions;
 		}
