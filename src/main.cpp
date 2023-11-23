@@ -9,12 +9,14 @@
 using namespace std;
 using namespace pah;
 
-void test(int& a, float b) {
-	
+void test(int& a, const Bvh::Node& node, const Bvh& bvh, json& json) {
+	a += node.triangles.size();
+	std::cout << "TEST_LOCAL_1\t" << a << std::endl;
 }
 
 void testF(int& a) {
-
+	a *= -1;
+	std::cout << "TEST_FINALIZE_1\t" << a << std::endl;
 }
 
 
@@ -35,8 +37,15 @@ int main() {
 	Bvh bvh{ properties, planeInfluenceArea, Bvh::computeCostPah, Bvh::chooseSplittingPlanesLongest, Bvh::shouldStopThresholdOrLevel };
 	bvh.build(triangles);
 
-	BvhAnalyzer analyzer{ vector{sahAnalyzer, pahAnalyzer}, pair{function<void(int&, float)>(test), function<void(int&)>(testF)}};
-	nlohmann::json analysis = analyzer.analyze(bvh);
+	//BvhAnalyzer analyzer{ vector{sahAnalyzer, pahAnalyzer}, pair{function{test}, function{testF}} };
+	BvhAnalyzer<int> analyzer{ vector{sahAnalyzer, pahAnalyzer} };
+	analyzer.addGlobalActions(function{ test }, function{ testF });
+	json j;
+	analyzer.performPerNodeGlobalActions(bvh.getRoot(), bvh, j);
+	analyzer.performPerNodeGlobalActions(*bvh.getRoot().leftChild, bvh, j);
+	analyzer.performFinalGlobalActions();
+	
+	//nlohmann::json analysis = analyzer.analyze(bvh);
 
-	std::cout << std::setw(1) << analysis;
+	//std::cout << std::setw(1) << analysis;
 }
