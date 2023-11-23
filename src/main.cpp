@@ -2,6 +2,7 @@
 #include "InfluenceArea.h"
 #include "Utilities.h"
 #include "BvhAnalyzer.h"
+#include "AnalyzerActions.h"
 
 #include <iostream>
 #include <memory>
@@ -38,7 +39,7 @@ int main() {
 	bvh.build(triangles);
 
 	//BvhAnalyzer analyzer{ vector{sahAnalyzer, pahAnalyzer}, pair{function{test}, function{testF}} };
-	BvhAnalyzer<int> analyzer{ vector{sahAnalyzer, pahAnalyzer} };
+	BvhAnalyzer<int> analyzer{ vector{analyzerLocalActions::sahAnalyzer, analyzerLocalActions::pahAnalyzer} };
 	analyzer.addGlobalActions(function{ test }, function{ testF });
 	json j;
 	analyzer.performPerNodeGlobalActions(bvh.getRoot(), bvh, j);

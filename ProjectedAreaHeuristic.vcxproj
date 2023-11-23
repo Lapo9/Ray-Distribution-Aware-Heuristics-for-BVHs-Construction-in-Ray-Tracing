@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="libs\json.hpp" />
+    <ClInclude Include="src\AnalyzerActions.h" />
     <ClInclude Include="src\Bvh.h" />
     <ClInclude Include="src\BvhAnalyzer.h" />
     <ClInclude Include="src\CustomJson.h" />
@@ -28,7 +29,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Bvh.cpp" />
-    <ClCompile Include="src\BvhAnalyzer.cpp" />
     <ClCompile Include="src\CustomJson.cpp" />
     <ClCompile Include="src\InfluenceArea.cpp" />
     <ClCompile Include="src\main.cpp" />
