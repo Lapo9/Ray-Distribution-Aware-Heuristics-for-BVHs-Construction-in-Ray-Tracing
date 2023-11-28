@@ -1,21 +1,28 @@
 #pragma once
 
 #include <vector>
+#include <memory>
 #include <tuple>
 #include <functional>
 
 #include "Utilities.h"
+#include "BvhRegion.h"
 
-namespace pah{
+namespace pah {
 
 	class InfluenceArea {
 	public:
+		InfluenceArea();
+
 		virtual float getProjectedArea(const Aabb& aabb) const = 0;
 		virtual float getInfluence(const Aabb& aabb) const = 0;
 		virtual Vector3 getRayDirection(const Aabb& aabb) const = 0;
 		virtual vector<tuple<Axis, function<bool(float bestCostSoFar)>>> bestSplittingPlanes() const = 0;
 
-	private:
+		const BvhRegion& getBvhRegion() const;
+
+	protected:
+		unique_ptr<BvhRegion> bvhRegion;
 	};
 
 

@@ -36,6 +36,9 @@
     <ClInclude Include="src\AnalyzerActions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\BvhRegion.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Bvh.cpp">
@@ -48,6 +51,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\CustomJson.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BvhRegion.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

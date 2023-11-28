@@ -23,12 +23,14 @@
     <ClInclude Include="src\AnalyzerActions.h" />
     <ClInclude Include="src\Bvh.h" />
     <ClInclude Include="src\BvhAnalyzer.h" />
+    <ClInclude Include="src\BvhRegion.h" />
     <ClInclude Include="src\CustomJson.h" />
     <ClInclude Include="src\InfluenceArea.h" />
     <ClInclude Include="src\Utilities.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Bvh.cpp" />
+    <ClCompile Include="src\BvhRegion.cpp" />
     <ClCompile Include="src\CustomJson.cpp" />
     <ClCompile Include="src\InfluenceArea.cpp" />
     <ClCompile Include="src\main.cpp" />
