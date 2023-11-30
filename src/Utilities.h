@@ -6,6 +6,7 @@
 #include <array>
 #include <random>
 #include <algorithm>
+#include <limits>
 #include <stdexcept>
 
 namespace pah {
@@ -83,7 +84,7 @@ namespace pah {
 		/**
 		 * @brief Creates the tightest possible axis aligned bounding box for the given list of triangles.
 		 */
-		Aabb(const vector<const Triangle*>& triangles) : min{}, max{} {
+		Aabb(const vector<const Triangle*>& triangles) : min{numeric_limits<float>::max()}, max{ numeric_limits<float>::min() } {
 			for (const auto& t : triangles) {
 				if (t->v1.x < min.x) min.x = t->v1.x;
 				if (t->v2.x < min.x) min.x = t->v2.x;

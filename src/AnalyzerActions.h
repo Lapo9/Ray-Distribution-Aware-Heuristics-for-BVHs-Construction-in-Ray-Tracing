@@ -20,13 +20,15 @@ namespace pah::analyzerActions {
 
 	namespace perNode {
 		/**
-		 * @brief Always adds one node, if the node is also a leaf, adds a leaf too.
+		 * @brief Always adds one node, if the node is also a leaf, adds a leaf too. Adds core info about the node.
 		 *
 		 * @param nodesAndLeaves Pair containing total number of nodes and leaves so far.
 		 */
-		static void nodesAndLeaves(pair<int, int>& nodesAndLeaves, ANALYZER_ACTION_PER_NODE_ARGUMENTS) {
+		static void core(pair<int, int>& nodesAndLeaves, ANALYZER_ACTION_PER_NODE_ARGUMENTS) {
 			nodesAndLeaves.first++;
 			nodesAndLeaves.second += node.isLeaf();
+
+			localLog["core"] = node;
 		}
 
 		/**
@@ -81,6 +83,17 @@ namespace pah::analyzerActions {
 		static void levelCount(int& maxLevel, ANALYZER_ACTION_PER_NODE_ARGUMENTS) {
 			maxLevel = currentLevel > maxLevel ? currentLevel : maxLevel;
 		}
+
+		/**
+		 * @brief Adds all triangles to the list \p triangles. Basically it adds only the triangles of the leaves, since their union is the full set of triangles.
+		 */
+		static void triangles(vector<const Triangle*>& triangles, ANALYZER_ACTION_PER_NODE_ARGUMENTS) {
+			if (node.isLeaf()) {
+				for (auto& triangle : node.triangles) {
+					triangles.push_back(triangle);
+				}
+			}
+		}
 	}
 
 
@@ -88,7 +101,7 @@ namespace pah::analyzerActions {
 		/**
 		 * @brief Simply adds the number of nodes and leaves to the JSON.
 		 */
-		static void nodesAndLeaves(pair<int, int>& nodesAndLeaves, ANALYZER_ACTION_FINAL_ARGUMENTS) {
+		static void core(pair<int, int>& nodesAndLeaves, ANALYZER_ACTION_FINAL_ARGUMENTS) {
 			log["globalInfo"]["numberOfNodes"] = nodesAndLeaves.first;
 			log["globalInfo"]["numberOfLeaves"] = nodesAndLeaves.second;
 		}
@@ -112,6 +125,19 @@ namespace pah::analyzerActions {
 		 */
 		static void levelCount(int& maxLevel, ANALYZER_ACTION_FINAL_ARGUMENTS) {
 			log["globalInfo"]["maxLevel"] = maxLevel;
+		}
+
+		/**
+		 * @brief Creates a list of all triangles in \p triangles.
+		 */
+		static void triangles(vector<const Triangle*>& triangles, ANALYZER_ACTION_FINAL_ARGUMENTS) {
+			for (auto& triangle : triangles) {
+				log["triangles"] += *triangle;
+			}
+		}
+
+		static void influenceArea(int& unused, ANALYZER_ACTION_FINAL_ARGUMENTS) {
+
 		}
 	}
 }

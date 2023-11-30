@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <functional>
+#include <fstream>
 #include "../libs/json.hpp"
 
 #include "Utilities.h"
@@ -54,7 +55,7 @@ namespace pah {
 		}
 
 		/**
-		 * @brief Given a BVH, it analyzes it and returns a Json.
+		 * @brief Given a BVH, it analyzes it and returns a JSON.
 		 */
 		json analyze(const Bvh& bvh) {
 			log = json{}; //initialize log string
@@ -67,7 +68,21 @@ namespace pah {
 			return log;
 		}
 
+		/**
+		 * @brief Given a BVH, it analyzes it and returns a JSON. Moreover it saves the JSON to a file.
+		 */
+		json analyze(const Bvh& bvh, string filePath) {
+			json json = analyze(bvh);
 
+			std::ofstream file;
+			file.open(filePath);
+			file << std::setw(2) << json;
+			file.close();
+
+			return json;
+		}
+
+	private:
 		/**
 		 * @brief Basically this does a for-each on all the elements of the \p actions and \globalObjects tuple.
 		 * What happens is that, for each function in \p actions, it calls it with the corresponding \p globalObject as argument (plus other possible arguments).
@@ -140,9 +155,9 @@ namespace pah {
 			"(std::get<Is>(actions).first(std::get<Is>(globalObjects), node, bvh, localLog), ...)";
 		}
 
-
-
-	private:
+		/**
+		 * @brief Calls all the register actions on this specific node.
+		 */
 		void analyzeNode(const Bvh::Node& node, const Bvh& bvh, int currentLevel) {
 			json localLog;
 

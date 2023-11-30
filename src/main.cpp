@@ -13,7 +13,7 @@ using namespace nlohmann;
 
 int main() {
 	//generate triangles
-	mt19937 rng{ 0 };
+	mt19937 rng{ 1 };
 	Uniform3dDistribution mainDistribution3d{ 0,10, -5,5, 15,19 };
 	Uniform3dDistribution otherDistribution3d{ -1,1, -1,1 , -1,1 };
 	auto triangles = Triangle::generateRandom(20, rng, mainDistribution3d, otherDistribution3d);
@@ -32,11 +32,13 @@ int main() {
 
 	//analyze BVH
 	BvhAnalyzer analyzer{
-		MAKE_ACTIONS_PAIR(nodesAndLeaves), 
+		MAKE_ACTIONS_PAIR(core), 
 		MAKE_ACTIONS_PAIR(sah), 
 		MAKE_ACTIONS_PAIR(pah), 
-		MAKE_ACTIONS_PAIR(levelCount) 
+		MAKE_ACTIONS_PAIR(levelCount),
+		MAKE_ACTIONS_PAIR(triangles)
 	};
-	json analysis = analyzer.analyze(bvh);
+	json analysis = analyzer.analyze(bvh, "D:/Users/lapof/Documents/Development/ProjectedAreaHeuristicVisualizer/Assets/Data/bvh.json");
+
 	std::cout << std::setw(2) << analysis;
 }
