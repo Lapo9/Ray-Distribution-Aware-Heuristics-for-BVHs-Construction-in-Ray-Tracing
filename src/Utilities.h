@@ -202,11 +202,6 @@ namespace pah {
 	public:
 		Plane() : point{}, normal{ 1,0,0 } {}
 		Plane(Vector3 point, Vector3 normal) : point{ point }, normal{ glm::normalize(normal) } {}
-		Plane(const Plane&) = default;
-		Plane& operator=(const Plane&) = default;
-		Plane(Plane&&) = default;
-		Plane& operator=(Plane&&) = default;
-		~Plane() = default;
 
 		const Vector3& getPoint() const { return point; }
 		void setPoint(Vector3 point) { this->point = point; }
@@ -224,11 +219,6 @@ namespace pah {
 		Pov() : position{}, direction{ Vector3{1, 0, 0} }, up{ 0,1,0 } {}
 		Pov(Vector3 position, Vector3 direction, Vector3 up = Vector3{ 0.0f, 1.0f, 0.0f }) : position{ position }, direction{ direction }, up{ up } {}
 		Pov(Plane plane, Vector3 up = Vector3{ 0.0f, 1.0f, 0.0f }) : position{ plane.getPoint()}, direction{plane.getNormal()}, up{up} {}
-		Pov(const Pov&) = default;
-		Pov& operator=(const Pov&) = default;		
-		Pov(Pov&&) = default;
-		Pov& operator=(Pov&&) = default;
-		~Pov() = default;
 
 		const Vector3& getPosition() const { return position; }
 		void setPosition(Vector3 position) { this->position = position; }

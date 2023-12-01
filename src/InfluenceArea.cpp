@@ -29,3 +29,15 @@ vector<tuple<Axis, function<bool(float bestCostSoFar)>>> pah::PlaneInfluenceArea
 	throw logic_error("Function not implemented yet!");
 }
 
+const Plane& pah::PlaneInfluenceArea::getPlane() const {
+	return plane;
+}
+
+const Vector2& pah::PlaneInfluenceArea::getSize() const {
+	return size;
+}
+
+float pah::PlaneInfluenceArea::getDensity() const {
+	return density;
+}
+

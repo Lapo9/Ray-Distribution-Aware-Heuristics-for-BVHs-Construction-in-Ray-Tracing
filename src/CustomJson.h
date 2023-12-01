@@ -21,4 +21,6 @@ namespace pah {
 	void to_json(json& j, const Aabb& aabb);
 	void to_json(json& j, const Triangle& triangle);
 	void to_json(json& j, const InfluenceArea& influenceArea);
+	void to_json(json& j, const PlaneInfluenceArea& planeInfluenceArea);
+	void to_json(json& j, const Plane& plane);
 }

@@ -7,7 +7,7 @@
 
 
 #define ANALYZER_ACTION_PER_NODE_ARGUMENTS const Bvh::Node& node, const Bvh& bvh, int currentLevel, json& localLog /**< The arguments (apart the first one, which is specific to each function) that must be part of the per-node function signatures. */
-#define ANALYZER_ACTION_FINAL_ARGUMENTS json& log /**< The arguments (apart the first one, which is specific to each function) that must be part of the final function signatures. */
+#define ANALYZER_ACTION_FINAL_ARGUMENTS const Bvh& bvh, json& log /**< The arguments (apart the first one, which is specific to each function) that must be part of the final function signatures. */
 
 
 namespace pah::analyzerActions {
@@ -94,6 +94,13 @@ namespace pah::analyzerActions {
 				}
 			}
 		}
+
+		/**
+		 * @brief Actually does nothing, we just need the final action.
+		 */
+		static void influenceArea(int& unused, ANALYZER_ACTION_PER_NODE_ARGUMENTS) {
+			//do nothing
+		}
 	}
 
 
@@ -136,8 +143,11 @@ namespace pah::analyzerActions {
 			}
 		}
 
+		/**
+		 * @brief Adds the influence area to the JSON.
+		 */
 		static void influenceArea(int& unused, ANALYZER_ACTION_FINAL_ARGUMENTS) {
-
+			log["influenceArea"] = bvh.getInfluenceArea();
 		}
 	}
 }

@@ -17,7 +17,7 @@ namespace pah {
 	class BvhAnalyzer {
 	public:
 		#define PerNodeActionType void(GlobalObject&, const Bvh::Node&, const Bvh&, int currLvl, json&)
-		#define FinalActionType void(GlobalObject&, json&)
+		#define FinalActionType void(GlobalObject&, const Bvh&, json&)
 
 		BvhAnalyzer(pair<function<PerNodeActionType>, function<FinalActionType>>... actions) {
 			this->actions = make_tuple(actions...);
@@ -63,7 +63,7 @@ namespace pah {
 			analyzeNode(bvh.getRoot(), bvh, 0); //recurse on all nodes, depth-first
 
 			//execute the final actions for each global object. For example, here it is possible to add to the json the info collected during the visit
-			performFinalActions(log);
+			performFinalActions(bvh, log);
 
 			return log;
 		}
@@ -92,8 +92,8 @@ namespace pah {
 		 * @tparam Size The size of the tuple. Is is defaulted to the size of a tuple of the same type as \p globalObjects .
 		 */
 		template<std::size_t Size = std::tuple_size_v<tuple<GlobalObject...>>>
-		void performFinalActions(json& log) {
-			performFinalActionsImpl(std::make_index_sequence<Size>{}, log); //call with an index sequence from 0 to Size
+		void performFinalActions(const Bvh& bvh, json& log) {
+			performFinalActionsImpl(std::make_index_sequence<Size>{}, bvh, log); //call with an index sequence from 0 to Size
 		}
 
 		/**
@@ -105,12 +105,12 @@ namespace pah {
 		 * @param The index sequence. We don't care to store it, the important thing is that it can be used to deduce the template parameter.
 		 */
 		template<std::size_t... Is>
-		void performFinalActionsImpl(std::index_sequence<Is...>, json& log) {
+		void performFinalActionsImpl(std::index_sequence<Is...>, const Bvh& bvh, json& log) {
 			//extract the I-th of the tuples globalObjects and actions, then perform the final function
 			auto performGlobalAction = [&]<std::size_t I>() {
 				const auto& action = std::get<I>(actions);
 				auto& object = std::get<I>(globalObjects); //the & is fundamental, else we won't store a reference of the object in the tuple
-				action.second(object, log);
+				action.second(object, bvh, log);
 			};
 
 			(performGlobalAction.template operator() < Is > (), ...); //execute for each element in the tuple

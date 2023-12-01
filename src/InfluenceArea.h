@@ -35,6 +35,10 @@ namespace pah {
 		Vector3 getRayDirection(const Aabb& aabb) const;
 		vector<tuple<Axis, function<bool(float bestCostSoFar)>>> bestSplittingPlanes() const;
 
+		const Plane& getPlane() const;
+		const Vector2& getSize() const;
+		float getDensity() const;
+
 	private:
 		Plane plane;
 		Vector2 size;

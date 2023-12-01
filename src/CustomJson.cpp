@@ -24,7 +24,27 @@ void pah::to_json(json& j, const Triangle& triangle) {
 }
 
 void pah::to_json(json& j, const InfluenceArea& influenceArea) {
-	//TODO
+	//we try to cast to the actual type, and then call the proper function with the run-time type; if no cast works, we throw.
+	//we have to do like this because C++ does NOT have multiple dispatch, therefore always this version of the function is called (with the static type InfluenceArea.
+	try {
+		auto& planeInfluenceArea = dynamic_cast<const PlaneInfluenceArea&>(influenceArea);
+		to_json(j, planeInfluenceArea);
+		return;
+	} catch (const std::bad_cast&){}
+	
+	throw std::invalid_argument{ "The run-time type of influenceArea cannot be handled by the to_json function." };
+}
+
+void pah::to_json(json& j, const PlaneInfluenceArea& planeInfluenceArea) {
+	j["type"] = "plane";
+	j["plane"] = planeInfluenceArea.getPlane();
+	j["size"] = planeInfluenceArea.getSize();
+	j["density"] = planeInfluenceArea.getDensity();
+}
+
+void pah::to_json(json& j, const Plane& plane) {
+	j["point"] = plane.getPoint();
+	j["normal"] = plane.getNormal();
 }
 
 void glm::to_json(json& j, const pah::Vector3& vector) {
