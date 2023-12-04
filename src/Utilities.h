@@ -7,7 +7,10 @@
 #include <random>
 #include <algorithm>
 #include <limits>
+#include <iostream>
 #include <stdexcept>
+
+#include  "../libs/json.hpp"
 
 namespace pah {
 	using Vector2 = glm::vec2;
@@ -84,7 +87,7 @@ namespace pah {
 		/**
 		 * @brief Creates the tightest possible axis aligned bounding box for the given list of triangles.
 		 */
-		Aabb(const vector<const Triangle*>& triangles) : min{numeric_limits<float>::max()}, max{ numeric_limits<float>::min() } {
+		Aabb(const vector<const Triangle*>& triangles) : min{ numeric_limits<float>::max() }, max{ -numeric_limits<float>::max() } {
 			for (const auto& t : triangles) {
 				if (t->v1.x < min.x) min.x = t->v1.x;
 				if (t->v2.x < min.x) min.x = t->v2.x;
@@ -188,7 +191,7 @@ namespace pah {
 		}
 
 		static Aabb maxAabb() {
-			Vector3 min{ numeric_limits<float>::min() };
+			Vector3 min{ -numeric_limits<float>::max() };
 			Vector3 max{ numeric_limits<float>::max() };
 			return Aabb{ min, max };
 		}
@@ -200,7 +203,7 @@ namespace pah {
 		Vector3 point;
 
 	public:
-		Plane() : point{}, normal{ 1,0,0 } {}
+		Plane() : point{}, normal{ 0,0,1 } {}
 		Plane(Vector3 point, Vector3 normal) : point{ point }, normal{ glm::normalize(normal) } {}
 
 		const Vector3& getPoint() const { return point; }
@@ -227,6 +230,7 @@ namespace pah {
 		const Vector3& getUp() const { return up; }
 		void setUp(Vector3 up) { this->up = glm::normalize(up); }
 	};
+
 
 	namespace utilities {
 
@@ -259,6 +263,46 @@ namespace pah {
 			if (axis == Axis::Z) return { Axis::X, Axis::Y };
 			throw invalid_argument{ "Cannot use pah::Axis::None as argument" };
 		}
+
+
+		class TimeLogger {
+		public:
+			template<same_as<chrono::duration<long long, std::nano>>... FinalActions>
+			TimeLogger(function<void(FinalActions... duration)>& finalActions) {
+				(this->finalActions.push_back(finalActions), ...);
+			}
+			
+			TimeLogger(const TimeLogger&) = default;
+			TimeLogger& operator=(const TimeLogger&) = default;
+			TimeLogger(TimeLogger&&) = default;
+			TimeLogger& operator=(TimeLogger&&) = default;
+			
+			~TimeLogger() {
+				if(!alreadyStopped) stop();
+			}
+
+			void stop() {
+				auto duration = chrono::high_resolution_clock::now() - startTime;
+				for (const auto& finalAction : finalActions) {
+					finalAction(duration);
+				}
+			}
+
+			//possible final actions
+
+			static void print(chrono::duration<long long, std::nano> duration, string name) {
+				std::cout << name << " " << duration << std::endl;
+			}
+
+			static void json(chrono::duration<long long, std::nano> duration, nlohmann::json& jsonOut, string label) {
+				jsonOut[label] = duration.count();
+			}
+
+		private:
+			chrono::time_point<chrono::high_resolution_clock> startTime;
+			vector<function<void(chrono::duration<long long, std::nano> duration)>> finalActions;
+			bool alreadyStopped = false;
+		};
 	}
 
 

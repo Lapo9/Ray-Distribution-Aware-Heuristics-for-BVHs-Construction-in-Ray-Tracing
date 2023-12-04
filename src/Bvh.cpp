@@ -74,3 +74,20 @@ const pah::Bvh::Node& pah::Bvh::getRoot() const {
 const pah::InfluenceArea& pah::Bvh::getInfluenceArea() const {
 	return *influenceArea;
 }
+
+pah::Bvh::ComputeCostReturnType pah::Bvh::computeCostWrapper(const Node& node, const InfluenceArea& influenceArea, float rootArea) {
+	TimeLogger timeLogger{ std::bind(&NodeTimingInfo::logComputeCost, &(node.nodeTimingInfo), placeholders::_1) };
+	auto result = computeCost(node, influenceArea, rootArea);
+	DBG()
+	return result;
+}
+
+pah::Bvh::ChooseSplittingPlanesReturnType pah::Bvh::chooseSplittingPlaneWrapper(const Aabb& aabb, const InfluenceArea& influenceArea, Axis axis, mt19937& rng) {
+	auto result = chooseSplittingPlanes(aabb, influenceArea, axis, rng);
+	return result;
+}
+
+pah::Bvh::ShouldStopReturnType pah::Bvh::shouldStopWrapper(const Properties& properties, const Node& node, int currentLevel, float nodeCost) {
+	auto result = shouldStop(properties, node, currentLevel, nodeCost);
+	return result;
+}

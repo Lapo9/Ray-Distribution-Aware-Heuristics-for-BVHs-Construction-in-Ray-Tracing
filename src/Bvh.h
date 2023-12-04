@@ -13,12 +13,60 @@
 
 namespace pah {
 	class Bvh {
+
+		#ifdef DEBUG
+		#define DBG(x)
+		#else
+		#define DBG(x) x
+		#endif // DEBUG
+
+
 	public:
+		struct NodeTimingInfo {
+			using DurationNs = chrono::duration<long long, std::nano>;
+			DurationNs total;
+			DurationNs splittingTot;
+			DurationNs computeCostTot;
+			int computeCostCount;
+			DurationNs splitTrianglesTot;
+			int splitTrianglesCount;
+			DurationNs chooseSplittingPlanesTot;
+			int chooseSplittingPlanesCount;
+			DurationNs shouldStopTot;
+			int shouldStopCount;
+
+			DurationNs computeCostMean() { return computeCostTot / computeCostCount; }
+			DurationNs splitTrianglesMean() { return splitTrianglesTot / splitTrianglesCount; }
+			DurationNs chooseSplittingPlanesMean() { return chooseSplittingPlanesTot / chooseSplittingPlanesCount; }
+			DurationNs shouldStopMean() { return shouldStopTot / shouldStopCount; }
+			
+			void logComputeCost(DurationNs duration) {
+				computeCostTot += duration;
+				computeCostCount++;
+			}
+
+			void logSplitTriangles(DurationNs duration) {
+				splitTrianglesTot += duration;
+				splitTrianglesCount++;
+			}
+
+			void logChooseSplittingPlanes(DurationNs duration) {
+				chooseSplittingPlanesTot += duration;
+				chooseSplittingPlanesCount++;
+			}
+
+			void logShouldStop(DurationNs duration) {
+				shouldStopTot += duration;
+				shouldStopCount++;
+			}
+		};
+
 		struct Node {
 			Aabb aabb;
 			unique_ptr<Node> leftChild;
 			unique_ptr<Node> rightChild;
 			vector<const Triangle*> triangles;
+			DBG(NodeTimingInfo nodeTimingInfo;)
 
 			Node(Aabb aabb) : aabb{ aabb } {};
 
@@ -197,6 +245,11 @@ namespace pah {
 
 	private:
 		void splitNode(Node& node, Axis fathersplittingAxis, int currentLevel);
+
+		//simple wrappers for the custom functions. We use wrappers because there may be some common actions to perform before (e.g. time logging)
+		ComputeCostReturnType computeCostWrapper(const Node& node, const InfluenceArea& influenceArea, float rootArea);
+		ChooseSplittingPlanesReturnType chooseSplittingPlaneWrapper(const Aabb& aabb, const InfluenceArea& influenceArea, Axis axis, mt19937& rng);
+		ShouldStopReturnType shouldStopWrapper(const Properties& properties, const Node& node, int currentLevel, float nodeCost);
 
 		/**
 		 * @brief Given a list of triangles, an axis and a position on this axis, returns 2 sets of triangles, the ones "to the left" of the plane, and the ones "to the right".

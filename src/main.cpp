@@ -14,20 +14,20 @@ using namespace nlohmann;
 int main() {
 	//generate triangles
 	mt19937 rng{ 1 };
-	Uniform3dDistribution mainDistribution3d{ 0,10, -5,5, 15,19 };
+	Uniform3dDistribution mainDistribution3d{ -5,5, -5,5, 2,10 };
 	Uniform3dDistribution otherDistribution3d{ -1,1, -1,1 , -1,1 };
-	auto triangles = Triangle::generateRandom(20, rng, mainDistribution3d, otherDistribution3d);
+	auto triangles = Triangle::generateRandom(100, rng, mainDistribution3d, otherDistribution3d);
 
 	//create influence area
-	PlaneInfluenceArea planeInfluenceArea{ Plane{}, Vector2{1,1}, 10 };
+	PlaneInfluenceArea planeInfluenceArea{ Plane{}, Vector2{10,10}, 10 };
 
 	//build BVH
 	Bvh::Properties properties{};
 	properties.maxLevels = 100;
-	properties.maxLeafCost = 1.0f;
+	properties.maxLeafCost = 0.1f;
 	properties.maxTrianglesPerLeaf = 2;
 	properties.bins = 20;
-	Bvh bvh{ properties, planeInfluenceArea, Bvh::computeCostPah, Bvh::chooseSplittingPlanesLongest, Bvh::shouldStopThresholdOrLevel };
+	Bvh bvh{ properties, planeInfluenceArea, Bvh::computeCostPah, Bvh::chooseSplittingPlanesFacing, Bvh::shouldStopThresholdOrLevel };
 	bvh.build(triangles);
 
 	//analyze BVH
