@@ -267,8 +267,8 @@ namespace pah {
 
 		class TimeLogger {
 		public:
-			template<same_as<chrono::duration<long long, std::nano>>... FinalActions>
-			TimeLogger(function<void(FinalActions... duration)>& finalActions) {
+			template<convertible_to<function<void(chrono::duration<float, std::milli>)>>... FinalActions>
+			TimeLogger(const FinalActions&... finalActions) : startTime{ chrono::high_resolution_clock::now() } {
 				(this->finalActions.push_back(finalActions), ...);
 			}
 			
@@ -278,30 +278,36 @@ namespace pah {
 			TimeLogger& operator=(TimeLogger&&) = default;
 			
 			~TimeLogger() {
-				if(!alreadyStopped) stop();
+				if(runLogOnDestruction) log();
 			}
 
-			void stop() {
+			void log() {
 				auto duration = chrono::high_resolution_clock::now() - startTime;
+				assert((duration.count() > 0, "Recorded duration <= 0"));
 				for (const auto& finalAction : finalActions) {
 					finalAction(duration);
 				}
 			}
 
+			void stop() {
+				log();
+				runLogOnDestruction = false;
+			}
+
 			//possible final actions
 
-			static void print(chrono::duration<long long, std::nano> duration, string name) {
+			static void print(chrono::duration<float, std::milli> duration, string name) {
 				std::cout << name << " " << duration << std::endl;
 			}
 
-			static void json(chrono::duration<long long, std::nano> duration, nlohmann::json& jsonOut, string label) {
+			static void json(chrono::duration<float, std::milli> duration, nlohmann::json& jsonOut, string label) {
 				jsonOut[label] = duration.count();
 			}
 
 		private:
 			chrono::time_point<chrono::high_resolution_clock> startTime;
-			vector<function<void(chrono::duration<long long, std::nano> duration)>> finalActions;
-			bool alreadyStopped = false;
+			vector<function<void(chrono::duration<float, std::milli> duration)>> finalActions;
+			bool runLogOnDestruction = true;
 		};
 	}
 

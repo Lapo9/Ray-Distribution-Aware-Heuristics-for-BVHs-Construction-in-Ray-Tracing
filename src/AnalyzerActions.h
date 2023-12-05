@@ -101,6 +101,18 @@ namespace pah::analyzerActions {
 		static void influenceArea(int& unused, ANALYZER_ACTION_PER_NODE_ARGUMENTS) {
 			//do nothing
 		}
+
+		/**
+		 * @brief Logs time measurements and updates the total "average" time measurement.
+		 * If the macro TIMING is false, nothing happens.
+		 */
+		static void timeMeasurement(Bvh::NodeTimingInfo& meanTimeInfo, ANALYZER_ACTION_PER_NODE_ARGUMENTS) {
+			//update total "average" times
+			TIME(meanTimeInfo += node.nodeTimingInfo;);
+			
+			//log to JSON the times of this node
+			TIME(localLog["timing"] = node.nodeTimingInfo;);
+		}
 	}
 
 
@@ -148,6 +160,17 @@ namespace pah::analyzerActions {
 		 */
 		static void influenceArea(int& unused, ANALYZER_ACTION_FINAL_ARGUMENTS) {
 			log["influenceArea"] = bvh.getInfluenceArea();
+		}
+
+		/**
+		 * @brief Logs the total build time and the average times for each building step of each node.
+		 */
+		static void timeMeasurement(Bvh::NodeTimingInfo& meanTimeInfo, ANALYZER_ACTION_FINAL_ARGUMENTS) {			
+			//log total "average" times
+			TIME(log["totalTiming"] = meanTimeInfo;);
+
+			//log total time
+			TIME(log["totalTiming"]["fullTotal"] = bvh.getTotalBuildTime().count(););
 		}
 	}
 }

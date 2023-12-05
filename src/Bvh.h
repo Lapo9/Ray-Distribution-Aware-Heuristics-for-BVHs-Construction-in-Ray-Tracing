@@ -10,54 +10,107 @@
 
 #include "Utilities.h"
 #include "InfluenceArea.h"
+#include "settings.h"
 
 namespace pah {
 	class Bvh {
 
-		#ifdef DEBUG
-		#define DBG(x)
-		#else
-		#define DBG(x) x
-		#endif // DEBUG
-
-
 	public:
+		//related classes
 		struct NodeTimingInfo {
-			using DurationNs = chrono::duration<long long, std::nano>;
-			DurationNs total;
-			DurationNs splittingTot;
-			DurationNs computeCostTot;
+			using DurationMs = chrono::duration<float, std::milli>;
+			DurationMs total;
+			DurationMs splittingTot;
+			DurationMs computeCostTot;
 			int computeCostCount;
-			DurationNs splitTrianglesTot;
+			DurationMs splitTrianglesTot;
 			int splitTrianglesCount;
-			DurationNs chooseSplittingPlanesTot;
+			DurationMs chooseSplittingPlanesTot;
 			int chooseSplittingPlanesCount;
-			DurationNs shouldStopTot;
+			DurationMs shouldStopTot;
 			int shouldStopCount;
+			DurationMs nodesCreationTot;
+			int nodesCreationCount;
 
-			DurationNs computeCostMean() { return computeCostTot / computeCostCount; }
-			DurationNs splitTrianglesMean() { return splitTrianglesTot / splitTrianglesCount; }
-			DurationNs chooseSplittingPlanesMean() { return chooseSplittingPlanesTot / chooseSplittingPlanesCount; }
-			DurationNs shouldStopMean() { return shouldStopTot / shouldStopCount; }
+			DurationMs computeCostMean() const { return computeCostTot / computeCostCount; }
+			DurationMs splitTrianglesMean() const { return splitTrianglesTot / splitTrianglesCount; }
+			DurationMs chooseSplittingPlanesMean() const { return chooseSplittingPlanesTot / chooseSplittingPlanesCount; }
+			DurationMs shouldStopMean() const { return shouldStopTot / shouldStopCount; }
+			DurationMs nodesCreationMean() const { return nodesCreationTot / nodesCreationCount; }
 			
-			void logComputeCost(DurationNs duration) {
+			void logTotal(DurationMs duration) {
+				total = duration;
+			}
+
+			void logSplittingTot(DurationMs duration) {
+				splittingTot = duration;
+			}
+
+			void logComputeCost(DurationMs duration) {
 				computeCostTot += duration;
 				computeCostCount++;
 			}
 
-			void logSplitTriangles(DurationNs duration) {
+			void logSplitTriangles(DurationMs duration) {
 				splitTrianglesTot += duration;
 				splitTrianglesCount++;
 			}
 
-			void logChooseSplittingPlanes(DurationNs duration) {
+			void logChooseSplittingPlanes(DurationMs duration) {
 				chooseSplittingPlanesTot += duration;
 				chooseSplittingPlanesCount++;
 			}
 
-			void logShouldStop(DurationNs duration) {
+			void logShouldStop(DurationMs duration) {
 				shouldStopTot += duration;
 				shouldStopCount++;
+			}
+
+			void logNodesCreation(DurationMs duration) {
+				nodesCreationTot += duration;
+				nodesCreationCount++;
+			}
+
+			/**
+			 * @brief Adds together 2 NodeTimingInfo objects.
+			 */
+			NodeTimingInfo& operator+=(const NodeTimingInfo& lhs) {
+
+				//else, compute the average between the 2
+				total = total + lhs.total;
+				splittingTot = splittingTot + lhs.splittingTot;
+				computeCostTot = computeCostTot + lhs.computeCostTot;
+				computeCostCount = computeCostCount + lhs.computeCostCount;
+				splitTrianglesTot = splitTrianglesTot + lhs.splitTrianglesTot;
+				splitTrianglesCount = splitTrianglesCount + lhs.splitTrianglesCount;
+				chooseSplittingPlanesTot = chooseSplittingPlanesTot + lhs.chooseSplittingPlanesTot;
+				chooseSplittingPlanesCount = chooseSplittingPlanesCount + lhs.chooseSplittingPlanesCount;
+				shouldStopTot = shouldStopTot + lhs.shouldStopTot;
+				shouldStopCount = shouldStopCount + lhs.shouldStopCount;				
+				nodesCreationTot = nodesCreationTot + lhs.nodesCreationTot;
+				nodesCreationCount = nodesCreationCount + lhs.nodesCreationCount;
+
+				return *this;
+			}
+
+			friend NodeTimingInfo& operator+(NodeTimingInfo lhs, const NodeTimingInfo& rhs) {
+				lhs += rhs;
+				return lhs;
+			}
+
+			friend bool operator==(const NodeTimingInfo& lhs, const NodeTimingInfo& rhs) {
+				return	lhs.total == rhs.total &&
+					lhs.splittingTot == rhs.splittingTot &&
+					lhs.computeCostTot == rhs.computeCostTot &&
+					lhs.computeCostCount == rhs.computeCostCount &&
+					lhs.splitTrianglesTot == rhs.splitTrianglesTot &&
+					lhs.splitTrianglesCount == rhs.splitTrianglesCount &&
+					lhs.chooseSplittingPlanesTot == rhs.chooseSplittingPlanesTot &&
+					lhs.chooseSplittingPlanesCount == lhs.chooseSplittingPlanesCount &&
+					lhs.shouldStopTot == rhs.shouldStopTot &&
+					lhs.shouldStopCount == rhs.shouldStopCount &&
+					lhs.nodesCreationTot == rhs.nodesCreationTot &&
+					lhs.nodesCreationCount == rhs.nodesCreationCount;
 			}
 		};
 
@@ -66,13 +119,17 @@ namespace pah {
 			unique_ptr<Node> leftChild;
 			unique_ptr<Node> rightChild;
 			vector<const Triangle*> triangles;
-			DBG(NodeTimingInfo nodeTimingInfo;)
+			TIME(mutable NodeTimingInfo nodeTimingInfo;)
 
-			Node(Aabb aabb) : aabb{ aabb } {};
-
-			Node(const vector<const Triangle*>& triangles) : aabb{ Aabb{triangles} }, triangles{ triangles } {}
-
-			Node() = default;
+			Node(Aabb aabb) : aabb{ aabb } {
+				TIME(nodeTimingInfo = NodeTimingInfo{};);
+			};
+			Node(const vector<const Triangle*>& triangles) : aabb{ Aabb{triangles} }, triangles{ triangles } {
+				TIME(nodeTimingInfo = NodeTimingInfo{};);
+			}
+			Node() : aabb{} {
+				TIME(nodeTimingInfo = NodeTimingInfo{};);
+			};
 			Node(Node&&) = default;
 			Node& operator=(Node&&) = default;
 			Node(const Node&) = delete;
@@ -107,8 +164,8 @@ namespace pah {
 
 		//custom types
 		using ComputeCostReturnType = float;																using ComputeCostType = ComputeCostReturnType(const Node&, const InfluenceArea&, float rootMetric);
-		using ChooseSplittingPlanesReturnType = vector<tuple<Axis, function<bool(float bestCostSoFar)>>>;	using ChooseSplittingPlanesType = ChooseSplittingPlanesReturnType(const Aabb&, const InfluenceArea&, Axis father, mt19937& rng);
-		using ShouldStopReturnType = bool;																	using ShouldStopType = ShouldStopReturnType(const Properties&, const Node&, int currentLevel, float nodeCost);
+		using ChooseSplittingPlanesReturnType = vector<tuple<Axis, function<bool(float bestCostSoFar)>>>;	using ChooseSplittingPlanesType = ChooseSplittingPlanesReturnType(const Node&, const InfluenceArea&, Axis father, mt19937& rng);
+		using ShouldStopReturnType = bool;																	using ShouldStopType = ShouldStopReturnType(const Node&, const Properties&, int currentLevel, float nodeCost);
 
 
 		Bvh(const Properties&, const InfluenceArea&, ComputeCostType computeCost, ChooseSplittingPlanesType chooseSplittingPlanes, ShouldStopType shouldStop);
@@ -122,6 +179,7 @@ namespace pah {
 
 		const Node& getRoot() const;
 		const InfluenceArea& getInfluenceArea() const;
+		const NodeTimingInfo::DurationMs getTotalBuildTime() const;
 
 
 		/**
@@ -149,8 +207,8 @@ namespace pah {
 		 * Axis are sorted from longest to shortest. If an axis is too short, it is not incuded.
 		 * The function returns whether it is worth it to try the corresponding axis, given the results obtained with the previous axis.
 		 */
-		static ChooseSplittingPlanesReturnType chooseSplittingPlanesLongest(const Aabb& aabb, const InfluenceArea&, Axis, mt19937&) {
-			array<tuple<float, Axis>, 3> axisLengths{ tuple{aabb.size().x, Axis::X}, {aabb.size().y, Axis::Y} , {aabb.size().z, Axis::Z} }; //basically a dictionary<length, Axis>
+		static ChooseSplittingPlanesReturnType chooseSplittingPlanesLongest(const Node& node, const InfluenceArea&, Axis, mt19937&) {
+			array<tuple<float, Axis>, 3> axisLengths{ tuple{node.aabb.size().x, Axis::X}, {node.aabb.size().y, Axis::Y} , {node.aabb.size().z, Axis::Z} }; //basically a dictionary<length, Axis>
 			sort(axisLengths.begin(), axisLengths.end(), [](auto a, auto b) { return get<0>(a) < get<0>(b); }); //sort based on axis length
 
 			vector<tuple<Axis, function<bool(float)>>> result{}; //the array to fill and return
@@ -166,9 +224,9 @@ namespace pah {
 			return result;
 		}
 
-		static ChooseSplittingPlanesReturnType chooseSplittingPlanesFacing(const Aabb& aabb, const InfluenceArea& influenceArea, Axis, mt19937& rng) {
+		static ChooseSplittingPlanesReturnType chooseSplittingPlanesFacing(const Node& node, const InfluenceArea& influenceArea, Axis, mt19937& rng) {
 			using namespace utilities;
-			Vector3 dir = influenceArea.getRayDirection(aabb); //TODO this will not work for point influence areas, we need to think about them
+			Vector3 dir = influenceArea.getRayDirection(node.aabb); //TODO this will not work for point influence areas, we need to think about them
 
 			Vector3 percs{ dir.x / (dir.x + dir.y + dir.z),  dir.y / (dir.x + dir.y + dir.z), dir.z / (dir.x + dir.y + dir.z) };
 
@@ -239,7 +297,7 @@ namespace pah {
 		/**
 		 * @brief Returns true if the max level has been passed or if the cost of the leaf is low enough.
 		 */
-		static ShouldStopReturnType shouldStopThresholdOrLevel(const Properties& properties, const Node& node, int currentLevel, float nodeCost) {
+		static ShouldStopReturnType shouldStopThresholdOrLevel(const Node& node, const Properties& properties, int currentLevel, float nodeCost) {
 			return currentLevel > properties.maxLevels || nodeCost < properties.maxLeafCost || node.triangles.size() < properties.maxTrianglesPerLeaf;
 		}
 
@@ -247,15 +305,18 @@ namespace pah {
 		void splitNode(Node& node, Axis fathersplittingAxis, int currentLevel);
 
 		//simple wrappers for the custom functions. We use wrappers because there may be some common actions to perform before (e.g. time logging)
-		ComputeCostReturnType computeCostWrapper(const Node& node, const InfluenceArea& influenceArea, float rootArea);
-		ChooseSplittingPlanesReturnType chooseSplittingPlaneWrapper(const Aabb& aabb, const InfluenceArea& influenceArea, Axis axis, mt19937& rng);
-		ShouldStopReturnType shouldStopWrapper(const Properties& properties, const Node& node, int currentLevel, float nodeCost);
+		ComputeCostReturnType computeCostWrapper(const Node& parent, const Node& node, const InfluenceArea& influenceArea, float rootArea);
+		ChooseSplittingPlanesReturnType chooseSplittingPlanesWrapper(const Node& node, const InfluenceArea& influenceArea, Axis axis, mt19937& rng);
+		ShouldStopReturnType shouldStopWrapper(const Node& parent, const Node& node, const Properties& properties, int currentLevel, float nodeCost);
 
 		/**
 		 * @brief Given a list of triangles, an axis and a position on this axis, returns 2 sets of triangles, the ones "to the left" of the plane, and the ones "to the right".
 		 */
-		static tuple<vector<const Triangle*>, vector<const Triangle*>> splitTriangles(const vector<const Triangle*>& triangles, Axis axis, float splittingPlanePosition) {
+		static tuple<vector<const Triangle*>, vector<const Triangle*>> splitTriangles(const Node& node, const vector<const Triangle*>& triangles, Axis axis, float splittingPlanePosition) {
 			using namespace utilities;
+			//the final action simply adds the measured time to the total split triangles time, and increases the split triangles counter
+			TIME(TimeLogger timeLogger{ [&timingInfo = node.nodeTimingInfo](NodeTimingInfo::DurationMs duration) { timingInfo.splitTrianglesTot += duration; timingInfo.splitTrianglesCount++; } };);
+
 			vector<const Triangle*> left, right;
 
 			for (auto t : triangles) {
@@ -274,13 +335,13 @@ namespace pah {
 
 		//customizable functions
 		function<ComputeCostType> computeCost;
-
 		//the idea is that this function returns a list of suitable axis to try to subdivide the AABB into, and a set of corresponding predicates.
 		//these predicates take into account the "quality" of the axis, and the results obtained from previous axis; and they decide whether is it worth it to try the next axis
 		function<ChooseSplittingPlanesType> chooseSplittingPlanes;
 		function<ShouldStopType> shouldStop;
 
 		mt19937 rng; //random number generator
+		NodeTimingInfo::DurationMs totalBuildTime; //total time of the last build
 		unsigned long long int id; //id of this BVH: it is a cheap way to check if 2 BVHs are equals
 	};
 }

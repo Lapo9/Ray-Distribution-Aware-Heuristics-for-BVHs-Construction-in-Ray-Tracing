@@ -32,12 +32,13 @@ int main() {
 
 	//analyze BVH
 	BvhAnalyzer analyzer{
-		MAKE_ACTIONS_PAIR(core), 
-		MAKE_ACTIONS_PAIR(sah), 
-		MAKE_ACTIONS_PAIR(pah), 
+		MAKE_ACTIONS_PAIR(core),
+		MAKE_ACTIONS_PAIR(sah),
+		MAKE_ACTIONS_PAIR(pah),
 		MAKE_ACTIONS_PAIR(levelCount),
 		MAKE_ACTIONS_PAIR(triangles),
-		MAKE_ACTIONS_PAIR(influenceArea)
+		MAKE_ACTIONS_PAIR(influenceArea),
+		MAKE_ACTIONS_PAIR(timeMeasurement)
 	};
 	json analysis = analyzer.analyze(bvh, "D:/Users/lapof/Documents/Development/ProjectedAreaHeuristicVisualizer/Assets/Data/bvh.json");
 

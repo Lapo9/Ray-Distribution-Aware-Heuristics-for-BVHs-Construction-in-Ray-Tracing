@@ -7,13 +7,16 @@ using namespace std;
 using namespace pah::utilities;
 
 pah::Bvh::Bvh(const Properties& properties, const InfluenceArea& influenceArea, ComputeCostType computeCost, ChooseSplittingPlanesType chooseSplittingPlanes, ShouldStopType shouldStop)
-	: properties{ properties }, influenceArea{ &influenceArea }, computeCost{ computeCost }, chooseSplittingPlanes{ chooseSplittingPlanes }, shouldStop{ shouldStop } {
-	//note that we MUST instantiate the unique_ptr this way (a.k.a. we cannot use make_unique), because make_unique tries to allocate the base class, which is abstract
-}
+	: properties{ properties }, influenceArea{ &influenceArea }, computeCost{ computeCost }, chooseSplittingPlanes{ chooseSplittingPlanes }, shouldStop{ shouldStop } {}
 
 void pah::Bvh::build(const vector<Triangle>& triangles) {
+	//the final action simply adds the measured time to the total time
+	TimeLogger timeLogger{ [this](NodeTimingInfo::DurationMs duration) { totalBuildTime = duration; } };
+
 	random_device randomDevice;
 	build(triangles, randomDevice()); //the seed is random
+	timeLogger.stop();
+	//here timeLogger will be destroyed, and it will log (by calling finalAction)
 }
 
 void pah::Bvh::build(const vector<Triangle>& triangles, unsigned int seed) {
@@ -27,21 +30,31 @@ void pah::Bvh::build(const vector<Triangle>& triangles, unsigned int seed) {
 }
 
 void pah::Bvh::splitNode(Node& node, Axis fatherSplittingAxis, int currentLevel) {
+	//the final action simply adds the measured time to the total time
+	TIME(TimeLogger timeLoggerTotal{ [&timingInfo = node.nodeTimingInfo](NodeTimingInfo::DurationMs duration) { timingInfo.logTotal(duration); } };);
+
 	float bestLeftSoFar = numeric_limits<float>::max(), bestRightSoFar = numeric_limits<float>::max();
 	Node bestLeft{ Aabb::maxAabb() }, bestRight{ Aabb::maxAabb() };
 	Axis usedAxis; //we save what axis we actually used
-	auto splittingPlanes = chooseSplittingPlanes(node.aabb, *influenceArea, fatherSplittingAxis, rng);
+	auto splittingPlanes = chooseSplittingPlanesWrapper(node, *influenceArea, fatherSplittingAxis, rng);
 
 	bool found = false; //flag to check if we found at least one split (maybe all the splits place the triangles on one side, leaving the other one empty)
+	
+	//the final action simply adds the measured time to the total split time
+	TIME(TimeLogger timeLoggerSplitting{ [&timingInfo = node.nodeTimingInfo](NodeTimingInfo::DurationMs duration) { timingInfo.logSplittingTot(duration); } };);
 	//try to split for each axis provided by chooseSplittingPlanes
 	for (const auto& [axis, criterium] : splittingPlanes) {
 		if (found && !criterium(bestLeftSoFar + bestRightSoFar)) break; //is it worth it to try this split? (it is always worth it if we haven't found a split on the previou axis)
 		//split for each bin
 		for (int i = 1; i < properties.bins - 1; ++i) {
 			float splittingPlanePosition = at(node.aabb.min, axis) + (at(node.aabb.max, axis) - at(node.aabb.min, axis)) / properties.bins * i;
-			const auto& [leftTriangles, rightTriangles] = splitTriangles(node.triangles, axis, splittingPlanePosition);
+			const auto& [leftTriangles, rightTriangles] = splitTriangles(node, node.triangles, axis, splittingPlanePosition);
+			
+			TIME(TimeLogger timeLoggerNodes{ [&timingInfo = node.nodeTimingInfo](auto duration) { timingInfo.logNodesCreation(duration); } };);
 			Node left = { leftTriangles }, right = { rightTriangles };
-			float costLeft = computeCost(left, *influenceArea, rootMetric), costRight = computeCost(right, *influenceArea, rootMetric);
+			TIME(timeLoggerNodes.stop(););
+
+			float costLeft = computeCostWrapper(node, left, *influenceArea, rootMetric), costRight = computeCostWrapper(node, right, *influenceArea, rootMetric);
 
 			//update best split (also check that we have triangles on both sides, else we might get stuck)
 			if (costLeft + costRight < bestLeftSoFar + bestRightSoFar && leftTriangles.size() > 0 && rightTriangles.size() > 0) {
@@ -54,6 +67,7 @@ void pah::Bvh::splitNode(Node& node, Axis fatherSplittingAxis, int currentLevel)
 			}
 		}
 	}
+	TIME(timeLoggerSplitting.stop();); //log the time it took to split this node
 
 	if (!found) return; //if we haven't found at least one split (therefore triangles are not separable), this node is a leaf by definition
 
@@ -61,10 +75,12 @@ void pah::Bvh::splitNode(Node& node, Axis fatherSplittingAxis, int currentLevel)
 	node.leftChild = std::make_unique<Node>(std::move(bestLeft));
 	node.rightChild = std::make_unique<Node>(std::move(bestRight));
 
+	TIME(timeLoggerTotal.stop();); //log the time it took for this node (of course we exclude recursive calls)
+
 	//recurse on children
 	currentLevel++;
-	if (!shouldStop(properties, *node.leftChild, currentLevel, bestLeftSoFar)) splitNode(*node.leftChild, usedAxis, currentLevel);
-	if (!shouldStop(properties, *node.rightChild, currentLevel, bestRightSoFar)) splitNode(*node.rightChild, usedAxis, currentLevel);
+	if (!shouldStopWrapper(node, *node.leftChild, properties, currentLevel, bestLeftSoFar)) splitNode(*node.leftChild, usedAxis, currentLevel);
+	if (!shouldStopWrapper(node, *node.rightChild, properties, currentLevel, bestRightSoFar)) splitNode(*node.rightChild, usedAxis, currentLevel);
 }
 
 const pah::Bvh::Node& pah::Bvh::getRoot() const {
@@ -75,19 +91,27 @@ const pah::InfluenceArea& pah::Bvh::getInfluenceArea() const {
 	return *influenceArea;
 }
 
-pah::Bvh::ComputeCostReturnType pah::Bvh::computeCostWrapper(const Node& node, const InfluenceArea& influenceArea, float rootArea) {
-	TimeLogger timeLogger{ std::bind(&NodeTimingInfo::logComputeCost, &(node.nodeTimingInfo), placeholders::_1) };
-	auto result = computeCost(node, influenceArea, rootArea);
-	DBG()
-	return result;
+const pah::Bvh::NodeTimingInfo::DurationMs pah::Bvh::getTotalBuildTime() const {
+	return totalBuildTime;
 }
 
-pah::Bvh::ChooseSplittingPlanesReturnType pah::Bvh::chooseSplittingPlaneWrapper(const Aabb& aabb, const InfluenceArea& influenceArea, Axis axis, mt19937& rng) {
-	auto result = chooseSplittingPlanes(aabb, influenceArea, axis, rng);
-	return result;
+pah::Bvh::ComputeCostReturnType pah::Bvh::computeCostWrapper(const Node& parent, const Node& node, const InfluenceArea& influenceArea, float rootArea) {
+	//the final action simply adds the measured time to the total compute cost time, and increases the compute cost counter
+	TIME(TimeLogger timeLogger{ [&timingInfo = parent.nodeTimingInfo](auto duration) { timingInfo.logComputeCost(duration); } };);
+	return computeCost(node, influenceArea, rootArea);
+	//here timeLogger will be destroyed, and it will log (by calling finalAction)
 }
 
-pah::Bvh::ShouldStopReturnType pah::Bvh::shouldStopWrapper(const Properties& properties, const Node& node, int currentLevel, float nodeCost) {
-	auto result = shouldStop(properties, node, currentLevel, nodeCost);
-	return result;
+pah::Bvh::ChooseSplittingPlanesReturnType pah::Bvh::chooseSplittingPlanesWrapper(const Node& node, const InfluenceArea& influenceArea, Axis axis, mt19937& rng) {
+	//the final action simply adds the measured time to the total choose splitting plane time, and increases the choose splitting plane counter
+	TIME(TimeLogger timeLogger{ [&timingInfo = node.nodeTimingInfo](auto duration) { timingInfo.logChooseSplittingPlanes(duration); } };);
+	return chooseSplittingPlanes(node, influenceArea, axis, rng);
+	//here timeLogger will be destroyed, and it will log (by calling finalAction)
+}
+
+pah::Bvh::ShouldStopReturnType pah::Bvh::shouldStopWrapper(const Node& parent, const Node& node, const Properties& properties, int currentLevel, float nodeCost) {
+	//the final action simply adds the measured time to the total should stop time, and increases the should stop counter
+	TIME(TimeLogger timeLogger{ [&timingInfo = parent.nodeTimingInfo](auto duration) { timingInfo.logShouldStop(duration); } };);
+	return shouldStop(node, properties, currentLevel, nodeCost);
+	//here timeLogger will be destroyed, and it will log (by calling finalAction)
 }

@@ -23,4 +23,5 @@ namespace pah {
 	void to_json(json& j, const InfluenceArea& influenceArea);
 	void to_json(json& j, const PlaneInfluenceArea& planeInfluenceArea);
 	void to_json(json& j, const Plane& plane);
+	void to_json(json& j, const Bvh::NodeTimingInfo& nti);
 }

@@ -1,4 +1,5 @@
 #include "CustomJson.h"
+#include "settings.h"
 
 void pah::to_json(json& j, const Bvh::Node& node) {
 	j["id"] = (unsigned long long int) & node;
@@ -45,6 +46,27 @@ void pah::to_json(json& j, const PlaneInfluenceArea& planeInfluenceArea) {
 void pah::to_json(json& j, const Plane& plane) {
 	j["point"] = plane.getPoint();
 	j["normal"] = plane.getNormal();
+}
+
+void pah::to_json(json& j, const Bvh::NodeTimingInfo& nti) {
+	//log to JSON the times of this node
+	TIME(j["total"] =							nti.total.count(););
+	TIME(j["splittingTot"] =					nti.splittingTot.count(););
+	TIME(j["computeCostTot"] =					nti.computeCostTot.count(););
+	TIME(j["computeCostCount"] =				nti.computeCostCount;);
+	TIME(j["computeCostAverage"] =				nti.computeCostMean().count(););
+	TIME(j["splitTrianglesTot"] =				nti.splitTrianglesTot.count(););
+	TIME(j["splitTrianglesCount"] =				nti.splitTrianglesCount;);
+	TIME(j["splitTrianglesAverage"] =			nti.splitTrianglesMean().count(););
+	TIME(j["chooseSplittingPlanesTot"] =		nti.chooseSplittingPlanesTot.count(););
+	TIME(j["chooseSplittingPlanesCount"] =		nti.chooseSplittingPlanesCount;);
+	TIME(j["chooseSplittingPlanesAverage"] =	nti.chooseSplittingPlanesMean().count(););
+	TIME(j["shouldStopTot"] =					nti.shouldStopTot.count(););
+	TIME(j["shouldStopCount"] =					nti.shouldStopCount;);
+	TIME(j["shouldStopAverage"] =				nti.shouldStopMean().count(););
+	TIME(j["nodesCreationTot"] =				nti.nodesCreationTot.count(););
+	TIME(j["nodesCreationCount"] =				nti.nodesCreationCount;);
+	TIME(j["nodesCreationAverage"] =			nti.nodesCreationMean().count(););
 }
 
 void glm::to_json(json& j, const pah::Vector3& vector) {
