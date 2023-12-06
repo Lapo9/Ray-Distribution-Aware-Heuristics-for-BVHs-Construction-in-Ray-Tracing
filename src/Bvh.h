@@ -207,6 +207,7 @@ namespace pah {
 		 * Axis are sorted from longest to shortest. If an axis is too short, it is not incuded.
 		 * The function returns whether it is worth it to try the corresponding axis, given the results obtained with the previous axis.
 		 */
+		template<float costThreshold, float ratioThreshold = 0.5f>
 		static ChooseSplittingPlanesReturnType chooseSplittingPlanesLongest(const Node& node, const InfluenceArea&, Axis, mt19937&) {
 			array<tuple<float, Axis>, 3> axisLengths{ tuple{node.aabb.size().x, Axis::X}, {node.aabb.size().y, Axis::Y} , {node.aabb.size().z, Axis::Z} }; //basically a dictionary<length, Axis>
 			sort(axisLengths.begin(), axisLengths.end(), [](auto a, auto b) { return get<0>(a) < get<0>(b); }); //sort based on axis length
@@ -214,16 +215,23 @@ namespace pah {
 			vector<tuple<Axis, function<bool(float)>>> result{}; //the array to fill and return
 			float longestAxis = get<0>(axisLengths[0]);
 			//basically, for each axis, decide whether to include it or not, and build a function that decides if it is worth it to try the next axis based on the results of the previous one(s)
-			for (const auto& [length, axis] : axisLengths) {
+			for (int i = 0; const auto & [length, axis] : axisLengths) {
 				float ratio = length / longestAxis;
-				if (ratio > 0.5f) { //TODO 0.5 is arbitrary
-					result.emplace_back(axis, [](float bestCostSoFar) {return bestCostSoFar / 100.0f > 1; }); //TODO the lambda must be reviewed, it is almost a placeholder now
+				if (ratio > ratioThreshold) {
+					result.emplace_back(
+						axis, 
+						[](float bestCostSoFar) { return bestCostSoFar > costThreshold + 0.1f * i * costThreshold; } //it suggest to try this axis if the found cost is > of a user-defined threshold plus a percentage (based on how many axis we've already analyzed)
+					); 
+					i++; //counts how many axis we analyzed
+					continue;
 				}
+				break; //if we haven't entered the if, it means all next axis won't enter it either
 			}
 
 			return result;
 		}
 
+		template<float costThreshold, float percentageMargin = 0.05f>
 		static ChooseSplittingPlanesReturnType chooseSplittingPlanesFacing(const Node& node, const InfluenceArea& influenceArea, Axis, mt19937& rng) {
 			using namespace utilities;
 			Vector3 dir = influenceArea.getRayDirection(node.aabb); //TODO this will not work for point influence areas, we need to think about them
@@ -255,12 +263,12 @@ namespace pah {
 					std::swap(pb11, pb12);
 				}
 				//add the best possible plane
-				result.emplace_back(b11, [](float bestCostSoFar) { return true; }); //TODO satisfaction criterium
+				result.emplace_back(b11, [](float bestCostSoFar) { return true; }); //always try the first plane
 
 				//if the main rays direction is "clear", but the best plane is not so "clear", we also add the other plane considering the "clear" main rays direction
 				if (pa1 - margin > pa2 && pb11 - margin <= pb12) {
 					//add the other plane with this main rays direction too
-					result.emplace_back(b12, [](float bestCostSoFar) { return true; }); //TODO satisfaction criterium
+					result.emplace_back(b12, [](float bestCostSoFar) { return bestCostSoFar > costThreshold; }); //try this plane if the results with the first plane were worse than the threshold
 				}
 				//if the main rays direction is not "clear", let's get the second main direction
 				else if (pa1 - margin <= pa2) {
@@ -274,16 +282,16 @@ namespace pah {
 
 					//if the best possible plane in the second main rays direction is NOT the same as the best plane in the main rays direction, add it
 					if (b21 != b11) {
-						result.emplace_back(b21, [](float bestCostSoFar) { return true; }); //TODO satisfaction criterium
+						result.emplace_back(b21, [](float bestCostSoFar) { return bestCostSoFar > costThreshold; }); //try this plane if the results with the first plane were worse than the threshold
 					}
-					//if the best possible plane in the second main rays direction is the same as the best plane in the main rays direction, verify if also the othe plane is "good enough"
+					//if the best possible plane in the second main rays direction is the same as the best plane in the main rays direction, verify if also the other plane is "good enough"
 					else if (pb21 - margin <= pb22) {
-						result.emplace_back(b22, [](float bestCostSoFar) { return true; }); //TODO satisfaction criterium
+						result.emplace_back(b22, [](float bestCostSoFar) { return bestCostSoFar > costThreshold; }); //try this plane if the results with the first plane were worse than the threshold
 					}
 				}
 
 				//at the end of the day, if the main rays direction and the best plane considering this direction is "clear", we will have just one plane; else we will have the best 2 planes.
-				//the satisfaction criteria will decide whether is it worth it to try the second plane or not, based on the results of the first split.
+				//the satisfaction criteria will determine whether it is worth it to try the second plane or not, based on the results of the first split.
 				return result;
 				};
 
@@ -291,7 +299,7 @@ namespace pah {
 			Axis min = percs.x < percs.y && percs.x < percs.z ? Axis::X : percs.y <= percs.x && percs.y <= percs.z ? Axis::Y : Axis::Z; //the first comparison is < and not <= so that if all axis are equal, then max != min
 			Axis mid = third(max, min);
 
-			return addPlanes(max, at(percs, max), mid, at(percs, mid), 0.05f);
+			return addPlanes(max, at(percs, max), mid, at(percs, mid), percentageMargin);
 		}
 
 		/**
