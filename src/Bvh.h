@@ -209,7 +209,7 @@ namespace pah {
 		 */
 		template<float costThreshold, float ratioThreshold = 0.5f>
 		static ChooseSplittingPlanesReturnType chooseSplittingPlanesLongest(const Node& node, const InfluenceArea&, Axis, mt19937&) {
-			array<tuple<float, Axis>, 3> axisLengths{ tuple{node.aabb.size().x, Axis::X}, {node.aabb.size().y, Axis::Y} , {node.aabb.size().z, Axis::Z} }; //basically a dictionary<length, Axis>
+			array<tuple<float, Axis>, 3> axisLengths{ tuple{node.aabb.size().x), Axis::X}, {node.aabb.size().y, Axis::Y} , {node.aabb.size().z, Axis::Z} }; //basically a dictionary<length, Axis>
 			sort(axisLengths.begin(), axisLengths.end(), [](auto a, auto b) { return get<0>(a) < get<0>(b); }); //sort based on axis length
 
 			vector<tuple<Axis, function<bool(float)>>> result{}; //the array to fill and return
@@ -231,22 +231,28 @@ namespace pah {
 			return result;
 		}
 
+		/**
+		 * @brief Returns a list of axis and satisfaction criteria predicates.
+		 * Axis are chosen based on the direction of the rays. It tries to avoid planes that are perpendicular to the rays, in order to try and minimize intersections.
+		 * If the main rays direction and the best plane considering this direction are "clear", it will return just one plane; else it will return the best 2 planes.
+		 * The satisfaction criteria will determine whether it is worth it to try the second plane or not, based on the results of the first split.
+		 * 
+		 * @tparam costThreshold The maximum cost after the first plane split NOT to try the second plane split.
+		 * @tparam percentageMargin The margin, in percent points, between axis directions to determine if a direction is "clear". e.g. If the rays have direction <-0.66, 0, 0.75> and the margin is 10%, then the main direction is not clear, because |-0.66|/(|-0.66|+|0.75|) = 47%, and |0.75|/(|-0.66|+|0.75|) = 53% and 53%-47% = 6% < 10%  
+		 */
 		template<float costThreshold, float percentageMargin = 0.05f>
 		static ChooseSplittingPlanesReturnType chooseSplittingPlanesFacing(const Node& node, const InfluenceArea& influenceArea, Axis, mt19937& rng) {
 			using namespace utilities;
 			Vector3 dir = influenceArea.getRayDirection(node.aabb); //TODO this will not work for point influence areas, we need to think about them
-
-			Vector3 percs{ dir.x / (dir.x + dir.y + dir.z),  dir.y / (dir.x + dir.y + dir.z), dir.z / (dir.x + dir.y + dir.z) };
-
-			uniform_real_distribution extractUniform(0.0f, 1.0f); //uniform distribution between 0 and 1 from which to extract random numbers
+			Vector3 percs{ abs(dir.x) / (abs(dir.x) + abs(dir.y) + abs(dir.z)),  abs(dir.y) / (abs(dir.x) + abs(dir.y) + abs(dir.z)), abs(dir.z) / (abs(dir.x) + abs(dir.y) + abs(dir.z)) };
 
 			//given 2 axis, returns their relative percentages (in the same order as the arguments)
-			auto remaining2AxisPercentages = [dir](Axis axis1, Axis axis2) {
-				float a1 = at(dir, axis1);
-				float a2 = at(dir, axis2);
+			auto remaining2AxisPercentages = [abs(dir](Axis axis1, Axis axis2) {
+				float a1 = at(abs(dir, axis1);
+				float a2 = at(abs(dir, axis2);
 
-				float a1Perc = a1 / (a1 + a2);
-				float a2Perc = a2 / (a2 + a1);
+				float a1Perc = abs(a1) / (abs(a1) + abs(a2));
+				float a2Perc = abs(a2) / (abs(a2) + abs(a1));
 
 				return tuple{ a1Perc, a2Perc };
 				};
@@ -295,8 +301,8 @@ namespace pah {
 				return result;
 				};
 
-			Axis max = percs.x >= percs.y && percs.x >= percs.z ? Axis::X : percs.y >= percs.x && percs.y >= percs.z ? Axis::Y : Axis::Z;
-			Axis min = percs.x < percs.y && percs.x < percs.z ? Axis::X : percs.y <= percs.x && percs.y <= percs.z ? Axis::Y : Axis::Z; //the first comparison is < and not <= so that if all axis are equal, then max != min
+			Axis max = percs.x) >= percs.y && percs.x) >= percs.z ? Axis::X : percs.y >= percs.x) && percs.y >= percs.z ? Axis::Y : Axis::Z;
+			Axis min = percs.x) < percs.y && percs.x) < percs.z ? Axis::X : percs.y <= percs.x) && percs.y <= percs.z ? Axis::Y : Axis::Z; //the first comparison is < and not <= so that if all axis are equal, then max != min
 			Axis mid = third(max, min);
 
 			return addPlanes(max, at(percs, max), mid, at(percs, mid), percentageMargin);
