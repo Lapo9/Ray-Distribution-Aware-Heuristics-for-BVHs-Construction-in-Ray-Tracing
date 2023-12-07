@@ -27,8 +27,9 @@ int main() {
 	properties.maxLeafCost = 0.1f;
 	properties.maxTrianglesPerLeaf = 2;
 	properties.bins = 20;
-	Bvh bvh{ properties, planeInfluenceArea, Bvh::computeCostPah, Bvh::chooseSplittingPlanesFacing, Bvh::shouldStopThresholdOrLevel };
-	bvh.build(triangles);
+	Bvh bvh{ properties, planeInfluenceArea, Bvh::computeCostPah, Bvh::chooseSplittingPlanesFacing<1.0f>, Bvh::shouldStopThresholdOrLevel };
+	vector<const Triangle*> trianglesPointers(triangles.size()); std::transform(triangles.begin(), triangles.end(), trianglesPointers.begin(), [](const Triangle& t) { return &t; });
+	bvh.build(trianglesPointers);
 
 	//analyze BVH
 	BvhAnalyzer analyzer{

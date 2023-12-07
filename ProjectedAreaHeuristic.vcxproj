@@ -27,6 +27,7 @@
     <ClInclude Include="src\CustomJson.h" />
     <ClInclude Include="src\InfluenceArea.h" />
     <ClInclude Include="src\settings.h" />
+    <ClInclude Include="src\TopLevel.h" />
     <ClInclude Include="src\Utilities.h" />
   </ItemGroup>
   <ItemGroup>

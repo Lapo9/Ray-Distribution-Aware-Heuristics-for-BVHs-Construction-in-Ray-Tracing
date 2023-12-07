@@ -9,7 +9,7 @@ using namespace pah::utilities;
 pah::Bvh::Bvh(const Properties& properties, const InfluenceArea& influenceArea, ComputeCostType computeCost, ChooseSplittingPlanesType chooseSplittingPlanes, ShouldStopType shouldStop)
 	: properties{ properties }, influenceArea{ &influenceArea }, computeCost{ computeCost }, chooseSplittingPlanes{ chooseSplittingPlanes }, shouldStop{ shouldStop } {}
 
-void pah::Bvh::build(const vector<Triangle>& triangles) {
+void pah::Bvh::build(const vector<const Triangle*>& triangles) {
 	//the final action simply adds the measured time to the total time
 	TimeLogger timeLogger{ [this](NodeTimingInfo::DurationMs duration) { totalBuildTime = duration; } };
 
@@ -19,12 +19,11 @@ void pah::Bvh::build(const vector<Triangle>& triangles) {
 	//here timeLogger will be destroyed, and it will log (by calling finalAction)
 }
 
-void pah::Bvh::build(const vector<Triangle>& triangles, unsigned int seed) {
+void pah::Bvh::build(const vector<const Triangle*>& triangles, unsigned int seed) {
 	id = chrono::duration_cast<std::chrono::milliseconds>(chrono::system_clock::now().time_since_epoch()).count(); //set the id based on current time: the id is just used to check for equality betweeen 2 BVHs (and this is the only non const function)
 	rng = mt19937{ seed }; //initialize random number generator
 	//from an array of triangles, to an array to pointers
-	vector<const Triangle*> trianglesPointers(triangles.size()); std::transform(triangles.begin(), triangles.end(), trianglesPointers.begin(), [](const Triangle& t) { return &t; });
-	root = { trianglesPointers }; //initizalize root
+	root = { triangles }; //initizalize root
 	rootMetric = computeCost(root, *influenceArea, -1); //initialize the root metric (generally its area/projected area)
 	splitNode(root, Axis::X, 1);
 }

@@ -174,8 +174,8 @@ namespace pah {
 			return bvh1.id == bvh2.id;
 		}
 
-		void build(const vector<Triangle>& triangles);
-		void build(const vector<Triangle>& triangles, unsigned int seed);
+		void build(const vector<const Triangle*>& triangles);
+		void build(const vector<const Triangle*>& triangles, unsigned int seed);
 
 		const Node& getRoot() const;
 		const InfluenceArea& getInfluenceArea() const;
@@ -209,7 +209,7 @@ namespace pah {
 		 */
 		template<float costThreshold, float ratioThreshold = 0.5f>
 		static ChooseSplittingPlanesReturnType chooseSplittingPlanesLongest(const Node& node, const InfluenceArea&, Axis, mt19937&) {
-			array<tuple<float, Axis>, 3> axisLengths{ tuple{node.aabb.size().x), Axis::X}, {node.aabb.size().y, Axis::Y} , {node.aabb.size().z, Axis::Z} }; //basically a dictionary<length, Axis>
+			array<tuple<float, Axis>, 3> axisLengths{ tuple{node.aabb.size().x, Axis::X}, {node.aabb.size().y, Axis::Y} , {node.aabb.size().z, Axis::Z} }; //basically a dictionary<length, Axis>
 			sort(axisLengths.begin(), axisLengths.end(), [](auto a, auto b) { return get<0>(a) < get<0>(b); }); //sort based on axis length
 
 			vector<tuple<Axis, function<bool(float)>>> result{}; //the array to fill and return
@@ -247,9 +247,9 @@ namespace pah {
 			Vector3 percs{ abs(dir.x) / (abs(dir.x) + abs(dir.y) + abs(dir.z)),  abs(dir.y) / (abs(dir.x) + abs(dir.y) + abs(dir.z)), abs(dir.z) / (abs(dir.x) + abs(dir.y) + abs(dir.z)) };
 
 			//given 2 axis, returns their relative percentages (in the same order as the arguments)
-			auto remaining2AxisPercentages = [abs(dir](Axis axis1, Axis axis2) {
-				float a1 = at(abs(dir, axis1);
-				float a2 = at(abs(dir, axis2);
+			auto remaining2AxisPercentages = [dir](Axis axis1, Axis axis2) {
+				float a1 = abs(at(dir, axis1));
+				float a2 = abs(at(dir, axis2));
 
 				float a1Perc = abs(a1) / (abs(a1) + abs(a2));
 				float a2Perc = abs(a2) / (abs(a2) + abs(a1));
@@ -301,8 +301,8 @@ namespace pah {
 				return result;
 				};
 
-			Axis max = percs.x) >= percs.y && percs.x) >= percs.z ? Axis::X : percs.y >= percs.x) && percs.y >= percs.z ? Axis::Y : Axis::Z;
-			Axis min = percs.x) < percs.y && percs.x) < percs.z ? Axis::X : percs.y <= percs.x) && percs.y <= percs.z ? Axis::Y : Axis::Z; //the first comparison is < and not <= so that if all axis are equal, then max != min
+			Axis max = percs.x >= percs.y && percs.x >= percs.z ? Axis::X : percs.y >= percs.x && percs.y >= percs.z ? Axis::Y : Axis::Z;
+			Axis min = percs.x < percs.y && percs.x < percs.z ? Axis::X : percs.y <= percs.x && percs.y <= percs.z ? Axis::Y : Axis::Z; //the first comparison is < and not <= so that if all axis are equal, then max != min
 			Axis mid = third(max, min);
 
 			return addPlanes(max, at(percs, max), mid, at(percs, mid), percentageMargin);
