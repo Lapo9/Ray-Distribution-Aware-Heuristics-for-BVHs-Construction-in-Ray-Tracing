@@ -30,9 +30,8 @@ int main() {
 	properties.maxTrianglesPerLeaf = 2;
 	properties.bins = 20;
 	Bvh bvh{ properties, planeInfluenceArea, Bvh::computeCostPah, Bvh::chooseSplittingPlanesFacing<1.0f>, Bvh::shouldStopThresholdOrLevel };
-	//vector<const Triangle*> trianglesPointers(triangles.size()); std::transform(triangles.begin(), triangles.end(), trianglesPointers.begin(), [](const Triangle& t) { return &t; });
-	//bvh.build(trianglesPointers);
 
+	//build top level structure
 	TopLevelAabbs topLevelStructure{ triangles, std::move(bvh) };
 	topLevelStructure.build();
 
@@ -42,7 +41,7 @@ int main() {
 		MAKE_ACTIONS_PAIR(sah),
 		MAKE_ACTIONS_PAIR(pah),
 		MAKE_ACTIONS_PAIR(levelCount),
-		//MAKE_ACTIONS_PAIR(triangles),
+		MAKE_ACTIONS_PAIR(triangles),
 		MAKE_ACTIONS_PAIR(influenceArea),
 		MAKE_ACTIONS_PAIR(timeMeasurement)
 	};
