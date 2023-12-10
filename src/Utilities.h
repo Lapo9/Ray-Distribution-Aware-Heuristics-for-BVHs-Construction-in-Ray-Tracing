@@ -13,14 +13,16 @@
 #include  "../libs/json.hpp"
 
 namespace pah {
+	#define PerNodeActionType void(GlobalObject&, const Bvh::Node&, const Bvh&, int currLvl, json&)
+	#define FinalActionType void(GlobalObject&, const Bvh&, json&)
+
 	using Vector2 = glm::vec2;
 	using Vector3 = glm::vec3;
 	using Vector4 = glm::vec4;
 	using Matrix4 = glm::mat4;
-	using namespace std;
 
 	template<typename D>
-	concept Distribution3d = requires(D distr, mt19937 rng) {
+	concept Distribution3d = requires(D distr, std::mt19937 rng) {
 		{ distr(rng) } -> std::same_as<Vector3>;
 	};
 
@@ -30,14 +32,14 @@ namespace pah {
 		Uniform3dDistribution(float minX, float maxX, float minY, float maxY, float minZ, float maxZ) 
 			: distributionX{ minX, maxX }, distributionY{ minY, maxY }, distributionZ{ minZ, maxZ } {}
 
-		Vector3 operator()(mt19937& rng) {
+		Vector3 operator()(std::mt19937& rng) {
 			return Vector3{ distributionX(rng), distributionY(rng), distributionZ(rng) };
 		}
 
 	private:
-		uniform_real_distribution<> distributionX;
-		uniform_real_distribution<> distributionY;
-		uniform_real_distribution<> distributionZ;
+		std::uniform_real_distribution<> distributionX;
+		std::uniform_real_distribution<> distributionY;
+		std::uniform_real_distribution<> distributionZ;
 	};
 
 
@@ -57,7 +59,7 @@ namespace pah {
 		}
 
 		template<Distribution3d D, Distribution3d D2>  
-		static Triangle random(mt19937& rng, D& firstVertexDistribution, D2& otherVerticesDistributions) {
+		static Triangle random(std::mt19937& rng, D& firstVertexDistribution, D2& otherVerticesDistributions) {
 			Vector3 v1 = firstVertexDistribution(rng);
 			Vector3 v2 = v1 + otherVerticesDistributions(rng);
 			Vector3 v3 = v1 + otherVerticesDistributions(rng);
@@ -65,8 +67,8 @@ namespace pah {
 		}
 
 		template<Distribution3d D, Distribution3d D2>
-		static vector<Triangle> generateRandom(int qty, mt19937& rng, D& firstVertexDistribution, D2& otherVerticesDistributions) {
-			vector<Triangle> triangles;
+		static std::vector<Triangle> generateRandom(int qty, std::mt19937& rng, D& firstVertexDistribution, D2& otherVerticesDistributions) {
+			std::vector<Triangle> triangles;
 			for (int i = 0; i < qty; ++i) {
 				triangles.emplace_back(random(rng, firstVertexDistribution, otherVerticesDistributions));
 			}
@@ -87,7 +89,7 @@ namespace pah {
 		/**
 		 * @brief Creates the tightest possible axis aligned bounding box for the given list of triangles.
 		 */
-		Aabb(const vector<const Triangle*>& triangles) : min{ numeric_limits<float>::max() }, max{ -numeric_limits<float>::max() } {
+		Aabb(const std::vector<const Triangle*>& triangles) : min{ std::numeric_limits<float>::max() }, max{ -std::numeric_limits<float>::max() } {
 			for (const auto& t : triangles) {
 				if (t->v1.x < min.x) min.x = t->v1.x;
 				if (t->v2.x < min.x) min.x = t->v2.x;
@@ -118,12 +120,6 @@ namespace pah {
 
 		Aabb(const Vector3& min, const Vector3& max) : min{ min }, max{ max } {}
 
-		Aabb(const Aabb&) = default;
-		Aabb& operator=(const Aabb&) = default;
-		Aabb(Aabb&&) = default;
-		Aabb& operator=(Aabb&&) = default;
-		~Aabb() = default;
-
 		/**
 		 * @brief Returns the center of the AABB.
 		 */
@@ -146,7 +142,7 @@ namespace pah {
 		}
 
 		/**
-		 * @brief Given an AABB (min-max form) returns the array of it 8 vertices with this layout:
+		 * @brief Given an AABB (min-max form) returns the array of its 8 vertices with this layout:
 		 *  2_______________6  
 		 *  |\              \ 
 		 *  | \______________\7
@@ -156,8 +152,8 @@ namespace pah {
 		 *     1             5
 		 * See pah::Aabb::getPoint for more info about the logic of this layout.
 		 */
-		array<Vector3, 8> getPoints() const {
-			array<Vector3, 8> points{};
+		std::array<Vector3, 8> getPoints() const {
+			std::array<Vector3, 8> points{};
 			for (int i = 0; i < 2; ++i)
 				for (int j = 0; j < 2; ++j)
 					for (int k = 0; k < 2; ++k) {
@@ -191,9 +187,60 @@ namespace pah {
 		}
 
 		static Aabb maxAabb() {
-			Vector3 min{ -numeric_limits<float>::max() };
-			Vector3 max{ numeric_limits<float>::max() };
+			Vector3 min{ -std::numeric_limits<float>::max() };
+			Vector3 max{ std::numeric_limits<float>::max() };
 			return Aabb{ min, max };
+		}
+	};
+
+	struct Obb {
+		Vector3 center;
+		Vector3 forward;
+		Vector3 right;
+		Vector3 up;
+		Vector3 halfSize;
+
+		Obb(const Vector3& center, const Vector3& halfSize, const Vector3& forward) : center{ center }, halfSize{ halfSize },
+			forward{ glm::normalize(forward) }, right{ glm::cross(Vector3{0,1,0}, forward) }, up{ glm::cross(forward, right) } {}
+
+		/**
+		 * @brief Given an OBB returns the array of its 8 vertices with this layout:
+		 *  2_______________6
+		 *  |\              \
+		 *  | \______________\7
+		 * 0| 3|          4. |
+		 *   \ |             |
+		 *    \|_____________|
+		 *     1             5
+		 * See pah::Aabb::getPoint for more info about the logic of this layout.
+		 */
+		std::array<Vector3, 8> getPoints() const {
+			std::array<Vector3, 8> points{};
+			//loop through each vertex of the OBB
+			for (int i = -1; i <= 1; i += 2)
+				for (int j = -1; j <= 1; j += 2)
+					for (int k = -1; k <= 1; k += 2) {
+						Vector3 obbVertex = halfSize * Vector3{ i,j,k }; //point in the reference system of the OBB
+						Vector3 worldVertex = Vector3{ glm::dot(obbVertex, right), glm::dot(obbVertex, up) , glm::dot(obbVertex, forward) } + center; //point in world space
+						points[((i + 1) / 2) * 4 + ((j + 1) / 2) * 2 + ((k + 1) / 2) * 1] = worldVertex;
+					}
+			return points;
+		}
+
+		/**
+		 * @brief Given an OBB it returns the tighest enclosing AABB.
+		 */
+		static Aabb enclosingAabb(const Obb& obb) {
+			Aabb aabb{ Vector3{std::numeric_limits<float>::max()}, Vector3{ -std::numeric_limits<float>::max()} };
+			auto vertices = obb.getPoints();
+
+			//TODO probably there is a more efficient way
+			for (auto& v : vertices) {
+				//update max and min of enclosing AABB
+				aabb.max = glm::max(aabb.max, v);
+				aabb.min = glm::min(aabb.min, v);
+			}
+			return aabb;
 		}
 	};
 
@@ -241,7 +288,7 @@ namespace pah {
 			if (axis == Axis::X) return vector.x;
 			if (axis == Axis::Y) return vector.y;
 			if (axis == Axis::Z) return vector.z;
-			throw invalid_argument{ "Cannot use pah::Axis::None as argument" };
+			throw std::invalid_argument{ "Cannot use pah::Axis::None as argument" };
 		}
 
 		/**
@@ -251,24 +298,24 @@ namespace pah {
 			if (a1 == Axis::X && a2 == Axis::Y || a1 == Axis::Y && a2 == Axis::X) return Axis::Z;
 			if (a1 == Axis::X && a2 == Axis::Z || a1 == Axis::Z && a2 == Axis::X) return Axis::Y;
 			if (a1 == Axis::Y && a2 == Axis::Z || a1 == Axis::Z && a2 == Axis::Y) return Axis::X;
-			throw invalid_argument{ "Cannot use pah::Axis::None as argument" };
+			throw std::invalid_argument{ "Cannot use pah::Axis::None as argument" };
 		}
 
 		/**
 		 * @brief Given an axis it returns the remaining 2.
 		 */
-		static tuple<Axis, Axis> other2(Axis axis) {
+		static std::tuple<Axis, Axis> other2(Axis axis) {
 			if (axis == Axis::X) return { Axis::Y, Axis::Z };
 			if (axis == Axis::Y) return { Axis::X, Axis::Z };
 			if (axis == Axis::Z) return { Axis::X, Axis::Y };
-			throw invalid_argument{ "Cannot use pah::Axis::None as argument" };
+			throw std::invalid_argument{ "Cannot use pah::Axis::None as argument" };
 		}
 
 
 		class TimeLogger {
 		public:
-			template<convertible_to<function<void(chrono::duration<float, std::milli>)>>... FinalActions>
-			TimeLogger(const FinalActions&... finalActions) : startTime{ chrono::high_resolution_clock::now() } {
+			template<std::convertible_to<std::function<void(std::chrono::duration<float, std::milli>)>>... FinalActions>
+			TimeLogger(const FinalActions&... finalActions) : startTime{ std::chrono::high_resolution_clock::now() } {
 				(this->finalActions.push_back(finalActions), ...);
 			}
 			
@@ -282,7 +329,7 @@ namespace pah {
 			}
 
 			void log() {
-				auto duration = chrono::high_resolution_clock::now() - startTime;
+				auto duration = std::chrono::high_resolution_clock::now() - startTime;
 				assert((duration.count() > 0, "Recorded duration <= 0"));
 				for (const auto& finalAction : finalActions) {
 					finalAction(duration);
@@ -296,17 +343,17 @@ namespace pah {
 
 			//possible final actions
 
-			static void print(chrono::duration<float, std::milli> duration, string name) {
+			static void print(std::chrono::duration<float, std::milli> duration, std::string name) {
 				std::cout << name << " " << duration << std::endl;
 			}
 
-			static void json(chrono::duration<float, std::milli> duration, nlohmann::json& jsonOut, string label) {
+			static void json(std::chrono::duration<float, std::milli> duration, nlohmann::json& jsonOut, std::string label) {
 				jsonOut[label] = duration.count();
 			}
 
 		private:
-			chrono::time_point<chrono::high_resolution_clock> startTime;
-			vector<function<void(chrono::duration<float, std::milli> duration)>> finalActions;
+			std::chrono::time_point<std::chrono::high_resolution_clock> startTime;
+			std::vector<std::function<void(std::chrono::duration<float, std::milli> duration)>> finalActions;
 			bool runLogOnDestruction = true;
 		};
 	}
@@ -352,7 +399,7 @@ namespace pah {
 		 * 
 		 * @param fovs Horizontal and vertical FoVs in degrees.
 		 */
-		static Matrix4 computePerspectiveMatrix(float f, float n, tuple<float, float> fovs) {
+		static Matrix4 computePerspectiveMatrix(float f, float n, std::tuple<float, float> fovs) {
 			auto [fovX, fovY] = fovs;
 			float right = glm::sin(glm::radians(fovX) / 2.0f);
 			float top = glm::sin(glm::radians(fovY) / 2.0f);
@@ -381,8 +428,8 @@ namespace pah {
 			/**
 			 * @brief Projects the given points to the specified plane.
 			 */
-			static vector<Vector2> projectPoints(const vector<Vector3>& points, Plane plane) {
-				vector<Vector2> projectedPoints;
+			static std::vector<Vector2> projectPoints(const std::vector<Vector3>& points, Plane plane) {
+				std::vector<Vector2> projectedPoints;
 				for (int i = 0; i < points.size(); ++i) {
 					projectedPoints.emplace_back(projectPoint(points[i], plane));
 				}
@@ -392,7 +439,8 @@ namespace pah {
 			/**
 			 * @brief Projects the AABB to the specified plane.
 			 */
-			static array<Vector2, 8> projectAabb(const Aabb& aabb, Plane plane) {
+			static std::array<Vector2, 8> projectAabb(const Aabb& aabb, Plane plane) {
+				using namespace std;
 				auto points = aabb.getPoints();
 				auto projectedPoints = projectPoints(vector(points.begin(), points.end()), plane);
 				array<Vector2, 8> result{};
@@ -405,7 +453,7 @@ namespace pah {
 			 */
 			static float computeProjectedArea(const Aabb& aabb, Plane plane) {
 				auto points = aabb.getPoints();
-				vector<Vector3> keyPoints = { points[3], points[1], points[2], points[7] };
+				std::vector<Vector3> keyPoints = { points[3], points[1], points[2], points[7] };
 				auto projectedPoints = projectPoints(keyPoints, plane);
 
 				Vector3 side1 = Vector3{ projectedPoints[0] - projectedPoints[1], 0.0f };
@@ -435,17 +483,18 @@ namespace pah {
 			 * See hull table for more info.
 			 */
 			struct HullInfo {
-				vector<int> vertices; //index of the indices creating the hull
+				std::vector<int> vertices; //index of the indices creating the hull
 
 				HullInfo() {}
-				HullInfo(vector<int> vertices) : vertices{ vertices } {}
+				HullInfo(std::vector<int> vertices) : vertices{ vertices } {}
 
 				/**
 				 * @brief The indexing follows this scheme:
 				 * |   5   |   4   |   3   |   2   |   1   |   0   |
 				 * | back  | front |  top  | bott. | right | left  |
 				 */
-				static string getDescription(int i) {
+				static std::string getDescription(int i) {
+					using namespace std;
 					string description = "";
 					array<string, 6> keywords = { "left", "right", "bottom", "top", "front", "back" };
 					for (int j = 0; j < 6; j++) {
@@ -464,7 +513,7 @@ namespace pah {
 			 * Of course some indexes will be empty, since you cannot see the AABB from bottom and top at the same time, therefore xx11xxb = 13 is empty.
 			 * To get more info about how we index the vertices of an AABB look at the function pah::Aabb::getPoints
 			 */
-			static array<HullInfo, 43> hullTable = 
+			static std::array<HullInfo, 43> hullTable =
 			{
 				HullInfo{},
 				HullInfo{{ 1, 0, 2, 3 }},
@@ -516,7 +565,7 @@ namespace pah {
 			 * @brief Projects the given point based on the PoV using perspective.
 			 * @param fovs Horizontal and vertical FoVs in degrees.
 			 */
-			static Vector2 projectPoint(Vector4 point, Pov pov, tuple<float, float> fovs = tuple{ 90.0f, 90.0f }, float far = 1000.0f, float near = 0.1f) {
+			static Vector2 projectPoint(Vector4 point, Pov pov, std::tuple<float, float> fovs = std::tuple{ 90.0f, 90.0f }, float far = 1000.0f, float near = 0.1f) {
 				return computeViewMatrix(Pov{ pov }) * computePerspectiveMatrix(far, near, fovs) * point;
 			}
 
@@ -524,7 +573,7 @@ namespace pah {
 			 * @brief Projects the given point based on the PoV using perspective. 1.0 is appended as w component of the point.
 			 * @param fovs Horizontal and vertical FoVs in degrees.
 			 */
-			static Vector2 projectPoint(Vector3 point, Pov pov, tuple<float, float> fovs = tuple{ 90.0f, 90.0f }, float far = 1000.0f, float near = 0.1f) {
+			static Vector2 projectPoint(Vector3 point, Pov pov, std::tuple<float, float> fovs = std::tuple{ 90.0f, 90.0f }, float far = 1000.0f, float near = 0.1f) {
 				return projectPoint(Vector4{ point, 1.0f }, pov, fovs, far, near);
 			}
 
@@ -532,8 +581,8 @@ namespace pah {
 			 * @brief Given some points it projects them based on the PoV, using perspective.
 			 * @param fovs Horizontal and vertical FoVs in degrees.
 			 */
-			static vector<Vector2> projectPoints(const vector<Vector3>& points, Pov pov, tuple<float, float> fovs = tuple{ 90.0f, 90.0f }, float far = 1000.0f, float near = 0.1f) {
-				vector<Vector2> projectedPoints;
+			static std::vector<Vector2> projectPoints(const std::vector<Vector3>& points, Pov pov, std::tuple<float, float> fovs = std::tuple{ 90.0f, 90.0f }, float far = 1000.0f, float near = 0.1f) {
+				std::vector<Vector2> projectedPoints;
 				for (int i = 0; i < points.size(); ++i) {
 					projectedPoints.emplace_back(projectPoint(points[i], pov, fovs, far, near));
 				}
@@ -544,7 +593,8 @@ namespace pah {
 			 * @brief Given an AABB it projects all of its points based on the PoV, using perspective.
 			 * @param fovs Horizontal and vertical FoVs in degrees.
 			 */
-			static array<Vector2, 8> projectAabb(const Aabb& aabb, Pov pov, tuple<float, float> fovs = tuple{ 90.0f, 90.0f }, float far = 1000.0f, float near = 0.1f) {
+			static std::array<Vector2, 8> projectAabb(const Aabb& aabb, Pov pov, std::tuple<float, float> fovs = std::tuple{ 90.0f, 90.0f }, float far = 1000.0f, float near = 0.1f) {
+				using namespace std;
 				auto points = aabb.getPoints();
 				auto projectedPoints = projectPoints(vector(points.begin(), points.end()), pov, fovs, far, near);
 				array<Vector2, 8> result{};
@@ -569,7 +619,8 @@ namespace pah {
 			/**
 			 * @brief Given an AABB and the index of the hull table, it returns the 3D contour points (to be projected later on).
 			 */
-			static vector<Vector3> findContourPoints(const Aabb& aabb, int i) {
+			static std::vector<Vector3> findContourPoints(const Aabb& aabb, int i) {
+				using namespace std;
 				const vector<int>& verticesIndexes = hullTable[i].vertices; //get the array of indexes of the contour vertices
 				vector<Vector3> contourVertices;
 				for (int j = 0; j < verticesIndexes.size(); j++) {
@@ -581,7 +632,7 @@ namespace pah {
 			/**
 			 * @brief Given and AABB and a PoV, it returns the 3D contour points by using the hull table and the relative position of the PoV and the AABB.
 			 */
-			static vector<Vector3> findContourPoints(const Aabb& aabb, Vector3 pov) {
+			static std::vector<Vector3> findContourPoints(const Aabb& aabb, Vector3 pov) {
 				return findContourPoints(aabb, findHullTableIndex(aabb, pov));
 			}
 
@@ -589,7 +640,7 @@ namespace pah {
 			 * @brief Given the contour points of a convex 2D hull, it calculates its area.
 			 * It uses a technique called contour integral.
 			 */
-			static float computeProjectedArea(const vector<Vector2>& contourPoints) {
+			static float computeProjectedArea(const std::vector<Vector2>& contourPoints) {
 				float area = 0.0f;
 				//for each segment of the hull, we compute its SIGNED area w.r.t. the x-axis
 				for (int i = 0; i < contourPoints.size(); ++i) {
@@ -597,7 +648,7 @@ namespace pah {
 					float meanHeight = (contourPoints[i + 1 == contourPoints.size() ? 0 : i + 1].y + contourPoints[i].y) / 2.0f; //mean height of the segment
 					area += width * meanHeight;
 				}
-				assert(( - area <= 0, "Projected area <= 0"));
+				assert((-area <= 0, "Projected area <= 0"));
 				return -area;
 			}
 
@@ -605,7 +656,7 @@ namespace pah {
 			 * @brief Given an AABB and a PoV, computes the projected area of the AABB.
 			 * @param fovs Horizontal and vertical FoVs in degrees.
 			 */
-			static float computeProjectedArea(const Aabb& aabb, Pov pov, tuple<float, float> fovs = tuple{ 90.0f, 90.0f }, float far = 1000.0f, float near = 0.1f) {
+			static float computeProjectedArea(const Aabb& aabb, Pov pov, std::tuple<float, float> fovs = std::tuple{ 90.0f, 90.0f }, float far = 1000.0f, float near = 0.1f) {
 				return computeProjectedArea(projectPoints(findContourPoints(aabb, pov.getPosition()), pov, fovs, far, near));
 			}
 		}

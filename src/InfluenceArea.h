@@ -12,28 +12,28 @@ namespace pah {
 
 	class InfluenceArea {
 	public:
-		InfluenceArea();
+		InfluenceArea(std::unique_ptr<BvhRegion>&& bvhRegion);
 
 		virtual float getProjectedArea(const Aabb& aabb) const = 0;
 		virtual float getInfluence(const Aabb& aabb) const = 0;
 		virtual Vector3 getRayDirection(const Aabb& aabb) const = 0;
-		virtual vector<tuple<Axis, function<bool(float bestCostSoFar)>>> bestSplittingPlanes() const = 0;
+		virtual std::vector<std::tuple<Axis, std::function<bool(float bestCostSoFar)>>> bestSplittingPlanes() const = 0;
 
 		const BvhRegion& getBvhRegion() const;
 
 	protected:
-		unique_ptr<BvhRegion> bvhRegion;
+		std::unique_ptr<BvhRegion> bvhRegion;
 	};
 
 
 	class PlaneInfluenceArea : public virtual InfluenceArea {
 	public:
-		PlaneInfluenceArea(Plane plane, Vector2 size, float density);
+		PlaneInfluenceArea(Plane plane, Vector2 size, float density, const Vector3& regionHalfSize);
 
-		float getProjectedArea(const Aabb& aabb) const;
-		float getInfluence(const Aabb& aabb) const;
-		Vector3 getRayDirection(const Aabb& aabb) const;
-		vector<tuple<Axis, function<bool(float bestCostSoFar)>>> bestSplittingPlanes() const;
+		float getProjectedArea(const Aabb& aabb) const override;
+		float getInfluence(const Aabb& aabb) const override;
+		Vector3 getRayDirection(const Aabb& aabb) const override;
+		std::vector<std::tuple<Axis, std::function<bool(float bestCostSoFar)>>> bestSplittingPlanes() const override;
 
 		const Plane& getPlane() const;
 		const Vector2& getSize() const;

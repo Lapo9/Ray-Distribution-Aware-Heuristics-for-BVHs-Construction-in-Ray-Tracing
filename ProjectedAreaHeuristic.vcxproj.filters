@@ -45,6 +45,12 @@
     <ClInclude Include="src\TopLevel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Octree.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TopLevelAnalyzer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Bvh.cpp">
@@ -60,6 +66,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\BvhRegion.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TopLevel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

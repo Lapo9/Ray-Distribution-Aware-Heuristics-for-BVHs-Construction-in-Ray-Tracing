@@ -3,15 +3,16 @@
 using namespace std;
 using namespace pah;
 
-pah::InfluenceArea::InfluenceArea() : bvhRegion{} {}
+
+pah::InfluenceArea::InfluenceArea(std::unique_ptr<BvhRegion>&& bvhRegion) : bvhRegion{ std::move(bvhRegion) } {}
 
 const pah::BvhRegion& pah::InfluenceArea::getBvhRegion() const {
 	return *bvhRegion;
 }
 
 
-pah::PlaneInfluenceArea::PlaneInfluenceArea(Plane plane, Vector2 size, float density) : InfluenceArea{}, plane { plane }, size{ size }, density{ density } {
-}
+pah::PlaneInfluenceArea::PlaneInfluenceArea(Plane plane, Vector2 size, float density, const Vector3& regionHalfSize) 
+	: InfluenceArea{ make_unique<ObbBvhRegion>(plane.getPoint(), regionHalfSize, plane.getNormal()) }, plane{ plane }, size{ size }, density{ density } {}
 
 float pah::PlaneInfluenceArea::getProjectedArea(const Aabb& aabb) const {
 	return projection::orthographic::computeProjectedArea(aabb, plane);

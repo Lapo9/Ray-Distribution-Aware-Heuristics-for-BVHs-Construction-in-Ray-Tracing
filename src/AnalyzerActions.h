@@ -13,10 +13,10 @@
 namespace pah::analyzerActions {
 
 	/** Creates a pair of analyzer actions based on name (if an action with such name doesn't exist it fails at compile-time. */
-	#define MAKE_ACTIONS_PAIR(actionName) pair{ function{ pah::analyzerActions::perNode::actionName }, function{ pah::analyzerActions::finals::actionName } } 
+	#define MAKE_ACTIONS_PAIR(actionName) std::pair{ std::function{ pah::analyzerActions::perNode::actionName }, std::function{ pah::analyzerActions::finals::actionName } } 
 	
 	/** Creates an argument list of analyzer actions based on name (if an action with such name doesn't exist it fails at compile-time. */
-	#define MAKE_ACTIONS_ARGS(actionName) function{ pah::analyzerActions::perNode::actionName }, function{ pah::analyzerActions::finals::actionName }
+	#define MAKE_ACTIONS_ARGS(actionName) std::function{ pah::analyzerActions::perNode::actionName }, std::function{ pah::analyzerActions::finals::actionName }
 
 	namespace perNode {
 		/**
@@ -24,7 +24,7 @@ namespace pah::analyzerActions {
 		 *
 		 * @param nodesAndLeaves Pair containing total number of nodes and leaves so far.
 		 */
-		static void core(pair<int, int>& nodesAndLeaves, ANALYZER_ACTION_PER_NODE_ARGUMENTS) {
+		static void core(std::pair<int, int>& nodesAndLeaves, ANALYZER_ACTION_PER_NODE_ARGUMENTS) {
 			nodesAndLeaves.first++;
 			nodesAndLeaves.second += node.isLeaf();
 
@@ -87,7 +87,7 @@ namespace pah::analyzerActions {
 		/**
 		 * @brief Adds all triangles to the list \p triangles. Basically it adds only the triangles of the leaves, since their union is the full set of triangles.
 		 */
-		static void triangles(vector<const Triangle*>& triangles, ANALYZER_ACTION_PER_NODE_ARGUMENTS) {
+		static void triangles(std::vector<const Triangle*>& triangles, ANALYZER_ACTION_PER_NODE_ARGUMENTS) {
 			if (node.isLeaf()) {
 				for (auto& triangle : node.triangles) {
 					triangles.push_back(triangle);
@@ -120,7 +120,7 @@ namespace pah::analyzerActions {
 		/**
 		 * @brief Simply adds the number of nodes and leaves to the JSON.
 		 */
-		static void core(pair<int, int>& nodesAndLeaves, ANALYZER_ACTION_FINAL_ARGUMENTS) {
+		static void core(std::pair<int, int>& nodesAndLeaves, ANALYZER_ACTION_FINAL_ARGUMENTS) {
 			log["globalInfo"]["numberOfNodes"] = nodesAndLeaves.first;
 			log["globalInfo"]["numberOfLeaves"] = nodesAndLeaves.second;
 		}
@@ -149,7 +149,7 @@ namespace pah::analyzerActions {
 		/**
 		 * @brief Creates a list of all triangles in \p triangles.
 		 */
-		static void triangles(vector<const Triangle*>& triangles, ANALYZER_ACTION_FINAL_ARGUMENTS) {
+		static void triangles(std::vector<const Triangle*>& triangles, ANALYZER_ACTION_FINAL_ARGUMENTS) {
 			for (auto& triangle : triangles) {
 				log["triangles"] += *triangle;
 			}

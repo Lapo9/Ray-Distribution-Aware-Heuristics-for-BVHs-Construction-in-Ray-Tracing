@@ -11,17 +11,13 @@
 
 
 namespace pah {
-	using json = nlohmann::json;
 
 	template<typename... GlobalObject>
 	class BvhAnalyzer {
-	public:
-		#define PerNodeActionType void(GlobalObject&, const Bvh::Node&, const Bvh&, int currLvl, json&)
-		#define FinalActionType void(GlobalObject&, const Bvh&, json&)
+		using json = nlohmann::json;
 
-		BvhAnalyzer(pair<function<PerNodeActionType>, function<FinalActionType>>... actions) {
-			this->actions = make_tuple(actions...);
-		}
+	public:
+		BvhAnalyzer(std::pair<std::function<PerNodeActionType>, std::function<FinalActionType>>... actions) : actions{ std::make_tuple(actions...) } {}
 
 		BvhAnalyzer() {}
 
@@ -34,9 +30,9 @@ namespace pah {
 		 * @param perNodeFunction Function to perform on each node.
 		 * @param finalFunction Function to perform at the end.
 		 */
-		template<std::size_t Pos, same_as<tuple_element_t<Pos, tuple<GlobalObject...>>> T> requires (Pos >= 0 && Pos < tuple_size_v<tuple<GlobalObject...>>)
-		void addAction(function<void(T&, const Bvh::Node&, const Bvh&, int currLvl, json&)> perNodeFunction, function<void(T&, json&)> finalFunction) {
-			pair functions{ perNodeFunction, finalFunction };
+		template<std::size_t Pos, std::same_as<std::tuple_element_t<Pos, std::tuple<GlobalObject...>>> T> requires (Pos >= 0 && Pos < tuple_size_v<std::tuple<GlobalObject...>>)
+		void addAction(std::function<void(T&, const Bvh::Node&, const Bvh&, int currLvl, json&)> perNodeFunction, std::function<void(T&, json&)> finalFunction) {
+			std::pair functions{ perNodeFunction, finalFunction };
 			std::get<Pos>(actions) = functions;
 		}
 
@@ -49,9 +45,17 @@ namespace pah {
 		 * @param finalFunction Function to perform at the end.
 		 */
 		template<typename T>
-		void addAction(function<void(T&, const Bvh::Node&, const Bvh&, int currLvl, json&)> perNodeFunction, function<void(T&, json&)> finalFunction) {
+		void addAction(std::function<void(T&, const Bvh::Node&, const Bvh&, int currLvl, json&)> perNodeFunction, std::function<void(T&, json&)> finalFunction) {
+			using namespace std;
 			pair functions{ perNodeFunction, finalFunction };
 			std::get<pair<function<void(T&, const Bvh::Node&, const Bvh&, int, json&)>, function<void(T&, json&)>>>(actions) = functions; //fails if there are more global objects with the same type (or none)
+		}
+
+		/**
+		 * @brief Adds all the actions to the the analyzer. Each action must match the type specified during the construction of the analyzer.
+		 */
+		void addActions(std::pair<std::function<PerNodeActionType>, std::function<FinalActionType>>... actions) {
+			this->actions = std::make_tuple(actions...);
 		}
 
 		/**
@@ -71,7 +75,7 @@ namespace pah {
 		/**
 		 * @brief Given a BVH, it analyzes it and returns a JSON. Moreover it saves the JSON to a file.
 		 */
-		json analyze(const Bvh& bvh, string filePath) {
+		json analyze(const Bvh& bvh, std::string filePath) {
 			json json = analyze(bvh);
 
 			std::ofstream file;
@@ -91,7 +95,7 @@ namespace pah {
 		 *
 		 * @tparam Size The size of the tuple. Is is defaulted to the size of a tuple of the same type as \p globalObjects .
 		 */
-		template<std::size_t Size = std::tuple_size_v<tuple<GlobalObject...>>>
+		template<std::size_t Size = std::tuple_size_v<std::tuple<GlobalObject...>>>
 		void performFinalActions(const Bvh& bvh, json& log) {
 			performFinalActionsImpl(std::make_index_sequence<Size>{}, bvh, log); //call with an index sequence from 0 to Size
 		}
@@ -127,7 +131,7 @@ namespace pah {
 		 *
 		 * @tparam Size The size of the tuple. Is is defaulted to the size of a tuple of the same type as \p globalObjects .
 		 */
-		template<std::size_t Size = std::tuple_size_v<tuple<GlobalObject...>>>
+		template<std::size_t Size = std::tuple_size_v<std::tuple<GlobalObject...>>>
 		void performPerNodeActions(const Bvh::Node& node, const Bvh& bvh, int currentLevel, json& localLog) {
 			performPerNodeActionsImpl(std::make_index_sequence<Size>{}, node, bvh, currentLevel, localLog); //call with an index sequence from 0 to Size
 		}
@@ -162,7 +166,7 @@ namespace pah {
 			json localLog;
 
 			//execute per-node actions with a global object associated (where they can save info across calls)
-			performPerNodeActions(node, bvh, currentLevel, localLog); 
+			performPerNodeActions(node, bvh, currentLevel, localLog);
 
 			log["nodes"].push_back(localLog); //add log of this node to the global log
 
@@ -173,8 +177,8 @@ namespace pah {
 		}
 
 
-		tuple<GlobalObject...> globalObjects; //objects used by the global actions. Each global action has a corresponding object where it can store info across calls of analyzeNode
-		tuple<pair<function<PerNodeActionType>, function<FinalActionType>>...> actions; //each pair of global actions has an associated object. The first function is responsible to update this object during the visit of each node. The second one is responsible to finalize the results by using the informations stored in the object.
+		std::tuple<GlobalObject...> globalObjects; //objects used by the global actions. Each global action has a corresponding object where it can store info across calls of analyzeNode
+		std::tuple<std::pair<std::function<PerNodeActionType>, std::function<FinalActionType>>...> actions; //each pair of global actions has an associated object. The first function is responsible to update this object during the visit of each node. The second one is responsible to finalize the results by using the informations stored in the object.
 
 		json log;
 	};

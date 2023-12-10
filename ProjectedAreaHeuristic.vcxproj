@@ -26,8 +26,10 @@
     <ClInclude Include="src\BvhRegion.h" />
     <ClInclude Include="src\CustomJson.h" />
     <ClInclude Include="src\InfluenceArea.h" />
+    <ClInclude Include="src\Octree.h" />
     <ClInclude Include="src\settings.h" />
     <ClInclude Include="src\TopLevel.h" />
+    <ClInclude Include="src\TopLevelAnalyzer.h" />
     <ClInclude Include="src\Utilities.h" />
   </ItemGroup>
   <ItemGroup>
@@ -36,6 +38,7 @@
     <ClCompile Include="src\CustomJson.cpp" />
     <ClCompile Include="src\InfluenceArea.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\TopLevel.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

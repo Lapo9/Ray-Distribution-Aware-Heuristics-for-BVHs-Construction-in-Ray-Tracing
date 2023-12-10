@@ -18,7 +18,7 @@ namespace pah {
 	public:
 		//related classes
 		struct NodeTimingInfo {
-			using DurationMs = chrono::duration<float, std::milli>;
+			using DurationMs = std::chrono::duration<float, std::milli>;
 			DurationMs total;
 			DurationMs splittingTot;
 			DurationMs computeCostTot;
@@ -116,25 +116,20 @@ namespace pah {
 
 		struct Node {
 			Aabb aabb;
-			unique_ptr<Node> leftChild;
-			unique_ptr<Node> rightChild;
-			vector<const Triangle*> triangles;
+			std::unique_ptr<Node> leftChild;
+			std::unique_ptr<Node> rightChild;
+			std::vector<const Triangle*> triangles;
 			TIME(mutable NodeTimingInfo nodeTimingInfo;)
 
 			Node(Aabb aabb) : aabb{ aabb } {
 				TIME(nodeTimingInfo = NodeTimingInfo{};);
 			};
-			Node(const vector<const Triangle*>& triangles) : aabb{ Aabb{triangles} }, triangles{ triangles } {
+			Node(const std::vector<const Triangle*>& triangles) : aabb{ Aabb{triangles} }, triangles{ triangles } {
 				TIME(nodeTimingInfo = NodeTimingInfo{};);
 			}
 			Node() : aabb{} {
 				TIME(nodeTimingInfo = NodeTimingInfo{};);
 			};
-			Node(Node&&) = default;
-			Node& operator=(Node&&) = default;
-			Node(const Node&) = delete;
-			Node& operator=(const Node&) = delete;
-			~Node() = default;
 
 			bool isLeaf() const {
 				return leftChild == nullptr && rightChild == nullptr;
@@ -163,9 +158,9 @@ namespace pah {
 		};
 
 		//custom types
-		using ComputeCostReturnType = float;																using ComputeCostType = ComputeCostReturnType(const Node&, const InfluenceArea&, float rootMetric);
-		using ChooseSplittingPlanesReturnType = vector<tuple<Axis, function<bool(float bestCostSoFar)>>>;	using ChooseSplittingPlanesType = ChooseSplittingPlanesReturnType(const Node&, const InfluenceArea&, Axis father, mt19937& rng);
-		using ShouldStopReturnType = bool;																	using ShouldStopType = ShouldStopReturnType(const Node&, const Properties&, int currentLevel, float nodeCost);
+		using ComputeCostReturnType = float;																				using ComputeCostType = ComputeCostReturnType(const Node&, const InfluenceArea&, float rootMetric);
+		using ChooseSplittingPlanesReturnType = std::vector<std::tuple<Axis, std::function<bool(float bestCostSoFar)>>>;	using ChooseSplittingPlanesType = ChooseSplittingPlanesReturnType(const Node&, const InfluenceArea&, Axis father, std::mt19937& rng);
+		using ShouldStopReturnType = bool;																					using ShouldStopType = ShouldStopReturnType(const Node&, const Properties&, int currentLevel, float nodeCost);
 
 
 		Bvh(const Properties&, const InfluenceArea&, ComputeCostType computeCost, ChooseSplittingPlanesType chooseSplittingPlanes, ShouldStopType shouldStop);
@@ -174,8 +169,8 @@ namespace pah {
 			return bvh1.id == bvh2.id;
 		}
 
-		void build(const vector<const Triangle*>& triangles);
-		void build(const vector<const Triangle*>& triangles, unsigned int seed);
+		void build(const std::vector<const Triangle*>& triangles);
+		void build(const std::vector<const Triangle*>& triangles, unsigned int seed);
 
 		const Node& getRoot() const;
 		const InfluenceArea& getInfluenceArea() const;
@@ -208,7 +203,8 @@ namespace pah {
 		 * The function returns whether it is worth it to try the corresponding axis, given the results obtained with the previous axis.
 		 */
 		template<float costThreshold, float ratioThreshold = 0.5f>
-		static ChooseSplittingPlanesReturnType chooseSplittingPlanesLongest(const Node& node, const InfluenceArea&, Axis, mt19937&) {
+		static ChooseSplittingPlanesReturnType chooseSplittingPlanesLongest(const Node& node, const InfluenceArea&, Axis, std::mt19937&) {
+			using namespace std;
 			array<tuple<float, Axis>, 3> axisLengths{ tuple{node.aabb.size().x, Axis::X}, {node.aabb.size().y, Axis::Y} , {node.aabb.size().z, Axis::Z} }; //basically a dictionary<length, Axis>
 			sort(axisLengths.begin(), axisLengths.end(), [](auto a, auto b) { return get<0>(a) < get<0>(b); }); //sort based on axis length
 
@@ -241,7 +237,8 @@ namespace pah {
 		 * @tparam percentageMargin The margin, in percent points, between axis directions to determine if a direction is "clear". e.g. If the rays have direction <-0.66, 0, 0.75> and the margin is 10%, then the main direction is not clear, because |-0.66|/(|-0.66|+|0.75|) = 47%, and |0.75|/(|-0.66|+|0.75|) = 53% and 53%-47% = 6% < 10%  
 		 */
 		template<float costThreshold, float percentageMargin = 0.05f>
-		static ChooseSplittingPlanesReturnType chooseSplittingPlanesFacing(const Node& node, const InfluenceArea& influenceArea, Axis, mt19937& rng) {
+		static ChooseSplittingPlanesReturnType chooseSplittingPlanesFacing(const Node& node, const InfluenceArea& influenceArea, Axis, std::mt19937& rng) {
+			using namespace std;
 			using namespace utilities;
 			Vector3 dir = influenceArea.getRayDirection(node.aabb); //TODO this will not work for point influence areas, we need to think about them
 			Vector3 percs{ abs(dir.x) / (abs(dir.x) + abs(dir.y) + abs(dir.z)),  abs(dir.y) / (abs(dir.x) + abs(dir.y) + abs(dir.z)), abs(dir.z) / (abs(dir.x) + abs(dir.y) + abs(dir.z)) };
@@ -320,18 +317,18 @@ namespace pah {
 
 		//simple wrappers for the custom functions. We use wrappers because there may be some common actions to perform before (e.g. time logging)
 		ComputeCostReturnType computeCostWrapper(const Node& parent, const Node& node, const InfluenceArea& influenceArea, float rootArea);
-		ChooseSplittingPlanesReturnType chooseSplittingPlanesWrapper(const Node& node, const InfluenceArea& influenceArea, Axis axis, mt19937& rng);
+		ChooseSplittingPlanesReturnType chooseSplittingPlanesWrapper(const Node& node, const InfluenceArea& influenceArea, Axis axis, std::mt19937& rng);
 		ShouldStopReturnType shouldStopWrapper(const Node& parent, const Node& node, const Properties& properties, int currentLevel, float nodeCost);
 
 		/**
 		 * @brief Given a list of triangles, an axis and a position on this axis, returns 2 sets of triangles, the ones "to the left" of the plane, and the ones "to the right".
 		 */
-		static tuple<vector<const Triangle*>, vector<const Triangle*>> splitTriangles(const Node& node, const vector<const Triangle*>& triangles, Axis axis, float splittingPlanePosition) {
+		static std::tuple<std::vector<const Triangle*>, std::vector<const Triangle*>> splitTriangles(const Node& node, const std::vector<const Triangle*>& triangles, Axis axis, float splittingPlanePosition) {
 			using namespace utilities;
 			//the final action simply adds the measured time to the total split triangles time, and increases the split triangles counter
 			TIME(TimeLogger timeLogger{ [&timingInfo = node.nodeTimingInfo](NodeTimingInfo::DurationMs duration) { timingInfo.splitTrianglesTot += duration; timingInfo.splitTrianglesCount++; } };);
 
-			vector<const Triangle*> left, right;
+			std::vector<const Triangle*> left, right;
 
 			for (auto t : triangles) {
 				if (at(t->center(), axis) < splittingPlanePosition) left.push_back(t);
@@ -348,13 +345,13 @@ namespace pah {
 		const InfluenceArea* influenceArea;
 
 		//customizable functions
-		function<ComputeCostType> computeCost;
+		std::function<ComputeCostType> computeCost;
 		//the idea is that this function returns a list of suitable axis to try to subdivide the AABB into, and a set of corresponding predicates.
 		//these predicates take into account the "quality" of the axis, and the results obtained from previous axis; and they decide whether is it worth it to try the next axis
-		function<ChooseSplittingPlanesType> chooseSplittingPlanes;
-		function<ShouldStopType> shouldStop;
+		std::function<ChooseSplittingPlanesType> chooseSplittingPlanes;
+		std::function<ShouldStopType> shouldStop;
 
-		mt19937 rng; //random number generator
+		std::mt19937 rng; //random number generator
 		NodeTimingInfo::DurationMs totalBuildTime; //total time of the last build
 		unsigned long long int id; //id of this BVH: it is a cheap way to check if 2 BVHs are equals
 	};
