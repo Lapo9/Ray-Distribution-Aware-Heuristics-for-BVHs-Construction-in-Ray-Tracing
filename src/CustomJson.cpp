@@ -47,7 +47,7 @@ void pah::to_json(json& j, const PlaneInfluenceArea& planeInfluenceArea) {
 	j["plane"] = planeInfluenceArea.getPlane();
 	j["size"] = planeInfluenceArea.getSize();
 	j["density"] = planeInfluenceArea.getDensity();
-	j["region"] = planeInfluenceArea.getBvhRegion();
+	j["bvhRegion"] = planeInfluenceArea.getBvhRegion();
 }
 
 void pah::to_json(json& j, const BvhRegion& bvhRegion) {
@@ -63,7 +63,8 @@ void pah::to_json(json& j, const BvhRegion& bvhRegion) {
 }
 
 void pah::to_json(json& j, const ObbBvhRegion& obbBvhRegion) {
-	obbBvhRegion.getObb();
+	j["type"] = "obb";
+	j["obb"] = obbBvhRegion.getObb();
 }
 
 void pah::to_json(json& j, const Plane& plane) {

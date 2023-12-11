@@ -20,19 +20,22 @@ int main() {
 	Uniform3dDistribution otherDistribution3d{ -1,1, -1,1 , -1,1 };
 	auto triangles = Triangle::generateRandom(100, rng, mainDistribution3d, otherDistribution3d);
 
-	//create influence area
-	PlaneInfluenceArea planeInfluenceArea{ Plane{}, Vector2{10,10}, 10, Vector3{20,10,40} };
+	//create influence areas
+	PlaneInfluenceArea planeInfluenceArea1{ Plane{}, Vector2{2,10}, 10, 20 };
+	PlaneInfluenceArea planeInfluenceArea2{ Plane{Vector3{-5,1,4}, Vector3{1,0,0}}, Vector2{5,1}, 10, 15 };
 
-	//build BVH
+	//build BVHs
 	Bvh::Properties properties{};
 	properties.maxLevels = 100;
 	properties.maxLeafCost = 0.1f;
 	properties.maxTrianglesPerLeaf = 2;
 	properties.bins = 20;
-	Bvh bvh{ properties, planeInfluenceArea, Bvh::computeCostPah, Bvh::chooseSplittingPlanesFacing<1.0f>, Bvh::shouldStopThresholdOrLevel };
+
+	Bvh bvh1{ properties, planeInfluenceArea1, Bvh::computeCostPah, Bvh::chooseSplittingPlanesFacing<1.0f>, Bvh::shouldStopThresholdOrLevel };
+	Bvh bvh2{ properties, planeInfluenceArea2, Bvh::computeCostPah, Bvh::chooseSplittingPlanesFacing<1.0f>, Bvh::shouldStopThresholdOrLevel };
 
 	//build top level structure
-	TopLevelAabbs topLevelStructure{ triangles, std::move(bvh) };
+	TopLevelAabbs topLevelStructure{ triangles, std::move(bvh1), std::move(bvh2) };
 	topLevelStructure.build();
 
 	//analyze BVH

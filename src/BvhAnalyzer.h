@@ -63,7 +63,8 @@ namespace pah {
 		 */
 		json analyze(const Bvh& bvh) {
 			log = json{}; //initialize log string
-
+			
+			globalObjects = std::tuple<GlobalObject...>{}; //reset global objects
 			analyzeNode(bvh.getRoot(), bvh, 0); //recurse on all nodes, depth-first
 
 			//execute the final actions for each global object. For example, here it is possible to add to the json the info collected during the visit

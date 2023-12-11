@@ -28,7 +28,7 @@ namespace pah {
 
 	class PlaneInfluenceArea : public virtual InfluenceArea {
 	public:
-		PlaneInfluenceArea(Plane plane, Vector2 size, float density, const Vector3& regionHalfSize);
+		PlaneInfluenceArea(Plane plane, Vector2 size, float density, float forwardSize);
 
 		float getProjectedArea(const Aabb& aabb) const override;
 		float getInfluence(const Aabb& aabb) const override;

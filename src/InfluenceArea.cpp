@@ -11,8 +11,9 @@ const pah::BvhRegion& pah::InfluenceArea::getBvhRegion() const {
 }
 
 
-pah::PlaneInfluenceArea::PlaneInfluenceArea(Plane plane, Vector2 size, float density, const Vector3& regionHalfSize) 
-	: InfluenceArea{ make_unique<ObbBvhRegion>(plane.getPoint(), regionHalfSize, plane.getNormal()) }, plane{ plane }, size{ size }, density{ density } {}
+pah::PlaneInfluenceArea::PlaneInfluenceArea(Plane plane, Vector2 size, float density, float forwardSize) 
+	: InfluenceArea{ make_unique<ObbBvhRegion>(plane.getPoint() + plane.getNormal() * forwardSize/2.0f, Vector3{size.x, size.y, forwardSize/2.0f}, plane.getNormal()) },
+	plane{ plane }, size{ size }, density{ density } {}
 
 float pah::PlaneInfluenceArea::getProjectedArea(const Aabb& aabb) const {
 	return projection::orthographic::computeProjectedArea(aabb, plane);
