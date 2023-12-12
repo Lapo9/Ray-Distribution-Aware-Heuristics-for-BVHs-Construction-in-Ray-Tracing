@@ -24,7 +24,7 @@ $C_{construction}(root) = C_{intersection} + 8 \cdot C_{construction}(subtree)$
 
 $C_{intersection} = C_{SAT} + C_{fully \space inside}$ <sub>early out if SAT fails, but little gains (SAT is way the most complex part by far)</sub>
 
-$C_{fully \space inside} = () \cdot C_{OBB}$ <sub>check *AABB for OBB*: we check if all the vertices of the AABB are inside the OBB of the region</sub>
+$C_{fully \space inside} = 8 \cdot C_{OBB}$ <sub>check *AABB for OBB*: we check if all the vertices of the AABB are inside the OBB of the region</sub>
 
 
 ## Update
