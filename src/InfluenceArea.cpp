@@ -1,10 +1,11 @@
 #include "InfluenceArea.h"
 
-#include "Utilities.h"
 #include "Projections.h"
 
 using namespace std;
 using namespace pah;
+
+pah::InfluenceArea::InfluenceArea(std::unique_ptr<Region>&& region) : bvhRegion{ std::move(region) } {}
 
 const pah::Region& pah::InfluenceArea::getBvhRegion() const {
 	return *bvhRegion;

@@ -4,7 +4,6 @@
 #include "../libs/json.hpp"
 #include "Bvh.h"
 #include "Utilities.h"
-#include "CustomJson.h"
 
 
 #define ANALYZER_ACTION_PER_NODE_ARGUMENTS const Bvh::Node& node, const Bvh& bvh, int currentLevel, json& localLog /**< The arguments (apart the first one, which is specific to each function) that must be part of the per-node function signatures. */

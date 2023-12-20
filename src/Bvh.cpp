@@ -1,6 +1,8 @@
 #include "Bvh.h"
+
 #include <limits>
 #include <chrono>
+#include <algorithm>
 
 using namespace std;
 using namespace pah::utilities;

@@ -1,12 +1,13 @@
 #pragma once
 
-#include <fstream>
 #include <vector>
 #include <functional>
+#include <fstream>
 #include "../libs/json.hpp"
 
 #include "Utilities.h"
 #include "Bvh.h"
+#include "CustomJson.h"
 
 
 namespace pah {

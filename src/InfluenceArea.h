@@ -2,8 +2,8 @@
 
 #include <vector>
 #include <memory>
+#include <tuple>
 #include <functional>
-#include <utility>
 
 #include "Utilities.h"
 #include "Regions.h"
@@ -12,7 +12,7 @@ namespace pah {
 
 	class InfluenceArea {
 	public:
-		InfluenceArea(std::unique_ptr<Region>&& region) : bvhRegion{ std::move(bvhRegion) } {}
+		InfluenceArea(std::unique_ptr<Region>&& region);
 
 		virtual float getProjectedArea(const Aabb& aabb) const = 0;
 		virtual float getInfluence(const Aabb& aabb) const = 0;
