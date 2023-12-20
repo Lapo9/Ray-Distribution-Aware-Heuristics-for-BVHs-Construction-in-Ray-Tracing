@@ -118,7 +118,6 @@ namespace pah {
 		void setUp(Vector3 up) { this->up = glm::normalize(up); }
 	};
 
-
 	namespace utilities {
 
 		/**

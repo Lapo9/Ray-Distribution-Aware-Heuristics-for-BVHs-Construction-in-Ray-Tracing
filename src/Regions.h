@@ -1,5 +1,7 @@
 #pragma once
 
+#include <functional>
+
 #include "Utilities.h"
 
 namespace pah {
@@ -213,4 +215,80 @@ namespace pah {
 			return false;
 		}
 	};
+
+
+	namespace collisionDetection {
+		static bool areColliding(const Aabb& aabb1, const Aabb& aabb2) {
+			return
+				aabb1.min.x <= aabb2.max.x &&
+				aabb1.max.x >= aabb2.min.x &&
+				aabb1.min.y <= aabb2.max.y &&
+				aabb1.max.y >= aabb2.min.y &&
+				aabb1.min.z <= aabb2.max.z &&
+				aabb1.max.z >= aabb2.min.z;
+		}
+
+
+		/**
+		 * @brief Implementation of the separating axis theorem between an OBB and an AABB.
+		 */
+		static bool areColliding(const Obb& obb, const Aabb& aabb) {
+			using namespace glm;
+
+			//first, we check if the enclosing AABB of the OBB overlaps with the AABB (it can save a lot of time)
+			bool aabbsColliding = areColliding(aabb, Obb::enclosingAabb(obb));
+			if (aabbsColliding) return true;
+			
+			//then we check whether the OBB is "almost" an AABB (in this case we can approximate the collision to the AABB v AABB case)
+			if (almostAabb(obb)) return aabbsColliding;
+
+			//else, we have to use SAT
+			auto obbVertices = obb.getPoints();
+			auto abbVertices = aabb.getPoints();
+
+			//these are the potential separating axes; we use lambdas in order to evaluate them lazily (important to avoid useless cross products in case of early outs)
+			auto axes = vector<function<Vector3()>>{
+				[]() { return Vector3{1,0,0}; },
+				[]() { return Vector3{0,1,0}; },
+				[]() { return Vector3{0,0,1}; },
+				[&obb]() { return obb.right; },
+				[&obb]() { return obb.up; },
+				[&obb]() { return obb.forward; },
+				[&obb]() { return cross(Vector3{1,0,0}, obb.right); },
+				[&obb]() { return cross(Vector3{1,0,0}, obb.up); },
+				[&obb]() { return cross(Vector3{1,0,0}, obb.forward); },
+				[&obb]() { return cross(Vector3{0,1,0}, obb.right); },
+				[&obb]() { return cross(Vector3{0,1,0}, obb.up); },
+				[&obb]() { return cross(Vector3{0,1,0}, obb.forward); },
+				[&obb]() { return cross(Vector3{0,0,1}, obb.right); },
+				[&obb]() { return cross(Vector3{0,0,1}, obb.up); },
+				[&obb]() { return cross(Vector3{0,0,1}, obb.forward); }
+			};
+
+			for (auto& axis : axes) {
+				//TODO continue from here
+			}
+		}
+
+
+		/**
+		 * @brief Checks whether 2 vectors are almost parallel.
+		 */
+		static bool almostParallel(const Vector3& lhs, const Vector3& rhs, float threshold = 0.01f) {
+			return abs(glm::dot(lhs, rhs)) < threshold;
+		}
+
+		/**
+		 * @brief Checks whether and OBB is "almost" an AABB.
+		 */
+		static bool almostAabb(const Obb& obb) {
+			return 
+				(almostParallel(obb.forward, Vector3{ 0,0,1 }) && almostParallel(obb.right, Vector3{ 1,0,0 })) ||
+				(almostParallel(obb.forward, Vector3{ 0,0,1 }) && almostParallel(obb.up, Vector3{ 1,0,0 })) ||
+				(almostParallel(obb.right, Vector3{ 0,0,1 }) && almostParallel(obb.forward, Vector3{ 1,0,0 })) ||
+				(almostParallel(obb.right, Vector3{ 0,0,1 }) && almostParallel(obb.up, Vector3{ 1,0,0 })) ||
+				(almostParallel(obb.up, Vector3{ 0,0,1 }) && almostParallel(obb.forward, Vector3{ 1,0,0 })) ||
+				(almostParallel(obb.up, Vector3{ 0,0,1 }) && almostParallel(obb.right, Vector3{ 1,0,0 }));
+		}
+	}
 }
