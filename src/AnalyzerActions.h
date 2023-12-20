@@ -4,6 +4,7 @@
 #include "../libs/json.hpp"
 #include "Bvh.h"
 #include "Utilities.h"
+#include "CustomJson.h"
 
 
 #define ANALYZER_ACTION_PER_NODE_ARGUMENTS const Bvh::Node& node, const Bvh& bvh, int currentLevel, json& localLog /**< The arguments (apart the first one, which is specific to each function) that must be part of the per-node function signatures. */
@@ -38,7 +39,7 @@ namespace pah::analyzerActions {
 		 */
 		static void sah(float& totalSah, ANALYZER_ACTION_PER_NODE_ARGUMENTS) {
 			float rootSa = bvh.getRoot().aabb.surfaceArea();
-			float sah = Bvh::computeCostSah(node, bvh.getInfluenceArea(), rootSa);
+			float sah = bvhStrategies::computeCostSah(node, bvh.getInfluenceArea(), rootSa);
 			float sa = node.aabb.surfaceArea();
 
 			//add to JSON
@@ -65,7 +66,7 @@ namespace pah::analyzerActions {
 				lastRootProjectedArea = bvh.getInfluenceArea().getProjectedArea(bvh.getRoot().aabb);
 			}
 
-			float pah = Bvh::computeCostPah(node, bvh.getInfluenceArea(), lastRootProjectedArea);
+			float pah = bvhStrategies::computeCostPah(node, bvh.getInfluenceArea(), lastRootProjectedArea);
 			float pa = bvh.getInfluenceArea().getProjectedArea(node.aabb);
 
 			//add to JSON
@@ -151,7 +152,7 @@ namespace pah::analyzerActions {
 		 */
 		static void triangles(std::vector<const Triangle*>& triangles, ANALYZER_ACTION_FINAL_ARGUMENTS) {
 			for (auto& triangle : triangles) {
-				log["triangles"] += *triangle;
+				log["triangles"] = *triangle;
 			}
 		}
 

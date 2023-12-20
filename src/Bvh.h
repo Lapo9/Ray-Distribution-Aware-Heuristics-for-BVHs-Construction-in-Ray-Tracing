@@ -157,10 +157,11 @@ namespace pah {
 			Properties& operator=(const Properties&) = default;
 		};
 
-		//custom types
+		//custom alias
 		using ComputeCostReturnType = float;																				using ComputeCostType = ComputeCostReturnType(const Node&, const InfluenceArea&, float rootMetric);
 		using ChooseSplittingPlanesReturnType = std::vector<std::tuple<Axis, std::function<bool(float bestCostSoFar)>>>;	using ChooseSplittingPlanesType = ChooseSplittingPlanesReturnType(const Node&, const InfluenceArea&, Axis father, std::mt19937& rng);
 		using ShouldStopReturnType = bool;																					using ShouldStopType = ShouldStopReturnType(const Node&, const Properties&, int currentLevel, float nodeCost);
+		using InfluenceArea = InfluenceArea;
 
 
 		Bvh(const Properties&, const InfluenceArea&, ComputeCostType computeCost, ChooseSplittingPlanesType chooseSplittingPlanes, ShouldStopType shouldStop);
@@ -176,11 +177,56 @@ namespace pah {
 		const InfluenceArea& getInfluenceArea() const;
 		const NodeTimingInfo::DurationMs getTotalBuildTime() const;
 
+	private:
+		void splitNode(Node& node, Axis fathersplittingAxis, int currentLevel);
+
+		//simple wrappers for the custom functions. We use wrappers because there may be some common actions to perform before (e.g. time logging)
+		ComputeCostReturnType computeCostWrapper(const Node& parent, const Node& node, const InfluenceArea& influenceArea, float rootArea);
+		ChooseSplittingPlanesReturnType chooseSplittingPlanesWrapper(const Node& node, const InfluenceArea& influenceArea, Axis axis, std::mt19937& rng);
+		ShouldStopReturnType shouldStopWrapper(const Node& parent, const Node& node, const Properties& properties, int currentLevel, float nodeCost);
 
 		/**
-		 * @brief Computes the surface area heuristic of the specified node of a BVH whose root has surface area @p rootSurfaceArea.
+		 * @brief Given a list of triangles, an axis and a position on this axis, returns 2 sets of triangles, the ones "to the left" of the plane, and the ones "to the right".
 		 */
-		static ComputeCostReturnType computeCostSah(const Node& node, const InfluenceArea&, float rootArea) {
+		static std::tuple<std::vector<const Triangle*>, std::vector<const Triangle*>> splitTriangles(const Node& node, const std::vector<const Triangle*>& triangles, Axis axis, float splittingPlanePosition) {
+			using namespace utilities;
+			//the final action simply adds the measured time to the total split triangles time, and increases the split triangles counter
+			TIME(TimeLogger timeLogger{ [&timingInfo = node.nodeTimingInfo](NodeTimingInfo::DurationMs duration) { timingInfo.splitTrianglesTot += duration; timingInfo.splitTrianglesCount++; } };);
+
+			std::vector<const Triangle*> left, right;
+
+			for (auto t : triangles) {
+				if (at(t->center(), axis) < splittingPlanePosition) left.push_back(t);
+				else right.push_back(t);
+			}
+
+			return { left, right };
+		}
+
+
+		Node root;
+		float rootMetric; //stores the cost metric of the root (e.g. surface area if we use SAH, projected area if we use PAH, ...)
+		Properties properties;
+		const InfluenceArea* influenceArea;
+
+		//customizable functions
+		std::function<ComputeCostType> computeCost;
+		//the idea is that this function returns a list of suitable axis to try to subdivide the AABB into, and a set of corresponding predicates.
+		//these predicates take into account the "quality" of the axis, and the results obtained from previous axis; and they decide whether is it worth it to try the next axis
+		std::function<ChooseSplittingPlanesType> chooseSplittingPlanes;
+		std::function<ShouldStopType> shouldStop;
+
+		std::mt19937 rng; //random number generator
+		NodeTimingInfo::DurationMs totalBuildTime; //total time of the last build
+		unsigned long long int id; //id of this BVH: it is a cheap way to check if 2 BVHs are equals
+	};
+
+	namespace bvhStrategies {
+
+		/**
+ * @brief Computes the surface area heuristic of the specified node of a BVH whose root has surface area @p rootSurfaceArea.
+ */
+		Bvh::ComputeCostReturnType computeCostSah(const Bvh::Node& node, const InfluenceArea&, float rootArea) {
 			if (rootArea < 0) return node.aabb.surfaceArea(); //this function is called with rootArea < 0 when we want to initialize it
 
 			float hitProbability = node.aabb.surfaceArea() / rootArea;
@@ -188,7 +234,7 @@ namespace pah {
 			return hitProbability * node.triangles.size() * cost;
 		}
 
-		static ComputeCostReturnType computeCostPah(const Node& node, const InfluenceArea& influenceArea, float rootProjectedArea) {
+		static Bvh::ComputeCostReturnType computeCostPah(const Bvh::Node& node, const InfluenceArea& influenceArea, float rootProjectedArea) {
 			if (rootProjectedArea < 0) return influenceArea.getProjectedArea(node.aabb); //this function is called with rootProjectedArea < 0 when we want to initialize it
 
 			float projectedArea = influenceArea.getProjectedArea(node.aabb);
@@ -203,7 +249,7 @@ namespace pah {
 		 * The function returns whether it is worth it to try the corresponding axis, given the results obtained with the previous axis.
 		 */
 		template<float costThreshold, float ratioThreshold = 0.5f>
-		static ChooseSplittingPlanesReturnType chooseSplittingPlanesLongest(const Node& node, const InfluenceArea&, Axis, std::mt19937&) {
+		static Bvh::ChooseSplittingPlanesReturnType chooseSplittingPlanesLongest(const Bvh::Node& node, const InfluenceArea&, Axis, std::mt19937&) {
 			using namespace std;
 			array<tuple<float, Axis>, 3> axisLengths{ tuple{node.aabb.size().x, Axis::X}, {node.aabb.size().y, Axis::Y} , {node.aabb.size().z, Axis::Z} }; //basically a dictionary<length, Axis>
 			sort(axisLengths.begin(), axisLengths.end(), [](auto a, auto b) { return get<0>(a) < get<0>(b); }); //sort based on axis length
@@ -215,9 +261,9 @@ namespace pah {
 				float ratio = length / longestAxis;
 				if (ratio > ratioThreshold) {
 					result.emplace_back(
-						axis, 
+						axis,
 						[](float bestCostSoFar) { return bestCostSoFar > costThreshold + 0.1f * i * costThreshold; } //it suggest to try this axis if the found cost is > of a user-defined threshold plus a percentage (based on how many axis we've already analyzed)
-					); 
+					);
 					i++; //counts how many axis we analyzed
 					continue;
 				}
@@ -232,12 +278,12 @@ namespace pah {
 		 * Axis are chosen based on the direction of the rays. It tries to avoid planes that are perpendicular to the rays, in order to try and minimize intersections.
 		 * If the main rays direction and the best plane considering this direction are "clear", it will return just one plane; else it will return the best 2 planes.
 		 * The satisfaction criteria will determine whether it is worth it to try the second plane or not, based on the results of the first split.
-		 * 
+		 *
 		 * @tparam costThreshold The maximum cost after the first plane split NOT to try the second plane split.
-		 * @tparam percentageMargin The margin, in percent points, between axis directions to determine if a direction is "clear". e.g. If the rays have direction <-0.66, 0, 0.75> and the margin is 10%, then the main direction is not clear, because |-0.66|/(|-0.66|+|0.75|) = 47%, and |0.75|/(|-0.66|+|0.75|) = 53% and 53%-47% = 6% < 10%  
+		 * @tparam percentageMargin The margin, in percent points, between axis directions to determine if a direction is "clear". e.g. If the rays have direction <-0.66, 0, 0.75> and the margin is 10%, then the main direction is not clear, because |-0.66|/(|-0.66|+|0.75|) = 47%, and |0.75|/(|-0.66|+|0.75|) = 53% and 53%-47% = 6% < 10%
 		 */
 		template<float costThreshold, float percentageMargin = 0.05f>
-		static ChooseSplittingPlanesReturnType chooseSplittingPlanesFacing(const Node& node, const InfluenceArea& influenceArea, Axis, std::mt19937& rng) {
+		static Bvh::ChooseSplittingPlanesReturnType chooseSplittingPlanesFacing(const Bvh::Node& node, const InfluenceArea& influenceArea, Axis, std::mt19937& rng) {
 			using namespace std;
 			using namespace utilities;
 			Vector3 dir = influenceArea.getRayDirection(node.aabb); //TODO this will not work for point influence areas, we need to think about them
@@ -308,51 +354,8 @@ namespace pah {
 		/**
 		 * @brief Returns true if the max level has been passed or if the cost of the leaf is low enough.
 		 */
-		static ShouldStopReturnType shouldStopThresholdOrLevel(const Node& node, const Properties& properties, int currentLevel, float nodeCost) {
+		static Bvh::ShouldStopReturnType shouldStopThresholdOrLevel(const Bvh::Node& node, const Bvh::Properties& properties, int currentLevel, float nodeCost) {
 			return currentLevel > properties.maxLevels || nodeCost < properties.maxLeafCost || node.triangles.size() < properties.maxTrianglesPerLeaf;
 		}
-
-	private:
-		void splitNode(Node& node, Axis fathersplittingAxis, int currentLevel);
-
-		//simple wrappers for the custom functions. We use wrappers because there may be some common actions to perform before (e.g. time logging)
-		ComputeCostReturnType computeCostWrapper(const Node& parent, const Node& node, const InfluenceArea& influenceArea, float rootArea);
-		ChooseSplittingPlanesReturnType chooseSplittingPlanesWrapper(const Node& node, const InfluenceArea& influenceArea, Axis axis, std::mt19937& rng);
-		ShouldStopReturnType shouldStopWrapper(const Node& parent, const Node& node, const Properties& properties, int currentLevel, float nodeCost);
-
-		/**
-		 * @brief Given a list of triangles, an axis and a position on this axis, returns 2 sets of triangles, the ones "to the left" of the plane, and the ones "to the right".
-		 */
-		static std::tuple<std::vector<const Triangle*>, std::vector<const Triangle*>> splitTriangles(const Node& node, const std::vector<const Triangle*>& triangles, Axis axis, float splittingPlanePosition) {
-			using namespace utilities;
-			//the final action simply adds the measured time to the total split triangles time, and increases the split triangles counter
-			TIME(TimeLogger timeLogger{ [&timingInfo = node.nodeTimingInfo](NodeTimingInfo::DurationMs duration) { timingInfo.splitTrianglesTot += duration; timingInfo.splitTrianglesCount++; } };);
-
-			std::vector<const Triangle*> left, right;
-
-			for (auto t : triangles) {
-				if (at(t->center(), axis) < splittingPlanePosition) left.push_back(t);
-				else right.push_back(t);
-			}
-
-			return { left, right };
-		}
-
-
-		Node root;
-		float rootMetric; //stores the cost metric of the root (e.g. surface area if we use SAH, projected area if we use PAH, ...)
-		Properties properties;
-		const InfluenceArea* influenceArea;
-
-		//customizable functions
-		std::function<ComputeCostType> computeCost;
-		//the idea is that this function returns a list of suitable axis to try to subdivide the AABB into, and a set of corresponding predicates.
-		//these predicates take into account the "quality" of the axis, and the results obtained from previous axis; and they decide whether is it worth it to try the next axis
-		std::function<ChooseSplittingPlanesType> chooseSplittingPlanes;
-		std::function<ShouldStopType> shouldStop;
-
-		std::mt19937 rng; //random number generator
-		NodeTimingInfo::DurationMs totalBuildTime; //total time of the last build
-		unsigned long long int id; //id of this BVH: it is a cheap way to check if 2 BVHs are equals
-	};
+	}
 }

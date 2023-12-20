@@ -31,8 +31,8 @@ int main() {
 	properties.maxTrianglesPerLeaf = 2;
 	properties.bins = 20;
 
-	Bvh bvh1{ properties, planeInfluenceArea1, Bvh::computeCostPah, Bvh::chooseSplittingPlanesFacing<1.0f>, Bvh::shouldStopThresholdOrLevel };
-	Bvh bvh2{ properties, planeInfluenceArea2, Bvh::computeCostPah, Bvh::chooseSplittingPlanesFacing<1.0f>, Bvh::shouldStopThresholdOrLevel };
+	Bvh bvh1{ properties, planeInfluenceArea1, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing<1.0f>, bvhStrategies::shouldStopThresholdOrLevel };
+	Bvh bvh2{ properties, planeInfluenceArea2, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing<1.0f>, bvhStrategies::shouldStopThresholdOrLevel };
 
 	//build top level structure
 	TopLevelAabbs topLevelStructure{ triangles, std::move(bvh1), std::move(bvh2) };

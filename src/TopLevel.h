@@ -22,7 +22,7 @@ namespace pah {
 		 * TODO implement it in concrete classes, it probably needs to know which parts to reconstruct
 		 */
 		virtual void update() = 0;
-		virtual const std::vector<Bvh*>& containedIn(const Vector3&) = 0;
+		virtual std::vector<Bvh*> containedIn(const Vector3&) = 0;
 
 		const std::vector<Bvh>& getBvhs() const;
 		const std::vector<Triangle>& getTriangles() const;
@@ -40,6 +40,6 @@ namespace pah {
 
 		void build() override;
 		void update() override;
-		const std::vector<Bvh*>& containedIn(const Vector3&) override;
+		std::vector<Bvh*> containedIn(const Vector3&) override;
 	};
 }

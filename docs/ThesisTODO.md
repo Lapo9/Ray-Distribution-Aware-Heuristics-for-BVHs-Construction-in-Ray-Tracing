@@ -1,15 +1,15 @@
-# [ ] State of the art
+# State of the art
 - [ ] BVH algorithms
 - [ ] Sampling techniques
 - [ ] Specific articles (e.g. contour integrals)
 
-# [ ] Comparison algorithms
+# Comparison algorithms
 - [x] BVH with SAH
 - [ ] Grids
 - [ ] Octrees
 - [ ] Binary space partitioning
 
-# [ ] Novelty
+# Novelty
 - [ ] CPU
   - [ ] Clustering for influence area detection
   - [x] **Single area PAH**
@@ -22,7 +22,11 @@
   - [ ] **Multi area PAH**
     - [ ] *Deferred rendering integration?*
     - [ ] **Top level acceleration structure**
-      - [ ] *How to create?*
+      - [ ] Many choices:
+        - [ ] Octree (fast to traverse, hard to construct)
+        - [ ] Binary Space Partitioning
+        - [ ] AABB for OBB
+        - [ ] Simplify OBB with AABBs or spheres
       - [ ] Traversal (choose best BVH based on ray direction)
   - [ ] **Multi area plane splitting** 
   - [ ] **Data collection**
@@ -38,4 +42,4 @@
   - [ ] Multi area PAH
   - [ ] Multi area plane splitting
  
-# [ ] Results
+# Results

@@ -1,14 +1,13 @@
 #include "Bvh.h"
 #include <limits>
 #include <chrono>
-#include <algorithm>
 
 using namespace std;
 using namespace pah::utilities;
 
 pah::Bvh::Bvh(const Properties& properties, const InfluenceArea& influenceArea, ComputeCostType computeCost, ChooseSplittingPlanesType chooseSplittingPlanes, ShouldStopType shouldStop)
 	: properties{ properties }, influenceArea{ &influenceArea }, computeCost{ computeCost }, chooseSplittingPlanes{ chooseSplittingPlanes }, shouldStop{ shouldStop } {}
-
+	
 void pah::Bvh::build(const vector<const Triangle*>& triangles) {
 	//the final action simply adds the measured time to the total time
 	TimeLogger timeLogger{ [this](NodeTimingInfo::DurationMs duration) { totalBuildTime = duration; } };
@@ -38,7 +37,7 @@ void pah::Bvh::splitNode(Node& node, Axis fatherSplittingAxis, int currentLevel)
 	auto splittingPlanes = chooseSplittingPlanesWrapper(node, *influenceArea, fatherSplittingAxis, rng);
 
 	bool found = false; //flag to check if we found at least one split (maybe all the splits place the triangles on one side, leaving the other one empty)
-	
+
 	//the final action simply adds the measured time to the total split time
 	TIME(TimeLogger timeLoggerSplitting{ [&timingInfo = node.nodeTimingInfo](NodeTimingInfo::DurationMs duration) { timingInfo.logSplittingTot(duration); } };);
 	//try to split for each axis provided by chooseSplittingPlanes
@@ -48,7 +47,7 @@ void pah::Bvh::splitNode(Node& node, Axis fatherSplittingAxis, int currentLevel)
 		for (int i = 1; i < properties.bins - 1; ++i) {
 			float splittingPlanePosition = at(node.aabb.min, axis) + (at(node.aabb.max, axis) - at(node.aabb.min, axis)) / properties.bins * i;
 			const auto& [leftTriangles, rightTriangles] = splitTriangles(node, node.triangles, axis, splittingPlanePosition);
-			
+
 			TIME(TimeLogger timeLoggerNodes{ [&timingInfo = node.nodeTimingInfo](auto duration) { timingInfo.logNodesCreation(duration); } };);
 			Node left = { leftTriangles }, right = { rightTriangles };
 			TIME(timeLoggerNodes.stop(););

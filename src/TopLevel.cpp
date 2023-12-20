@@ -35,7 +35,7 @@ void pah::TopLevelAabbs::update() {
 	throw exception{ "TopLevelAabbs::update function not implemented yet." };
 }
 
-const vector<pah::Bvh*>& pah::TopLevelAabbs::containedIn(const Vector3& point) {
+vector<pah::Bvh*> pah::TopLevelAabbs::containedIn(const Vector3& point) {
 	vector<Bvh*> containedIn;
 	for (auto& bvh : bvhs) {
 		if (bvh.getInfluenceArea().getBvhRegion().isInside(point)) {

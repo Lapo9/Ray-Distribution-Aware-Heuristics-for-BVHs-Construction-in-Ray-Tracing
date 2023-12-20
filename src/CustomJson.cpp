@@ -1,4 +1,5 @@
 #include "CustomJson.h"
+
 #include "settings.h"
 
 void pah::to_json(json& j, const Bvh::Node& node) {
@@ -10,17 +11,6 @@ void pah::to_json(json& j, const Bvh::Node& node) {
 	for (auto& triangle : node.triangles) {
 		j["triangles"] += (unsigned long long int) & *triangle;
 	}
-}
-
-void pah::to_json(json& j, const Aabb& aabb) {
-	j["min"] = aabb.min;
-	j["max"] = aabb.max;
-}
-
-void pah::to_json(json& j, const Obb& obb) {
-	j["center"] = obb.center;
-	j["forward"] = obb.forward; //then you can (almost always) derivate right and up (considering that the up of the world is always <0,1,0>)
-	j["halfSize"] = obb.halfSize;
 }
 
 void pah::to_json(json& j, const Triangle& triangle) {
@@ -50,21 +40,43 @@ void pah::to_json(json& j, const PlaneInfluenceArea& planeInfluenceArea) {
 	j["bvhRegion"] = planeInfluenceArea.getBvhRegion();
 }
 
-void pah::to_json(json& j, const BvhRegion& bvhRegion) {
+void pah::to_json(json& j, const Region& region) {
 	//we try to cast to the actual type, and then call the proper function with the run-time type; if no cast works, we throw.
-	//we have to do like this because C++ does NOT have multiple dispatch, therefore always this version of the function is called (with the static type BvhRegion)
+	//we have to do like this because C++ does NOT have multiple dispatch, therefore always this version of the function is called (with the static type Region)
 	try {
-		auto& obbBvhRegion = dynamic_cast<const ObbBvhRegion&>(bvhRegion);
-		to_json(j, obbBvhRegion);
+		auto& aabbRegion = dynamic_cast<const Aabb&>(region);
+		to_json(j, aabbRegion);
 		return;
-	} catch (const std::bad_cast&) { /* try next type */ }
+	} catch (const std::bad_cast&) {}
+	try {
+		auto& obbRegion = dynamic_cast<const Obb&>(region);
+		to_json(j, obbRegion);
+		return;
+	} catch (const std::bad_cast&) {}
+	try {
+		auto& aabbForObbRegion = dynamic_cast<const AabbForObb&>(region);
+		to_json(j, aabbForObbRegion);
+		return;
+	} catch (const std::bad_cast&) {}
 
-	throw std::invalid_argument{ "The run-time type of bvhRegion cannot be handled by the to_json function." };
+	throw std::invalid_argument{ "The run-time type of region cannot be handled by the to_json function." };
 }
 
-void pah::to_json(json& j, const ObbBvhRegion& obbBvhRegion) {
+void pah::to_json(json& j, const Aabb& aabb) {
+	j["min"] = aabb.min;
+	j["max"] = aabb.max;
+}
+
+void pah::to_json(json& j, const Obb& obb) {
+	j["center"] = obb.center;
+	j["forward"] = obb.forward; //then you can (almost always) derivate right and up (considering that the up of the world is always <0,1,0>)
+	j["halfSize"] = obb.halfSize;
+}
+
+void pah::to_json(json& j, const AabbForObb& aabbForObb) {
 	j["type"] = "obb";
-	j["obb"] = obbBvhRegion.getObb();
+	j["aabb"] = aabbForObb.aabb;
+	j["obb"] = aabbForObb.obb;
 }
 
 void pah::to_json(json& j, const Plane& plane) {

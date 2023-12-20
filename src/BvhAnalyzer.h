@@ -1,13 +1,12 @@
 #pragma once
 
+#include <fstream>
 #include <vector>
 #include <functional>
-#include <fstream>
 #include "../libs/json.hpp"
 
 #include "Utilities.h"
 #include "Bvh.h"
-#include "CustomJson.h"
 
 
 namespace pah {
@@ -79,8 +78,7 @@ namespace pah {
 		json analyze(const Bvh& bvh, std::string filePath) {
 			json json = analyze(bvh);
 
-			std::ofstream file;
-			file.open(filePath);
+			std::ofstream file{ filePath };
 			file << std::setw(2) << json;
 			file.close();
 
