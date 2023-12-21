@@ -1,10 +1,14 @@
 #pragma once
 
 #include <functional>
+#include "glm/glm.hpp"
 
 #include "Utilities.h"
 
 namespace pah {
+	/**
+	 * @brief Base class for anything that can represent a 3D space region.
+	 */
 	class Region {
 	public:
 		/**
@@ -13,6 +17,9 @@ namespace pah {
 		virtual bool isInside(const Vector3& point) const = 0;
 	};
 
+	/**
+	 * @brief An axis aligned bounding box.
+	 */
 	struct Aabb : public Region {
 		Vector3 min;
 		Vector3 max;
@@ -140,6 +147,9 @@ namespace pah {
 		}
 	};
 
+	/**
+	 * @brief An oriented bounding box.
+	 */
 	struct Obb : public Region {
 		Vector3 center;
 		Vector3 forward;
@@ -203,11 +213,15 @@ namespace pah {
 		}
 	};
 
+	/**
+	 * @brief An OBB with an enclosing AABB.
+	 */
 	struct AabbForObb : public Region {
 		Obb obb;
 		Aabb aabb;
 
 		AabbForObb(const Vector3& center, const Vector3& halfSize, const Vector3& forward) : obb{ center, halfSize, forward }, aabb{ Obb::enclosingAabb(obb) } {}
+		AabbForObb(const Obb& obb) : obb{ obb }, aabb{ Obb::enclosingAabb(obb) } {}
 
 		bool isInside(const Vector3& point) const override {
 			//check if the point is inside the AABB (cheap), if it is, check the OBB
@@ -217,7 +231,14 @@ namespace pah {
 	};
 
 
+	/**
+	 * @brief Functions and utilities to detect whether there is a collision between 2 /p Region s.
+	 */
 	namespace collisionDetection {
+
+		/**
+		 * @brief Returns whether 2 /p Aabb s are colliding.
+		 */
 		static bool areColliding(const Aabb& aabb1, const Aabb& aabb2) {
 			return
 				aabb1.min.x <= aabb2.max.x &&
@@ -228,22 +249,21 @@ namespace pah {
 				aabb1.max.z >= aabb2.min.z;
 		}
 
-
 		/**
-		 * @brief Implementation of the separating axis theorem between an OBB and an AABB.
+		 * @brief Implementation of the separating axis theorem between an /p AabbForObb and an /p Aabb.
 		 */
-		static bool areColliding(const Obb& obb, const Aabb& aabb) {
+		static bool areColliding(const AabbForObb& obb, const Aabb& aabb) {
 			using namespace glm;
 
 			//first, we check if the enclosing AABB of the OBB overlaps with the AABB (it can save a lot of time)
-			bool aabbsColliding = areColliding(aabb, Obb::enclosingAabb(obb));
+			bool aabbsColliding = areColliding(aabb, obb.aabb);
 			if (aabbsColliding) return true;
-			
+
 			//then we check whether the OBB is "almost" an AABB (in this case we can approximate the collision to the AABB v AABB case)
-			if (almostAabb(obb)) return aabbsColliding;
+			if (almostAabb(obb.obb)) return aabbsColliding;
 
 			//else, we have to use SAT
-			auto obbVertices = obb.getPoints();
+			auto obbVertices = obb.obb.getPoints();
 			auto abbVertices = aabb.getPoints();
 
 			//these are the potential separating axes; we use lambdas in order to evaluate them lazily (important to avoid useless cross products in case of early outs)
@@ -265,11 +285,26 @@ namespace pah {
 				[&obb]() { return cross(Vector3{0,0,1}, obb.forward); }
 			};
 
-			for (auto& axis : axes) {
-				//TODO continue from here
+			for (auto& getAxis : axes) {
+				auto axis = getAxis();
+				//get the points that, after the projection, will be the outermost (both for the OBB and the AABB)
+				auto obbExtremesIndexes = projectedObbExtremes(axis, obb.obb);
+				auto aabbExtremesIndexes = projectedAabbExtremes(axis);
+
+				// |--------------------|MA     MB    overlap iff mB <= MA && MB >= mA
+				// mA             mB|-----------|
+				if (dot(obbVertices[aabbExtremesIndexes.first], axis) <= dot(obbVertices[obbExtremesIndexes.second], axis) &&
+					dot(obbVertices[aabbExtremesIndexes.second], axis) >= dot(obbVertices[obbExtremesIndexes.first], axis)) return true;
 			}
+			return false; //if we havent't found any axis where there is no overlap, boxes are colliding
 		}
 
+		/**
+		 * @brief Implementation of the separating axis theorem between an /p Obb and an /p Aabb.
+		 */
+		static bool areColliding(const Obb& obb, const Aabb& aabb) {
+			return areColliding(AabbForObb{ obb }, aabb);
+		}
 
 		/**
 		 * @brief Checks whether 2 vectors are almost parallel.
@@ -289,6 +324,46 @@ namespace pah {
 				(almostParallel(obb.right, Vector3{ 0,0,1 }) && almostParallel(obb.up, Vector3{ 1,0,0 })) ||
 				(almostParallel(obb.up, Vector3{ 0,0,1 }) && almostParallel(obb.forward, Vector3{ 1,0,0 })) ||
 				(almostParallel(obb.up, Vector3{ 0,0,1 }) && almostParallel(obb.right, Vector3{ 1,0,0 }));
+		}
+
+		/**
+		 * @brief Given an axis, it returns the indexes of the vertices (min and max) that are most far apart (the extremes) on the projection of an AABB to the specified axis.
+		 * The indexes refer to the order in which the function Aabb::getPoints return the vertices of an AABB.
+		 * Look at the visualization in the project ProjectedAreaHeuristic-Visualization to better understand the logic behind this funciton.
+		 *  
+		 *  2_______________6
+		 *  |\             .\
+		 *  | \____________._\7
+		 * 0| 3|          4. |
+		 *  .\ |           . |
+		 *  . \|1__________._|5
+		 *  .  .           . .  
+		 *  |--|-----------|-|    in this case A and D are the outermost., which correspond to points with index 0 (or 2) and 7 (or 5)
+		 *  A  B           C D
+		 * 
+		 */
+		static std::pair<int, int> projectedAabbExtremes(const Vector3& axis) {
+			auto normalized = glm::normalize(axis);
+			float x = normalized.x, y = normalized.y, z = normalized.z;
+
+			if (x >= 0 && y >= 0 && z <= 0) return { 0, 7 }; //yellow
+			if (x <= 0 && y <= 0 && z >= 0) return { 7, 0 }; //blue
+			if (x >= 0 && y >= 0 && z >= 0) return { 1, 6 }; //white
+			if (x <= 0 && y <= 0 && z <= 0) return { 6, 1 }; //black
+			if (x >= 0 && y <= 0 && z <= 0) return { 2, 5 }; //red
+			if (x <= 0 && y >= 0 && z >= 0) return { 5, 2 }; //cyan
+			if (x >= 0 && y <= 0 && z >= 0) return { 3, 4 }; //magenta
+			if (x <= 0 && y >= 0 && z <= 0) return { 4, 3 }; //green
+		}
+
+		/**
+		 * @brief Given an axis and an OBB, it returns the indexes of the vertices (min and max) that are most far apart (the extremes) on the projection of an AABB to the specified axis.
+		 * What happens is that the function transforms the axis into the OBB coordinate system, and then treats it like an AABB.
+		 */
+		static std::pair<int, int> projectedObbExtremes(const Vector3& axis, const Obb& obb) {
+			Matrix3 newBasis{ obb.right, obb.up, obb.forward };
+			Vector3 newAxis = newBasis * axis;
+			return projectedAabbExtremes(newAxis);
 		}
 	}
 }

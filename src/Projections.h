@@ -2,7 +2,9 @@
 
 #include "Utilities.h"
 
-
+/**
+ * @brief Function and utilities to project points and AABBs to a plane.
+ */
 namespace pah::projection {
 
 	/**
@@ -53,6 +55,9 @@ namespace pah::projection {
 	}
 
 
+	/**
+	 * @brief Function and utilities for orthographic projections.
+	 */
 	namespace orthographic {
 
 		/**
@@ -121,6 +126,9 @@ namespace pah::projection {
 	}
 
 
+	/**
+	 * @brief Functions and utilities for perspective projections.
+	 */
 	namespace perspective {
 		/**
 		 * @brief An HullInfo object keeps a list of the indexes of the vertices that are part of the convex hull.

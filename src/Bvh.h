@@ -136,17 +136,7 @@ namespace pah {
 			}
 		};
 
-		enum class Heuristic {
-			SAH, PAH, RANDOM
-		};
-
-		enum class SplitPlaneStrategy {
-			LONGEST, PLANE_FACING, ROUND_ROBIN, RANDOM
-		};
-
 		struct Properties {
-			Heuristic heuristic;
-			SplitPlaneStrategy splitPlaneStrategy;
 			float maxLeafCost;
 			int maxTrianglesPerLeaf;
 			int maxLevels;
@@ -165,6 +155,11 @@ namespace pah {
 
 		Bvh(const Properties&, const InfluenceArea&, ComputeCostType computeCost, ChooseSplittingPlanesType chooseSplittingPlanes, ShouldStopType shouldStop);
 
+		/**
+		 * @brief Returns whether /p bvh1 is the same as /p bvh2.
+		 * To do so, it compares the ids of the 2 /p Bvh s. This is just a cheap way to understand if we are dealing with the exact same object.
+		 * The id changes every time the /p Bvh is built.
+		 */
 		friend bool operator==(const Bvh& bvh1, const Bvh& bvh2) {
 			return bvh1.id == bvh2.id;
 		}
@@ -217,10 +212,13 @@ namespace pah {
 
 		std::mt19937 rng; //random number generator
 		NodeTimingInfo::DurationMs totalBuildTime; //total time of the last build
-		unsigned long long int id; //id of this BVH: it is a cheap way to check if 2 BVHs are equals
+		unsigned long long int id; //id of this BVH: it is a cheap way to check if 2 BVHs are equal
 	};
 
 
+	/**
+	 * @brief Functions that can be plugged in the /p Bvh to decide how to build it.
+	 */
 	namespace bvhStrategies {
 
 		/**

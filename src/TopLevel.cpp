@@ -15,7 +15,7 @@ const vector<pah::Triangle>& pah::TopLevel::getTriangles() const {
 void pah::TopLevelAabbs::build() {
 	vector<vector<const Triangle*>> bvhsTriangles(bvhs.size());
 	
-	//understand the BVHs each triangle is into
+	//understand the BVHs each triangle is contained into
 	for (auto& t : triangles) {
 		for (int i = 0; i < bvhs.size(); ++i) {
 			auto& region = bvhs[i].getInfluenceArea().getBvhRegion();
@@ -43,4 +43,21 @@ vector<pah::Bvh*> pah::TopLevelAabbs::containedIn(const Vector3& point) {
 		}
 	}
 	return containedIn;
+}
+
+
+void pah::TopLevelOctree::build() {
+}
+
+void pah::TopLevelOctree::update() {
+	throw exception{ "TopLevelOctree::update function not implemented yet." };
+}
+
+std::vector<pah::Bvh*> pah::TopLevelOctree::containedIn(const Vector3& point) {
+	Node* current = &*root;
+	while (!current->isLeaf()) {
+		int index = 0;
+		current = &*current->children[index];
+	}
+	return current->bvhs;
 }

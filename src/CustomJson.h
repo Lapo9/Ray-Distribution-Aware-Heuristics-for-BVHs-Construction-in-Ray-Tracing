@@ -3,8 +3,8 @@
 #include "../libs/json.hpp"
 #include "Bvh.h"
 #include "Utilities.h"
-//#include "InfluenceArea.h"
-//#include "Regions.h"
+#include "InfluenceArea.h"
+#include "Regions.h"
 
 
 namespace glm{

@@ -10,15 +10,36 @@
 
 namespace pah {
 
+	/**
+	 * @brief Defines an area where there is a certain distribution of rays.
+	 * Each /p InfluenceArea has an associated /p Region.
+	 */
 	class InfluenceArea {
 	public:
 		InfluenceArea(std::unique_ptr<Region>&& region);
 
+		/**
+		 * @brief Given an /p Aabb, returns the area projected by this /p Aabb on this /p InfluenceArea.
+		 */
 		virtual float getProjectedArea(const Aabb& aabb) const = 0;
+
+		/**
+		 * @brief Given an /p Aabb, returns the influence that this /p InfluenceArea has on it.
+		 * This may depend on many factors, such as the amount of rays in the area or the distance.
+		 */
 		virtual float getInfluence(const Aabb& aabb) const = 0;
+
+		/**
+		 * @brief Given an /p Aabb, returns the direction that the ray hitting the center of the AABB has.
+		 */
 		virtual Vector3 getRayDirection(const Aabb& aabb) const = 0;
+
+		// TODO probably this will be removed. It should return the best way to split the AABB
 		virtual std::vector<std::tuple<Axis, std::function<bool(float bestCostSoFar)>>> bestSplittingPlanes() const = 0;
 
+		/**
+		 * @brief Returns the associated /p Region.
+		 */
 		const Region& getBvhRegion() const;
 
 	protected:
