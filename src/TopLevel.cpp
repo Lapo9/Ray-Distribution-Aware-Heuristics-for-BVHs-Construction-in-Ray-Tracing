@@ -1,9 +1,33 @@
 #include "TopLevel.h"
 
 #include <ranges>
+#include <unordered_set>
+#include <unordered_map>
 #include <exception>
 
 using namespace std;
+
+void pah::TopLevel::build() {
+	unordered_map<pah::Bvh*, vector<const Triangle*>> bvhsTriangles; //maps the BVH and the triangles it contains
+
+	//understand the BVHs each triangle is contained into
+	for (auto& t : triangles) {
+		unordered_set<pah::Bvh*> containedInto; //the BVHs where thre triangle is contained into
+
+		//for each vertex, get the BVHs it is contained into, and add them to the set (we directly use the containedIn function, so this is polymorphic
+		containedInto.insert_range(containedIn(t.v1));
+		containedInto.insert_range(containedIn(t.v2));
+		containedInto.insert_range(containedIn(t.v3));
+
+		//add the triangle to each BVH where it is contained into (at least one vertex)
+		for (const auto& bvh : containedInto) bvhsTriangles[bvh].push_back(&t);
+	}
+
+	//build the BVHs with the corresponding triangles
+	for (auto& bvh : bvhs) {
+		bvh.build(bvhsTriangles[&bvh]);
+	}
+}
 
 const vector<pah::Bvh>& pah::TopLevel::getBvhs() const {
 	return bvhs;
@@ -14,22 +38,7 @@ const vector<pah::Triangle>& pah::TopLevel::getTriangles() const {
 }
 
 void pah::TopLevelAabbs::build() {
-	vector<vector<const Triangle*>> bvhsTriangles(bvhs.size());
-	
-	//understand the BVHs each triangle is contained into
-	for (auto& t : triangles) {
-		for (int i = 0; i < bvhs.size(); ++i) {
-			auto& region = bvhs[i].getInfluenceArea().getBvhRegion();
-			if (region.contains(t.v1) || region.contains(t.v2) || region.contains(t.v3)) {
-				bvhsTriangles[i].push_back(&t);
-			}
-		}
-	}
-
-	//build the BVHs with the corresponding triangles
-	for (int i = 0; i < bvhs.size(); ++i) {
-		bvhs[i].build(bvhsTriangles[i]);
-	}
+	TopLevel::build();
 }
 
 void pah::TopLevelAabbs::update() {
@@ -48,8 +57,12 @@ vector<pah::Bvh*> pah::TopLevelAabbs::containedIn(const Vector3& point) {
 
 
 void pah::TopLevelOctree::build() {
+	//build the octree
 	auto bvhsPointers = bvhs | std::views::transform([](Bvh& bvh) { return &bvh; }) | std::ranges::to<vector>(); //make vector of pointers
-	buildRecursive(*root, bvhsPointers, {});
+	buildOctreeRecursive(*root, bvhsPointers, {});
+
+	//build the BVHs
+	TopLevel::build();
 }
 
 void pah::TopLevelOctree::update() {
@@ -70,7 +83,7 @@ pah::TopLevelOctree::Node& pah::TopLevelOctree::getRoot() const {
 	return *root;
 }
 
-void pah::TopLevelOctree::buildRecursive(Node& node, const vector<Bvh*>& fatherCollidingRegions, const vector<Bvh*>& fatherFullyContainedRegions, int currentLevel) {
+void pah::TopLevelOctree::buildOctreeRecursive(Node& node, const vector<Bvh*>& fatherCollidingRegions, const vector<Bvh*>& fatherFullyContainedRegions, int currentLevel) {
 	vector<Bvh*> collidingRegions;
 	node.bvhs = fatherFullyContainedRegions; //if the father node was fully contained in some region, for sure the child will also be
 	bool leafNode = true; //this will become false if there is a region that intersects the node, but doesn't fully contain it
@@ -100,7 +113,7 @@ void pah::TopLevelOctree::buildRecursive(Node& node, const vector<Bvh*>& fatherC
 				node.aabb.min - half * -position
 			};
 			child = make_unique<Node>(childAabb); //create empty child
-			buildRecursive(*child, collidingRegions, node.bvhs, ++currentLevel); //build child
+			buildOctreeRecursive(*child, collidingRegions, node.bvhs, ++currentLevel); //build child
 		}
 	}
 	//At the moment the node only contains the regions that fully contain it: our approach is conservative.

@@ -21,7 +21,7 @@ namespace pah {
 		/**
 		 * @brief Insert the triangles in the specific area they belong to, then builds the BVHs.
 		 */
-		virtual void build() = 0;
+		virtual void build();
 
 		/**
 		 * @brief Updates the region where each triangle belongs to.
@@ -112,7 +112,7 @@ namespace pah {
 		Node& getRoot() const;
 
 	private:
-		void buildRecursive(Node& node, const std::vector<Bvh*>& fatherCollidingRegions, const std::vector<Bvh*>& fatherFullyContainedRegions, int currentLevel = 0);
+		void buildOctreeRecursive(Node& node, const std::vector<Bvh*>& fatherCollidingRegions, const std::vector<Bvh*>& fatherFullyContainedRegions, int currentLevel = 0);
 
 		/**
 		 * @brief Given the relative position of a point to the center of the /p Aabb, returns the index of the /p Node.
