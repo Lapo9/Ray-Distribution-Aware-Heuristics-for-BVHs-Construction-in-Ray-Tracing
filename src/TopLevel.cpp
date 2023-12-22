@@ -19,7 +19,7 @@ void pah::TopLevelAabbs::build() {
 	for (auto& t : triangles) {
 		for (int i = 0; i < bvhs.size(); ++i) {
 			auto& region = bvhs[i].getInfluenceArea().getBvhRegion();
-			if (region.isInside(t.v1) || region.isInside(t.v2) || region.isInside(t.v3)) {
+			if (region.contains(t.v1) || region.contains(t.v2) || region.contains(t.v3)) {
 				bvhsTriangles[i].push_back(&t);
 			}
 		}
@@ -38,7 +38,7 @@ void pah::TopLevelAabbs::update() {
 vector<pah::Bvh*> pah::TopLevelAabbs::containedIn(const Vector3& point) {
 	vector<Bvh*> containedIn;
 	for (auto& bvh : bvhs) {
-		if (bvh.getInfluenceArea().getBvhRegion().isInside(point)) {
+		if (bvh.getInfluenceArea().getBvhRegion().contains(point)) {
 			containedIn.push_back(&bvh);
 		}
 	}
@@ -47,6 +47,7 @@ vector<pah::Bvh*> pah::TopLevelAabbs::containedIn(const Vector3& point) {
 
 
 void pah::TopLevelOctree::build() {
+
 }
 
 void pah::TopLevelOctree::update() {
@@ -60,4 +61,34 @@ std::vector<pah::Bvh*> pah::TopLevelOctree::containedIn(const Vector3& point) {
 		current = &*current->children[index];
 	}
 	return current->bvhs;
+}
+
+
+void pah::TopLevelOctree::buildRecursive(Node& node, const vector<Bvh*>& fatherCollidingRegions, const vector<Bvh*>& fatherFullyContainedRegions) {
+	vector<Bvh*> collidingRegions;
+	node.bvhs = fatherFullyContainedRegions; //if the father node was fully contained in some region, for sure the child will also be
+	bool leafNode = true; //this will become false if there is a region that intersects the node, but doesn't fully contain it
+
+	//for each region that collided with the father, but didn't fully contained it, we have to check what happens with the child
+	for (const auto& bvh : fatherCollidingRegions) {
+		if (bvh->getInfluenceArea().getBvhRegion().isCollidingWith(node.aabb)) {
+			if (bvh->getInfluenceArea().getBvhRegion().fullyContains(node.aabb)) {
+				node.bvhs.push_back(bvh);
+			}
+			else {
+				collidingRegions.push_back(bvh);
+				leafNode = false;
+			}
+		}
+	}
+
+	//the node is a leaf if there are no colliding but not fully contained regions, or if we reached the max level
+	node.setLeaf(leafNode);
+	if (node.isLeaf()) {
+		for (auto& child : node.children) {
+			buildRecursive(*child, collidingRegions, node.bvhs);
+		}
+	}
+	//At the moment the node only contains the regions that fully contain it: our approach is conservative.
+	//We prefer to have slightly smaller regions than slightly bigger ones, since it is likely that, at the border of the region, it wouldn't be useful to look in the local BVH first
 }

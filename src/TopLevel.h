@@ -64,6 +64,7 @@ namespace pah {
 	public:
 		//related classes
 		struct Node {
+			Aabb aabb;
 			std::vector<Bvh*> bvhs;
 			std::array<std::unique_ptr<Node>, 8> children;
 
@@ -88,8 +89,14 @@ namespace pah {
 
 
 		template<std::same_as<Bvh>... Bvh>
-		TopLevelOctree(const std::vector<Triangle>& triangles, Bvh&&... bvhs) : TopLevel{ triangles, std::move(bvhs)... } {
-			//TODO from here
+		TopLevelOctree(const std::vector<Triangle>& triangles, Bvh&&... bvhs) : TopLevel{ triangles, std::move(bvhs)... }, root{} {
+			Aabb sceneAabb = Aabb::minAabb();
+			for (const auto& bvh : this->bvhs) {
+				sceneAabb += bvh.getInfluenceArea().getBvhRegion().enclosingAabb();
+			}
+
+			root->aabb = sceneAabb;
+			root->bvhs = this->bvhs;
 		}
 
 		void build() override;
@@ -97,6 +104,8 @@ namespace pah {
 		std::vector<Bvh*> containedIn(const Vector3&) override;
 
 	private:
+		void buildRecursive(Node& node, const std::vector<Bvh*>& fatherCollidingRegions, const std::vector<Bvh*>& fatherFullyContainedRegions);
+
 		std::unique_ptr<Node> root;
 	};
 }

@@ -94,8 +94,7 @@ namespace pah {
 			}
 
 			friend NodeTimingInfo& operator+(NodeTimingInfo lhs, const NodeTimingInfo& rhs) {
-				lhs += rhs;
-				return lhs;
+				return lhs += rhs;
 			}
 
 			friend bool operator==(const NodeTimingInfo& lhs, const NodeTimingInfo& rhs) {

@@ -14,7 +14,24 @@ namespace pah {
 		/**
 		 * @brief Returns whether the /p point is inside the region.
 		 */
-		virtual bool isInside(const Vector3& point) const = 0;
+		virtual bool contains(const Vector3& point) const = 0;
+
+		/**
+		 * @brief Returns the enclosing /p Aabb.
+		 */
+		virtual Aabb enclosingAabb() const = 0;
+
+		/**
+		 * @brief Returns whether there is a collision between this /p Region and an /p Aabb.
+		 * We make this a method in order to make use of the runtime polymorphism features of C++.
+		 */
+		virtual bool isCollidingWith(const Aabb& aabb) const = 0;
+
+		/**
+		 * @brief Returns whether this /p Region fully contains the specified /p Aabb.
+		 * We make this a method in order to make use of the runtime polymorphism features of C++.
+		 */
+		virtual bool fullyContains(const Aabb& aabb) const = 0;
 	};
 
 	/**
@@ -58,7 +75,7 @@ namespace pah {
 		}
 		Aabb(const Vector3& min, const Vector3& max) : min{ min }, max{ max } {}
 
-		bool isInside(const Vector3& point) const override {
+		bool contains(const Vector3& point) const override {
 			return
 				point.x >= min.x &&
 				point.y >= min.y &&
@@ -66,6 +83,24 @@ namespace pah {
 				point.x <= max.x &&
 				point.y <= max.y &&
 				point.z <= max.z;
+		}
+
+		Aabb enclosingAabb() const override {
+			return *this;
+		}
+		
+		bool isCollidingWith(const Aabb& aabb) const override {
+			return collisionDetection::areColliding(*this, aabb);
+		}
+
+		bool fullyContains(const Aabb& aabb) const override {
+			return 
+				min.x <= aabb.min.x &&
+				min.y <= aabb.min.y &&
+				min.z <= aabb.min.z &&
+				max.x >= aabb.max.x &&
+				max.y >= aabb.max.y &&
+				max.z >= aabb.max.z &&
 		}
 
 		/**
@@ -145,6 +180,25 @@ namespace pah {
 			Vector3 max{ std::numeric_limits<float>::max() };
 			return Aabb{ min, max };
 		}
+
+		/**
+		 * @brief Returns the biggest negative AABB possible.
+		 */
+		static Aabb minAabb() {
+			Vector3 min{ std::numeric_limits<float>::max() };
+			Vector3 max{ -std::numeric_limits<float>::max() };
+			return Aabb{ min, max };
+		}
+
+		Aabb& operator+=(const Aabb& lhs) {
+			min = glm::min(min, lhs.min);
+			max = glm::max(max, lhs.max);
+			return *this;
+		}
+
+		friend Aabb& operator+(Aabb lhs, const Aabb& rhs) {
+			return lhs += rhs;
+		}
 	};
 
 	/**
@@ -161,7 +215,7 @@ namespace pah {
 			forward{ glm::normalize(forward) }, right{ glm::cross(Vector3{0,1,0}, forward) }, up{ glm::cross(forward, right) } {
 		}
 
-		bool isInside(const Vector3& point) const override {
+		bool contains(const Vector3& point) const override {
 			using namespace glm;
 
 			Vector3 d = point - center;
@@ -171,6 +225,32 @@ namespace pah {
 				abs(dot(d, up)) <= halfSize.y &&
 				abs(dot(d, forward)) <= halfSize.z;
 		}
+
+		Aabb enclosingAabb() const override {
+			Aabb aabb{ Vector3{std::numeric_limits<float>::max()}, Vector3{ -std::numeric_limits<float>::max()} };
+			auto vertices = getPoints();
+
+			//TODO probably there is a more efficient way
+			for (auto& v : vertices) {
+				//update max and min of enclosing AABB
+				aabb.max = glm::max(aabb.max, v);
+				aabb.min = glm::min(aabb.min, v);
+			}
+			return aabb;
+		}
+
+		bool isCollidingWith(const Aabb& aabb) const override {
+			return collisionDetection::areColliding(*this, aabb);
+		}
+
+		bool fullyContains(const Aabb& aabb) const override {
+			const auto& vertices = aabb.getPoints();
+			for (const auto& vertex : vertices) {
+				if (!contains(vertex)) return false;
+			}
+			return true;
+		}
+
 
 		/**
 		 * @brief Given an OBB returns the array of its 8 vertices with this layout:
@@ -195,22 +275,6 @@ namespace pah {
 					}
 			return points;
 		}
-
-		/**
-		 * @brief Given an OBB it returns the tighest enclosing AABB.
-		 */
-		static Aabb enclosingAabb(const Obb& obb) {
-			Aabb aabb{ Vector3{std::numeric_limits<float>::max()}, Vector3{ -std::numeric_limits<float>::max()} };
-			auto vertices = obb.getPoints();
-
-			//TODO probably there is a more efficient way
-			for (auto& v : vertices) {
-				//update max and min of enclosing AABB
-				aabb.max = glm::max(aabb.max, v);
-				aabb.min = glm::min(aabb.min, v);
-			}
-			return aabb;
-		}
 	};
 
 	/**
@@ -220,13 +284,26 @@ namespace pah {
 		Obb obb;
 		Aabb aabb;
 
-		AabbForObb(const Vector3& center, const Vector3& halfSize, const Vector3& forward) : obb{ center, halfSize, forward }, aabb{ Obb::enclosingAabb(obb) } {}
-		AabbForObb(const Obb& obb) : obb{ obb }, aabb{ Obb::enclosingAabb(obb) } {}
+		AabbForObb(const Vector3& center, const Vector3& halfSize, const Vector3& forward) : obb{ center, halfSize, forward }, aabb{ obb.enclosingAabb() } {}
+		AabbForObb(const Obb& obb) : obb{ obb }, aabb{ obb.enclosingAabb() } {}
 
-		bool isInside(const Vector3& point) const override {
+		bool contains(const Vector3& point) const override {
 			//check if the point is inside the AABB (cheap), if it is, check the OBB
-			if (aabb.isInside(point)) return obb.isInside(point);
+			if (aabb.contains(point)) return obb.contains(point);
 			return false;
+		}
+
+		Aabb enclosingAabb() const override {
+			return aabb;
+		}
+
+		bool isCollidingWith(const Aabb& aabb) const override {
+			return collisionDetection::areColliding(*this, aabb);
+		}
+
+		bool fullyContains(const Aabb& aabb) const override {
+			if (this->aabb.fullyContains(aabb)) return true;
+			return this->obb.fullyContains(aabb);
 		}
 	};
 
@@ -252,18 +329,19 @@ namespace pah {
 		/**
 		 * @brief Implementation of the separating axis theorem between an /p AabbForObb and an /p Aabb.
 		 */
-		static bool areColliding(const AabbForObb& obb, const Aabb& aabb) {
+		static bool areColliding(const AabbForObb& aabbForObb, const Aabb& aabb) {
 			using namespace glm;
 
 			//first, we check if the enclosing AABB of the OBB overlaps with the AABB (it can save a lot of time)
-			bool aabbsColliding = areColliding(aabb, obb.aabb);
+			bool aabbsColliding = areColliding(aabb, aabbForObb.aabb);
 			if (aabbsColliding) return true;
 
 			//then we check whether the OBB is "almost" an AABB (in this case we can approximate the collision to the AABB v AABB case)
-			if (almostAabb(obb.obb)) return aabbsColliding;
+			const Obb& obb = aabbForObb.obb;
+			if (almostAabb(obb)) return aabbsColliding;
 
 			//else, we have to use SAT
-			auto obbVertices = obb.obb.getPoints();
+			auto obbVertices = obb.getPoints();
 			auto abbVertices = aabb.getPoints();
 
 			//these are the potential separating axes; we use lambdas in order to evaluate them lazily (important to avoid useless cross products in case of early outs)
@@ -288,7 +366,7 @@ namespace pah {
 			for (auto& getAxis : axes) {
 				auto axis = getAxis();
 				//get the points that, after the projection, will be the outermost (both for the OBB and the AABB)
-				auto obbExtremesIndexes = projectedObbExtremes(axis, obb.obb);
+				auto obbExtremesIndexes = projectedObbExtremes(axis, obb);
 				auto aabbExtremesIndexes = projectedAabbExtremes(axis);
 
 				// |--------------------|MA     MB    overlap iff mB <= MA && MB >= mA
