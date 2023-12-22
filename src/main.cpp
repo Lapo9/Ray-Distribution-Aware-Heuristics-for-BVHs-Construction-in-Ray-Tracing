@@ -35,11 +35,11 @@ int main() {
 	Bvh bvh2{ properties, planeInfluenceArea2, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing<1.0f>, bvhStrategies::shouldStopThresholdOrLevel };
 
 	//build top level structure
-	TopLevelAabbs topLevelStructure{ triangles, std::move(bvh1), std::move(bvh2) };
+	TopLevelOctree topLevelStructure{ TopLevelOctree::Properties{5}, triangles, std::move(bvh1), std::move(bvh2) };
 	topLevelStructure.build();
 
 	//analyze BVH
-	TopLevelAnalyzer analyzer{
+	TopLevelOctreeAnalyzer analyzer{
 		MAKE_ACTIONS_PAIR(core),
 		MAKE_ACTIONS_PAIR(sah),
 		MAKE_ACTIONS_PAIR(pah),

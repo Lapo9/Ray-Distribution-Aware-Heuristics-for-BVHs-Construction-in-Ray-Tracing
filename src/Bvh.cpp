@@ -2,7 +2,6 @@
 
 #include <limits>
 #include <chrono>
-#include <algorithm>
 
 using namespace std;
 using namespace pah::utilities;
@@ -72,8 +71,8 @@ void pah::Bvh::splitNode(Node& node, Axis fatherSplittingAxis, int currentLevel)
 	if (!found) return; //if we haven't found at least one split (therefore triangles are not separable), this node is a leaf by definition
 
 	//set children nodes to the best split found (move is necessary, because Node(s) cannot be copied)
-	node.leftChild = std::make_unique<Node>(std::move(bestLeft));
-	node.rightChild = std::make_unique<Node>(std::move(bestRight));
+	node.leftChild = make_unique<Node>(std::move(bestLeft));
+	node.rightChild = make_unique<Node>(std::move(bestRight));
 
 	TIME(timeLoggerTotal.stop();); //log the time it took for this node (of course we exclude recursive calls)
 

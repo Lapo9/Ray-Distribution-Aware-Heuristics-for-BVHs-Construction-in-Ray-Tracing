@@ -2,6 +2,7 @@
 
 #include <tuple>
 #include <functional>
+#include <queue>
 #include "../libs/json.hpp"
 
 #include "Utilities.h"
@@ -23,7 +24,7 @@ namespace pah {
 		 */
 		json analyze(const TopLevel& topLevel) {
 			BvhAnalyzer<GlobalObject...> analyzer{};
-			std::apply([&analyzer](auto&... go) { analyzer.addActions(go...); }, actions); //all all the actions to the analyzer
+			std::apply([&analyzer](auto&... go) { analyzer.addActions(go...); }, actions); //all the actions to the analyzer
 
 			json analyses;
 			for (auto& bvh : topLevel.getBvhs()) {
@@ -53,5 +54,45 @@ namespace pah {
 
 	private:
 		std::tuple<std::pair<std::function<PerNodeActionType>, std::function<FinalActionType>>...> actions; //actions we'll pass to each BVH analyzer
+	};
+
+
+	template<typename... GlobalObject>
+	class TopLevelOctreeAnalyzer {
+		using json = nlohmann::json;
+
+	public:
+		TopLevelOctreeAnalyzer(std::pair<std::function<PerNodeActionType>, std::function<FinalActionType>>... actions) : topLevelAnalyzer{ actions... } {}
+
+		json analyze(const TopLevelOctree& topLevel) {
+			json analyses = topLevelAnalyzer.analyze(topLevel); //get the analyses of all the BVHs
+
+			//now analyze the octree
+			std::queue<TopLevelOctree::Node*> toAnalyze;
+			toAnalyze.push(&topLevel.getRoot());
+			while (!toAnalyze.empty()) {
+				auto& currentNode = toAnalyze.front();
+				toAnalyze.pop(); //remove the element we got via front()
+				analyses["octree"] += *currentNode;
+				if (currentNode->isLeaf()) continue;
+				for(auto& childPtr : currentNode->children) toAnalyze.push(&*childPtr); //add all children to the queue				
+			}	
+
+			return analyses;
+		}
+
+		json analyze(const TopLevelOctree& topLevel, std::string filePath) {
+			json json = analyze(topLevel);
+
+			std::ofstream file;
+			file.open(filePath);
+			file << std::setw(2) << json;
+			file.close();
+
+			return json;
+		}
+
+	private:
+		TopLevelAnalyzer<GlobalObject...> topLevelAnalyzer;
 	};
 }

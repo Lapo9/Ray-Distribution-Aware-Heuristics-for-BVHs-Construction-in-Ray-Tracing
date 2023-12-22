@@ -105,6 +105,17 @@ void pah::to_json(json& j, const Bvh::NodeTimingInfo& nti) {
 	TIME(j["nodesCreationAverage"] =			nti.nodesCreationMean().count(););
 }
 
+void pah::to_json(json& j, const pah::TopLevelOctree::Node& node) {
+	j["aabb"] = node.aabb;
+	for (const auto& child : node.children) {
+		j["children"] += (long long int) &child;
+	}
+	for (const auto& bvhPtr : node.bvhs) {
+		j["bvhs"] += (long long int) bvhPtr;
+	}
+	j["isLeaf"] = node.isLeaf();
+}
+
 void glm::to_json(json& j, const pah::Vector3& vector) {
 	j += vector.x;
 	j += vector.y; 

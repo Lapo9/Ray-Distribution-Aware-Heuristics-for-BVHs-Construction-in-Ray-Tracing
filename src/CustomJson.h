@@ -5,6 +5,7 @@
 #include "Utilities.h"
 #include "InfluenceArea.h"
 #include "Regions.h"
+#include "TopLevel.h"
 
 
 namespace glm{
@@ -28,4 +29,5 @@ namespace pah {
 	void to_json(json& j, const AabbForObb& aabbForObb);
 	void to_json(json& j, const Plane& plane);
 	void to_json(json& j, const Bvh::NodeTimingInfo& nti);
+	void to_json(json& j, const TopLevelOctree::Node&);
 }

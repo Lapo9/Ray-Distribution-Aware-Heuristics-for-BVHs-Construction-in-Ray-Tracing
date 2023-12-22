@@ -5,7 +5,6 @@
 #include <vector>
 #include <array>
 #include <random>
-#include <algorithm>
 #include <limits>
 #include <iostream>
 #include <stdexcept>

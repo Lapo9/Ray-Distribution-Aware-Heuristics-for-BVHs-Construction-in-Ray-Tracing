@@ -68,6 +68,9 @@ namespace pah {
 			std::vector<Bvh*> bvhs;
 			std::array<std::unique_ptr<Node>, 8> children;
 
+			Node() {}
+			Node(const Aabb& aabb) : aabb{ aabb } {}
+
 			bool isLeaf() const {
 				if (leaf.has_value()) return leaf.value(); //if the user set that this node is a leaf, we can shortcut
 
@@ -87,25 +90,54 @@ namespace pah {
 			std::optional<bool> leaf;
 		};
 
+		struct Properties {
+			int maxLevel;
+		};
+
 
 		template<std::same_as<Bvh>... Bvh>
-		TopLevelOctree(const std::vector<Triangle>& triangles, Bvh&&... bvhs) : TopLevel{ triangles, std::move(bvhs)... }, root{} {
+		TopLevelOctree(const Properties& properties, const std::vector<Triangle>& triangles, Bvh&&... bvhs) : TopLevel{ triangles, std::move(bvhs)... }, properties{ properties }, root{ std::make_unique<Node>() } {
 			Aabb sceneAabb = Aabb::minAabb();
 			for (const auto& bvh : this->bvhs) {
 				sceneAabb += bvh.getInfluenceArea().getBvhRegion().enclosingAabb();
 			}
 
 			root->aabb = sceneAabb;
-			root->bvhs = this->bvhs;
 		}
 
 		void build() override;
 		void update() override;
 		std::vector<Bvh*> containedIn(const Vector3&) override;
 
+		Node& getRoot() const;
+
 	private:
-		void buildRecursive(Node& node, const std::vector<Bvh*>& fatherCollidingRegions, const std::vector<Bvh*>& fatherFullyContainedRegions);
+		void buildRecursive(Node& node, const std::vector<Bvh*>& fatherCollidingRegions, const std::vector<Bvh*>& fatherFullyContainedRegions, int currentLevel = 0);
+
+		/**
+		 * @brief Given the relative position of a point to the center of the /p Aabb, returns the index of the /p Node.
+		 * For example, if the point is <3,7,4> and the center is <2,8,9>, the relative position is <true, false, false>.
+		 * Look at /p TopLevelOctree::indexToPosition to understand the order of the octants.
+		 */
+		static int positionToIndex(bool x, bool y, bool z);
+		/**
+		 * @brief Look at \p TopLevelOctree::positionToIndex(bool,bool,bool).
+		 */
+		static int positionToIndex(const Vector3& pos);
+		/**
+		 * @brief Octants are logically disposed in this order:
+		 *   _________________
+		 *  |\    2   \   6   \
+		 *  | \--------\-------\
+		 *  |\|\________\_______\             
+		 *  |0| |   3   |   7   |   4 is the hidden one
+		 *   \|\|_______|_______|
+		 *    \ |   1   |   5   |
+		 *     \|_______|_______|        
+		 */
+		static Vector3 indexToPosition(int i);
 
 		std::unique_ptr<Node> root;
+		Properties properties;
 	};
 }

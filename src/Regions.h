@@ -6,6 +6,23 @@
 #include "Utilities.h"
 
 namespace pah {
+	//forward declarations
+	class Region;
+	class Aabb;
+	class Obb;
+	class AabbForObb;
+	namespace collisionDetection {
+		static bool areColliding(const Aabb& aabb1, const Aabb& aabb2);
+		static bool areColliding(const AabbForObb& aabbForObb, const Aabb& aabb);
+		static bool areColliding(const Obb& obb, const Aabb& aabb);
+		static bool almostParallel(const Vector3& lhs, const Vector3& rhs, float threshold);
+		static bool almostAabb(const Obb& obb);
+		static std::pair<int, int> projectedAabbExtremes(const Vector3& axis);
+		static std::pair<int, int> projectedObbExtremes(const Vector3& axis, const Obb& obb);
+	}
+
+
+
 	/**
 	 * @brief Base class for anything that can represent a 3D space region.
 	 */
@@ -94,13 +111,13 @@ namespace pah {
 		}
 
 		bool fullyContains(const Aabb& aabb) const override {
-			return 
+			return
 				min.x <= aabb.min.x &&
 				min.y <= aabb.min.y &&
 				min.z <= aabb.min.z &&
 				max.x >= aabb.max.x &&
 				max.y >= aabb.max.y &&
-				max.z >= aabb.max.z &&
+				max.z >= aabb.max.z;
 		}
 
 		/**
@@ -330,6 +347,7 @@ namespace pah {
 		 * @brief Implementation of the separating axis theorem between an /p AabbForObb and an /p Aabb.
 		 */
 		static bool areColliding(const AabbForObb& aabbForObb, const Aabb& aabb) {
+			using namespace std;
 			using namespace glm;
 
 			//first, we check if the enclosing AABB of the OBB overlaps with the AABB (it can save a lot of time)
