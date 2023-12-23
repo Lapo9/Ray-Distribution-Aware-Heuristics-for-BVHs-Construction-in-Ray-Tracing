@@ -106,9 +106,10 @@ void pah::to_json(json& j, const Bvh::NodeTimingInfo& nti) {
 }
 
 void pah::to_json(json& j, const pah::TopLevelOctree::Node& node) {
+	j["id"] = (unsigned long long int) &node;
 	j["aabb"] = node.aabb;
 	for (const auto& child : node.children) {
-		j["children"] += (long long int) &child;
+		j["children"] += (long long int) &*child;
 	}
 	for (const auto& bvhPtr : node.bvhs) {
 		j["bvhs"] += (long long int) bvhPtr;

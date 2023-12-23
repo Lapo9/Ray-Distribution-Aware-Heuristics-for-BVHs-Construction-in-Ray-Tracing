@@ -104,18 +104,21 @@ void pah::TopLevelOctree::buildOctreeRecursive(Node& node, const vector<Bvh*>& f
 	//the node is a leaf if there are no colliding but not fully contained regions, or if we reached the max level
 	node.setLeaf(leafNode || currentLevel >= properties.maxLevel);
 	if (!node.isLeaf()) {
+		currentLevel++;
 		for (int i = 0; i < 8; ++i) {
 			auto& child = node.children[i];
-			Vector3 half = node.aabb.center();
+			Vector3 halfExtents = (node.aabb.max - node.aabb.min) / 2.0f;
 			Vector3 position = indexToPosition(i); //the bottommost, downmost, backwardmost octant is represented by <0,0,0>, the opposite by <1,1,1>, and everything in between
 			Aabb childAabb{
-				node.aabb.min + half * position,
-				node.aabb.min - half * -position
+				node.aabb.min + halfExtents * position,
+				node.aabb.max - halfExtents * (Vector3{1.0f, 1.0f, 1.0f} - position)
 			};
 			child = make_unique<Node>(childAabb); //create empty child
-			buildOctreeRecursive(*child, collidingRegions, node.bvhs, ++currentLevel); //build child
+			buildOctreeRecursive(*child, collidingRegions, node.bvhs, currentLevel); //build child
 		}
 	}
+
+	node.bvhs.append_range(collidingRegions); //TODO remove if the comment below is true
 	//At the moment the node only contains the regions that fully contain it: our approach is conservative.
 	//We prefer to have slightly smaller regions than slightly bigger ones, since it is likely that, at the border of the region, it wouldn't be useful to look in the local BVH first
 }

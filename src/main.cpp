@@ -16,13 +16,13 @@ using namespace nlohmann;
 int main() {
 	//generate triangles
 	mt19937 rng{ 1 };
-	Uniform3dDistribution mainDistribution3d{ -5,5, -5,5, 2,10 };
+	Uniform3dDistribution mainDistribution3d{ 0,10, 0,10, 0,10 };
 	Uniform3dDistribution otherDistribution3d{ -1,1, -1,1 , -1,1 };
 	auto triangles = Triangle::generateRandom(100, rng, mainDistribution3d, otherDistribution3d);
 
 	//create influence areas
-	PlaneInfluenceArea planeInfluenceArea1{ Plane{}, Vector2{2,10}, 10, 20 };
-	PlaneInfluenceArea planeInfluenceArea2{ Plane{Vector3{-5,1,4}, Vector3{1,0,0}}, Vector2{5,1}, 10, 15 };
+	PlaneInfluenceArea planeInfluenceArea1{ Plane{Vector3{1,4,0}, Vector3{0,0,1}}, Vector2{1,4}, 10, 20 };
+	PlaneInfluenceArea planeInfluenceArea2{ Plane{Vector3{0,2,1}, Vector3{1,0,1}}, Vector2{1,2}, 10, 15 };
 
 	//build BVHs
 	Bvh::Properties properties{};
@@ -35,7 +35,7 @@ int main() {
 	Bvh bvh2{ properties, planeInfluenceArea2, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing<1.0f>, bvhStrategies::shouldStopThresholdOrLevel };
 
 	//build top level structure
-	TopLevelOctree topLevelStructure{ TopLevelOctree::Properties{5}, triangles, std::move(bvh1), std::move(bvh2) };
+	TopLevelOctree topLevelStructure{ TopLevelOctree::Properties{ 2 }, triangles, std::move(bvh1), std::move(bvh2) };
 	topLevelStructure.build();
 
 	//analyze BVH

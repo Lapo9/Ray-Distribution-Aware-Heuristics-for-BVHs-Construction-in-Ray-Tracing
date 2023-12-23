@@ -12,7 +12,7 @@ const pah::Region& pah::InfluenceArea::getBvhRegion() const {
 }
 
 pah::PlaneInfluenceArea::PlaneInfluenceArea(Plane plane, Vector2 size, float density, float forwardSize)
-	: InfluenceArea{ make_unique<AabbForObb>(plane.getPoint() + plane.getNormal() * forwardSize / 2.0f, Vector3{size.x, size.y, forwardSize / 2.0f}, plane.getNormal()) },
+	: InfluenceArea{ make_unique<AabbForObb>(plane.getPoint() + plane.getNormal() * (forwardSize / 2.0f), Vector3{size.x, size.y, forwardSize / 2.0f}, plane.getNormal()) },
 	plane{ plane }, size{ size }, density{ density } {
 }
 

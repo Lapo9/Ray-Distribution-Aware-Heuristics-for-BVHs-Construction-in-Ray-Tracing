@@ -287,7 +287,8 @@ namespace pah {
 				for (int j = -1; j <= 1; j += 2)
 					for (int k = -1; k <= 1; k += 2) {
 						Vector3 obbVertex = halfSize * Vector3{ i,j,k }; //point in the reference system of the OBB
-						Vector3 worldVertex = Vector3{ glm::dot(obbVertex, right), glm::dot(obbVertex, up) , glm::dot(obbVertex, forward) } + center; //point in world space
+						Matrix3 rotation{ right, up, forward };
+						Vector3 worldVertex = rotation * obbVertex + center; //point in world space
 						points[((i + 1) / 2) * 4 + ((j + 1) / 2) * 2 + ((k + 1) / 2) * 1] = worldVertex;
 					}
 			return points;
@@ -352,7 +353,7 @@ namespace pah {
 
 			//first, we check if the enclosing AABB of the OBB overlaps with the AABB (it can save a lot of time)
 			bool aabbsColliding = areColliding(aabb, aabbForObb.aabb);
-			if (aabbsColliding) return true;
+			if (!aabbsColliding) return false;
 
 			//then we check whether the OBB is "almost" an AABB (in this case we can approximate the collision to the AABB v AABB case)
 			const Obb& obb = aabbForObb.obb;
@@ -387,12 +388,12 @@ namespace pah {
 				auto obbExtremesIndexes = projectedObbExtremes(axis, obb);
 				auto aabbExtremesIndexes = projectedAabbExtremes(axis);
 
-				// |--------------------|MA     MB    overlap iff mB <= MA && MB >= mA
+				// |--------------------|MA     MB    overlap iff mB <= MA && MB >= mA (not overlap iff mB >= MA || MB <= mA)
 				// mA             mB|-----------|
-				if (dot(obbVertices[aabbExtremesIndexes.first], axis) <= dot(obbVertices[obbExtremesIndexes.second], axis) &&
-					dot(obbVertices[aabbExtremesIndexes.second], axis) >= dot(obbVertices[obbExtremesIndexes.first], axis)) return true;
+				if (dot(obbVertices[aabbExtremesIndexes.first], axis) >= dot(obbVertices[obbExtremesIndexes.second], axis) ||
+					dot(obbVertices[aabbExtremesIndexes.second], axis) <= dot(obbVertices[obbExtremesIndexes.first], axis)) return false;
 			}
-			return false; //if we havent't found any axis where there is no overlap, boxes are colliding
+			return true; //if we havent't found any axis where there is no overlap, boxes are colliding
 		}
 
 		/**
