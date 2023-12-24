@@ -9,7 +9,9 @@
 #define ANALYZER_ACTION_PER_NODE_ARGUMENTS const Bvh::Node& node, const Bvh& bvh, int currentLevel, json& localLog /**< The arguments (apart the first one, which is specific to each function) that must be part of the per-node function signatures. */
 #define ANALYZER_ACTION_FINAL_ARGUMENTS const Bvh& bvh, json& log /**< The arguments (apart the first one, which is specific to each function) that must be part of the final function signatures. */
 
-
+/**
+ * @brief Contains a set of functions that can be used as actions for a @p BvhAnalyzer.
+ */
 namespace pah::analyzerActions {
 
 	/** Creates a pair of analyzer actions based on name (if an action with such name doesn't exist it fails at compile-time. */
@@ -18,6 +20,9 @@ namespace pah::analyzerActions {
 	/** Creates an argument list of analyzer actions based on name (if an action with such name doesn't exist it fails at compile-time. */
 	#define MAKE_ACTIONS_ARGS(actionName) std::function{ pah::analyzerActions::perNode::actionName }, std::function{ pah::analyzerActions::finals::actionName }
 
+	/**
+	 * @brief Actions executed once for each node.
+	 */
 	namespace perNode {
 		/**
 		 * @brief Always adds one node, if the node is also a leaf, adds a leaf too. Adds core info about the node.
@@ -116,6 +121,9 @@ namespace pah::analyzerActions {
 	}
 
 
+	/**
+	 * @brief Actions executed at the end of the analysis.
+	 */
 	namespace finals {
 		/**
 		 * @brief Simply adds the number of nodes and leaves to the JSON.

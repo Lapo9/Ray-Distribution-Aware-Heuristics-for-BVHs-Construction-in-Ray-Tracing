@@ -30,17 +30,17 @@ namespace pah {
 		virtual void update() = 0;
 
 		/**
-		 * @brief Given a point, returns the /p Region s it belongs to.
+		 * @brief Given a point, returns the @p Region s it belongs to.
 		 */
 		virtual std::vector<Bvh*> containedIn(const Vector3&) = 0;
 
 		/**
-		 * @brief Returns the /p Bvh s that are part of this /p TopLevel structure.
+		 * @brief Returns the @p Bvh s that are part of this @p TopLevel structure.
 		 */
 		const std::vector<Bvh>& getBvhs() const;
 
 		/**
-		 * @brief Returns the /p Triangle s that are part of this /p TopLevel structure.
+		 * @brief Returns the @p Triangle s that are part of this @p TopLevel structure.
 		 */
 		const std::vector<Triangle>& getTriangles() const;
 
@@ -94,7 +94,7 @@ namespace pah {
 			int maxLevel;
 			/**
 			 * @brief If true, the leaves will only contain the regions that fully contain them. 
-			 * The issue is that, if /p maxLevel is too low this may create not fully connected regions.
+			 * The issue is that, if @p maxLevel is too low this may create not fully connected regions.
 			 */
 			bool conservativeApproach;
 		};
@@ -123,9 +123,9 @@ namespace pah {
 		void buildOctreeRecursive(Node& node, const std::vector<Bvh*>& fatherCollidingRegions, const std::vector<Bvh*>& fatherFullyContainedRegions, int currentLevel = 0);
 
 		/**
-		 * @brief Given the relative position of a point to the center of the /p Aabb, returns the index of the /p Node.
+		 * @brief Given the relative position of a point to the center of the @p Aabb, returns the index of the @p Node.
 		 * For example, if the point is <3,7,4> and the center is <2,8,9>, the relative position is <true, false, false>.
-		 * Look at /p TopLevelOctree::indexToPosition to understand the order of the octants.
+		 * Look at @p TopLevelOctree::indexToPosition to understand the order of the octants.
 		 */
 		static int positionToIndex(bool x, bool y, bool z);
 		/**

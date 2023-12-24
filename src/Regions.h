@@ -7,10 +7,10 @@
 
 namespace pah {
 	//forward declarations
-	class Region;
-	class Aabb;
-	class Obb;
-	class AabbForObb;
+	struct Region;
+	struct Aabb;
+	struct Obb;
+	struct AabbForObb;
 	namespace collisionDetection {
 		static bool areColliding(const Aabb& aabb1, const Aabb& aabb2);
 		static bool areColliding(const AabbForObb& aabbForObb, const Aabb& aabb);
@@ -29,23 +29,23 @@ namespace pah {
 	class Region {
 	public:
 		/**
-		 * @brief Returns whether the /p point is inside the region.
+		 * @brief Returns whether the @p point is inside the region.
 		 */
 		virtual bool contains(const Vector3& point) const = 0;
 
 		/**
-		 * @brief Returns the enclosing /p Aabb.
+		 * @brief Returns the enclosing @p Aabb.
 		 */
 		virtual Aabb enclosingAabb() const = 0;
 
 		/**
-		 * @brief Returns whether there is a collision between this /p Region and an /p Aabb.
+		 * @brief Returns whether there is a collision between this @p Region and an @p Aabb.
 		 * We make this a method in order to make use of the runtime polymorphism features of C++.
 		 */
 		virtual bool isCollidingWith(const Aabb& aabb) const = 0;
 
 		/**
-		 * @brief Returns whether this /p Region fully contains the specified /p Aabb.
+		 * @brief Returns whether this @p Region fully contains the specified @p Aabb.
 		 * We make this a method in order to make use of the runtime polymorphism features of C++.
 		 */
 		virtual bool fullyContains(const Aabb& aabb) const = 0;
@@ -207,12 +207,18 @@ namespace pah {
 			return Aabb{ min, max };
 		}
 
+		/**
+		 * @brief Adds toghether 2 @p Aabb s.
+		 */
 		Aabb& operator+=(const Aabb& lhs) {
 			min = glm::min(min, lhs.min);
 			max = glm::max(max, lhs.max);
 			return *this;
 		}
 
+		/**
+		 * @brief Adds toghether 2 @p Aabb s.
+		 */
 		friend Aabb& operator+(Aabb lhs, const Aabb& rhs) {
 			return lhs += rhs;
 		}
@@ -327,12 +333,12 @@ namespace pah {
 
 
 	/**
-	 * @brief Functions and utilities to detect whether there is a collision between 2 /p Region s.
+	 * @brief Functions and utilities to detect whether there is a collision between 2 @p Region s.
 	 */
 	namespace collisionDetection {
 
 		/**
-		 * @brief Returns whether 2 /p Aabb s are colliding.
+		 * @brief Returns whether 2 @p Aabb s are colliding.
 		 */
 		static bool areColliding(const Aabb& aabb1, const Aabb& aabb2) {
 			return
@@ -345,7 +351,7 @@ namespace pah {
 		}
 
 		/**
-		 * @brief Implementation of the separating axis theorem between an /p AabbForObb and an /p Aabb.
+		 * @brief Implementation of the separating axis theorem between an @p AabbForObb and an @p Aabb.
 		 */
 		static bool areColliding(const AabbForObb& aabbForObb, const Aabb& aabb) {
 			using namespace std;
@@ -397,7 +403,7 @@ namespace pah {
 		}
 
 		/**
-		 * @brief Implementation of the separating axis theorem between an /p Obb and an /p Aabb.
+		 * @brief Implementation of the separating axis theorem between an @p Obb and an @p Aabb.
 		 */
 		static bool areColliding(const Obb& obb, const Aabb& aabb) {
 			return areColliding(AabbForObb{ obb }, aabb);

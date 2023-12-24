@@ -12,21 +12,28 @@
 
 namespace pah {
 
+	/**
+	 * @brief Class used to analyze a @p Bvh. The way in which the @p Bvh is analyzed is customizable.
+	 */
 	template<typename... GlobalObject>
 	class BvhAnalyzer {
 		using json = nlohmann::json;
 
 	public:
+		/**
+		 * @brief Constructs a @p BvhAnalyzer where, at each node, the first action of the pair is executed, and at the end of the analysis, the second action is executed.
+		 * The first argument of both actions must be a trivially initializable reference to an object. 
+		 * Per-node actions can store data in this object, and the stored data can be accessed during the final action.
+		 */
 		BvhAnalyzer(std::pair<std::function<PerNodeActionType>, std::function<FinalActionType>>... actions) : actions{ std::make_tuple(actions...) } {}
-
 		BvhAnalyzer() {}
 
 
 		/**
-		 * @brief Adds a pair of per-node function and final function to the list of global actions at position \p Pos.
+		 * @brief Adds a pair of per-node function and final function to the list of global actions at position @p Pos.
 		 *
 		 * @tparam Pos the position where to insert these functions. It must be 0 <= Pos < size(GlobalObject...)
-		 * @tparam T The type of the first arguments of the functions. It is required that it matches the type of the Pos-th element of \p globalObjects
+		 * @tparam T The type of the first arguments of the functions. It is required that it matches the type of the Pos-th element of @p globalObjects
 		 * @param perNodeFunction Function to perform on each node.
 		 * @param finalFunction Function to perform at the end.
 		 */
@@ -37,9 +44,9 @@ namespace pah {
 		}
 
 		/**
-		 * @brief Does the same as \p addGlobalActionsIndex, but in this case it is not required to specify the position.
+		 * @brief Does the same as @p addGlobalActionsIndex, but in this case it is not required to specify the position.
 		 * The position it deduced by the type of the first argument in the functions.
-		 * It is fundamental to note that, in case more than one function with the same first argument is present (a.k.a. more than one \c globalObject has the same type), thif function will fail at compile-time.
+		 * It is fundamental to note that, in case more than one function with the same first argument is present (a.k.a. more than one @p globalObject has the same type), thif function will fail at compile-time.
 		 *
 		 * @param perNodeFunction Function to perform on each node.
 		 * @param finalFunction Function to perform at the end.
@@ -52,14 +59,14 @@ namespace pah {
 		}
 
 		/**
-		 * @brief Adds all the actions to the the analyzer. Each action must match the type specified during the construction of the analyzer.
+		 * @brief Adds all the actions to the the @p BvhAnalyzer. Each action must match the type specified during the construction of the @p BvhAnalyzer.
 		 */
 		void addActions(std::pair<std::function<PerNodeActionType>, std::function<FinalActionType>>... actions) {
 			this->actions = std::make_tuple(actions...);
 		}
 
 		/**
-		 * @brief Given a BVH, it analyzes it and returns a JSON.
+		 * @brief Given a @p Bvh, it analyzes it and returns a JSON.
 		 */
 		json analyze(const Bvh& bvh) {
 			log = json{}; //initialize log string
@@ -74,7 +81,7 @@ namespace pah {
 		}
 
 		/**
-		 * @brief Given a BVH, it analyzes it and returns a JSON. Moreover it saves the JSON to a file.
+		 * @brief Given a @p Bvh, it analyzes it and returns a JSON. Moreover it saves the JSON to a file.
 		 */
 		json analyze(const Bvh& bvh, std::string filePath) {
 			json json = analyze(bvh);
@@ -88,12 +95,12 @@ namespace pah {
 
 	private:
 		/**
-		 * @brief Basically this does a for-each on all the elements of the \p actions and \globalObjects tuple.
-		 * What happens is that, for each function in \p actions, it calls it with the corresponding \p globalObject as argument (plus other possible arguments).
-		 * The implementation is carried out in \p performGlobalActionsImpl, this wrapper lacks the boilerplate arguments.
+		 * @brief Basically this does a for-each on all the elements of the @p actions and @p globalObjects tuple.
+		 * What happens is that, for each function in @p actions, it calls it with the corresponding @p globalObject as argument (plus other possible arguments).
+		 * The implementation is carried out in @p performGlobalActionsImpl, this wrapper lacks the boilerplate arguments.
 		 * In this case we call the final functions.
 		 *
-		 * @tparam Size The size of the tuple. Is is defaulted to the size of a tuple of the same type as \p globalObjects .
+		 * @tparam Size The size of the tuple. Is is defaulted to the size of a tuple of the same type as @p globalObjects .
 		 */
 		template<std::size_t Size = std::tuple_size_v<std::tuple<GlobalObject...>>>
 		void performFinalActions(const Bvh& bvh, json& log) {
@@ -101,8 +108,8 @@ namespace pah {
 		}
 
 		/**
-		 * @brief Basically this does a for-each on all the elements of the \p actions and \globalObjects tuple.
-		 * What happens is that, for each function in \p actions, it calls it with the corresponding \p globalObject as argument (plus other possible arguments)
+		 * @brief Basically this does a for-each on all the elements of the @p actions and \globalObjects tuple.
+		 * What happens is that, for each function in @p actions, it calls it with the corresponding @p globalObject as argument (plus other possible arguments)
 		 * In this case we call the final functions.
 		 *
 		 * @tparam Is A compile-time sequence of integer numbers. It is used to iterate over the tuple (it must be done at compile time).
@@ -124,12 +131,12 @@ namespace pah {
 		}
 
 		/**
-		 * @brief Basically this does a for-each on all the elements of the \p actions and \globalObjects tuple.
-		 * What happens is that, for each function in \p actions, it calls it with the corresponding \p globalObject as argument (plus other possible arguments).
-		 * The implementation is carried out in \p performGlobalActionsImpl, this wrapper lacks the boilerplate arguments.
+		 * @brief Basically this does a for-each on all the elements of the @p actions and \globalObjects tuple.
+		 * What happens is that, for each function in @p actions, it calls it with the corresponding @p globalObject as argument (plus other possible arguments).
+		 * The implementation is carried out in @p performGlobalActionsImpl, this wrapper lacks the boilerplate arguments.
 		 * In this case we call the per-node functions.
 		 *
-		 * @tparam Size The size of the tuple. Is is defaulted to the size of a tuple of the same type as \p globalObjects .
+		 * @tparam Size The size of the tuple. Is is defaulted to the size of a tuple of the same type as @p globalObjects .
 		 */
 		template<std::size_t Size = std::tuple_size_v<std::tuple<GlobalObject...>>>
 		void performPerNodeActions(const Bvh::Node& node, const Bvh& bvh, int currentLevel, json& localLog) {
@@ -137,8 +144,8 @@ namespace pah {
 		}
 
 		/**
-		 * @brief Basically this does a for-each on all the elements of the \p actions and \globalObjects tuple.
-		 * What happens is that, for each function in \p actions, it calls it with the corresponding \p globalObject as argument (plus other possible arguments)
+		 * @brief Basically this does a for-each on all the elements of the @p actions and \globalObjects tuple.
+		 * What happens is that, for each function in @p actions, it calls it with the corresponding @p globalObject as argument (plus other possible arguments)
 		 * In this case we call the per-node functions.
 		 *
 		 * @tparam Is A compile-time sequence of integer numbers. It is used to iterate over the tuple (it must be done at compile time).

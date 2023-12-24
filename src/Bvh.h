@@ -13,8 +13,10 @@
 #include "settings.h"
 
 namespace pah {
+	/**
+	 * @brief A BVH is a bounding volume hierarchy.
+	 */
 	class Bvh {
-
 	public:
 		//related classes
 		struct NodeTimingInfo {
@@ -113,6 +115,9 @@ namespace pah {
 			}
 		};
 
+		/**
+		 * @brief Node of a @p Bvh.
+		 */
 		struct Node {
 			Aabb aabb;
 			std::unique_ptr<Node> leftChild;
@@ -120,26 +125,41 @@ namespace pah {
 			std::vector<const Triangle*> triangles;
 			TIME(mutable NodeTimingInfo nodeTimingInfo;)
 
+			/**
+			 * @brief Creates an empty node with the specified @p Aabb.
+			 */
 			Node(Aabb aabb) : aabb{ aabb } {
 				TIME(nodeTimingInfo = NodeTimingInfo{};);
 			};
+			/**
+			 * @brief Creates a @p Node given a list of triangles. The @p Aabb of the node is the tightest one to enclose all the vertices of the triangles.
+			 */
 			Node(const std::vector<const Triangle*>& triangles) : aabb{ Aabb{triangles} }, triangles{ triangles } {
 				TIME(nodeTimingInfo = NodeTimingInfo{};);
 			}
+			/**
+			 * @brief Creates an empty @p Node.
+			 */
 			Node() : aabb{} {
 				TIME(nodeTimingInfo = NodeTimingInfo{};);
 			};
 
+			/**
+			 * @brief A @p Node is a leaf if both children are empty.
+			 */
 			bool isLeaf() const {
 				return leftChild == nullptr && rightChild == nullptr;
 			}
 		};
 
+		/**
+		 * @brief Properties used to build the @p Bvh.
+		 */
 		struct Properties {
-			float maxLeafCost;
-			int maxTrianglesPerLeaf;
-			int maxLevels;
-			int bins;
+			float maxLeafCost; /**< If a @p Node cost is less than this threshold, it is automatically a leaf. */
+			int maxTrianglesPerLeaf; /**< If a @p Node has less triangles than this threshold, it is automatically a leaf. */
+			int maxLevels; /**< Max number of levels of the @p Bvh. */
+			int bins; /**< How many bins are used to create the nodes of th @p Bvh. The higher, the better the @p Bvh, but the slower the construction. */
 
 			Properties() = default;
 			Properties(const Properties&) = default;
@@ -155,22 +175,31 @@ namespace pah {
 		Bvh(const Properties&, const InfluenceArea&, ComputeCostType computeCost, ChooseSplittingPlanesType chooseSplittingPlanes, ShouldStopType shouldStop);
 
 		/**
-		 * @brief Returns whether /p bvh1 is the same as /p bvh2.
-		 * To do so, it compares the ids of the 2 /p Bvh s. This is just a cheap way to understand if we are dealing with the exact same object.
-		 * The id changes every time the /p Bvh is built.
+		 * @brief Returns whether @p bvh1 is the same as @p bvh2.
+		 * To do so, it compares the ids of the 2 @p Bvh s. This is just a cheap way to understand if we are dealing with the exact same object.
+		 * The id changes every time the @p Bvh is built.
 		 */
 		friend bool operator==(const Bvh& bvh1, const Bvh& bvh2) {
 			return bvh1.id == bvh2.id;
 		}
 
+		/**
+		 * @brief Constructs the @p Bvh on a set of triangles. The seed for the random operations during the construction is random.
+		 */
 		void build(const std::vector<const Triangle*>& triangles);
+		/**
+		 * @brief Constructs the @p Bvh on a set of triangles. It is possible to specify the seed for the random operations during the construction.
+		 */
 		void build(const std::vector<const Triangle*>& triangles, unsigned int seed);
 
-		const Node& getRoot() const;
-		const InfluenceArea& getInfluenceArea() const;
-		const NodeTimingInfo::DurationMs getTotalBuildTime() const;
+		const Node& getRoot() const; /**< @brief Returns the root of the @p Bvh. */
+		const InfluenceArea& getInfluenceArea() const; /**< @brief Returns the @p InfluenceArea of the @p Bvh. */
+		const NodeTimingInfo::DurationMs getTotalBuildTime() const; /**< @brief Returns the time it took to build this @p Bvh. */
 
 	private:
+		/**
+		 * @brief Given a @p Node, it splits it into 2 children according to the strategies set during @p Bvh construction.
+		 */
 		void splitNode(Node& node, Axis fathersplittingAxis, int currentLevel);
 
 		//simple wrappers for the custom functions. We use wrappers because there may be some common actions to perform before (e.g. time logging)
@@ -216,13 +245,13 @@ namespace pah {
 
 
 	/**
-	 * @brief Functions that can be plugged in the /p Bvh to decide how to build it.
+	 * @brief Functions that can be plugged in the @p Bvh to decide how to build it.
 	 */
 	namespace bvhStrategies {
 
 		/**
- * @brief Computes the surface area heuristic of the specified node of a BVH whose root has surface area @p rootSurfaceArea.
- */
+		 * @brief Computes the surface area heuristic of the specified node of a @p Bvh whose root has surface area @p rootSurfaceArea.
+		 */
 		static Bvh::ComputeCostReturnType computeCostSah(const Bvh::Node& node, const InfluenceArea&, float rootArea) {
 			if (rootArea < 0) return node.aabb.surfaceArea(); //this function is called with rootArea < 0 when we want to initialize it
 
@@ -231,6 +260,9 @@ namespace pah {
 			return hitProbability * node.triangles.size() * cost;
 		}
 
+		/**
+		 * @brief Computes the projected area heuristic of the specified node of a @p Bvh whose root has surface area @p rootSurfaceArea.
+		 */
 		static Bvh::ComputeCostReturnType computeCostPah(const Bvh::Node& node, const InfluenceArea& influenceArea, float rootProjectedArea) {
 			if (rootProjectedArea < 0) return influenceArea.getProjectedArea(node.aabb); //this function is called with rootProjectedArea < 0 when we want to initialize it
 
@@ -241,7 +273,7 @@ namespace pah {
 		}
 
 		/**
-		 * @brief Given the AABB, it returns an array where each element contains an axis and a function to evaluate.
+		 * @brief Given the @p Aabb, it returns an array where each element contains an axis and a function to evaluate.
 		 * Axis are sorted from longest to shortest. If an axis is too short, it is not incuded.
 		 * The function returns whether it is worth it to try the corresponding axis, given the results obtained with the previous axis.
 		 */

@@ -3,7 +3,7 @@
 #include "Utilities.h"
 
 /**
- * @brief Function and utilities to project points and AABBs to a plane.
+ * @brief Function and utilities to project points and @Aabb s to a plane.
  */
 namespace pah::projection {
 
@@ -86,7 +86,7 @@ namespace pah::projection {
 		}
 
 		/**
-		 * @brief Projects the AABB to the specified plane.
+		 * @brief Projects the @p Aabb to the specified plane.
 		 */
 		static std::array<Vector2, 8> projectAabb(const Aabb& aabb, Plane plane) {
 			using namespace std;
@@ -98,7 +98,7 @@ namespace pah::projection {
 		}
 
 		/**
-		 * @brief Given an AABB and a plane, it returns the area the AABB projects on the plane.
+		 * @brief Given an @p Aabb and a plane, it returns the area the @p Aabb projects on the plane.
 		 */
 		static float computeProjectedArea(const Aabb& aabb, Plane plane) {
 			auto points = aabb.getPoints();
@@ -163,7 +163,7 @@ namespace pah::projection {
 		 * | back  | front |  top  | bott. | right | left  |
 		 * So, for example index 9 = 001001b will contain the indexes when the AABB is seen from top-left, whereas index 4 = 000100b will contain the indexes when the AABB is seen from bottom.
 		 * Of course some indexes will be empty, since you cannot see the AABB from bottom and top at the same time, therefore xx11xxb = 13 is empty.
-		 * To get more info about how we index the vertices of an AABB look at the function pah::Aabb::getPoints
+		 * To get more info about how we index the vertices of an @p Aabb look at the function @p pah::Aabb::getPoints
 		 */
 		static std::array<HullInfo, 43> hullTable =
 		{
@@ -242,7 +242,7 @@ namespace pah::projection {
 		}
 
 		/**
-		 * @brief Given an AABB it projects all of its points based on the PoV, using perspective.
+		 * @brief Given an @p Aabb it projects all of its points based on the PoV, using perspective.
 		 * @param fovs Horizontal and vertical FoVs in degrees.
 		 */
 		static std::array<Vector2, 8> projectAabb(const Aabb& aabb, Pov pov, std::tuple<float, float> fovs = std::tuple{ 90.0f, 90.0f }, float far = 1000.0f, float near = 0.1f) {
@@ -255,7 +255,7 @@ namespace pah::projection {
 		}
 
 		/**
-		 * @brief Given the PoV and an AABB it returns the corresponding index in the hull table, based on the relative position of the PoV and the AABB..
+		 * @brief Given the PoV and an @p Aabb it returns the corresponding index in the hull table, based on the relative position of the PoV and the @p Aabb.
 		 */
 		static int findHullTableIndex(const Aabb& aabb, Vector3 pov) {
 			int i = 0;
@@ -269,7 +269,7 @@ namespace pah::projection {
 		}
 
 		/**
-		 * @brief Given an AABB and the index of the hull table, it returns the 3D contour points (to be projected later on).
+		 * @brief Given an @p Aabb and the index of the hull table, it returns the 3D contour points (to be projected later on).
 		 */
 		static std::vector<Vector3> findContourPoints(const Aabb& aabb, int i) {
 			using namespace std;
@@ -282,7 +282,7 @@ namespace pah::projection {
 		}
 
 		/**
-		 * @brief Given and AABB and a PoV, it returns the 3D contour points by using the hull table and the relative position of the PoV and the AABB.
+		 * @brief Given and @p Aabb and a PoV, it returns the 3D contour points by using the hull table and the relative position of the PoV and the @p Aabb.
 		 */
 		static std::vector<Vector3> findContourPoints(const Aabb& aabb, Vector3 pov) {
 			return findContourPoints(aabb, findHullTableIndex(aabb, pov));
@@ -305,7 +305,7 @@ namespace pah::projection {
 		}
 
 		/**
-		 * @brief Given an AABB and a PoV, computes the projected area of the AABB.
+		 * @brief Given an @p Aabb and a PoV, computes the projected area of the @p Aabb.
 		 * @param fovs Horizontal and vertical FoVs in degrees.
 		 */
 		static float computeProjectedArea(const Aabb& aabb, Pov pov, std::tuple<float, float> fovs = std::tuple{ 90.0f, 90.0f }, float far = 1000.0f, float near = 0.1f) {

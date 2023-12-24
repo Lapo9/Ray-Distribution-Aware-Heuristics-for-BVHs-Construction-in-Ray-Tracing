@@ -12,15 +12,21 @@
 
 namespace pah {
 
+	/**
+	 * @brief Class that can be used to analyze a @p TopLevel structure.
+	 */
 	template<typename... GlobalObject>
 	class TopLevelAnalyzer {
 		using json = nlohmann::json;
 
 	public:
+		/**
+		 * @brief Constructs the @p TopLevelAnalyzer. Each @p BvhAnalyzer will have the actions passed as argument.
+		 */
 		TopLevelAnalyzer(std::pair<std::function<PerNodeActionType>, std::function<FinalActionType>>... actions) : actions{ std::make_tuple(actions...) } {}
 
 		/**
-		 * @brief Given a top level structure, it analyzes it and returns a JSON.
+		 * @brief Given a @p TopLevel structure, it analyzes it and returns a JSON.
 		 */
 		json analyze(const TopLevel& topLevel) {
 			BvhAnalyzer<GlobalObject...> analyzer{};
@@ -39,7 +45,7 @@ namespace pah {
 		}
 
 		/**
-		 * @brief Given a top level structure, it analyzes it and returns a JSON. Moreover it saves the JSON to a file.
+		 * @brief Given a @p TopLevel structure, it analyzes it and returns a JSON. Moreover it saves the JSON to a file.
 		 */
 		json analyze(const TopLevel& topLevel, std::string filePath) {
 			json json = analyze(topLevel);
@@ -57,13 +63,22 @@ namespace pah {
 	};
 
 
+	/**
+	 * @brief Class that can be used to analyze a @TopLevelOctree. It analyzes the @p Bvh s just as a @TopLevelAnalyzer would, but then also gets data about the octree.
+	 */
 	template<typename... GlobalObject>
 	class TopLevelOctreeAnalyzer {
 		using json = nlohmann::json;
 
 	public:
+		/**
+		 * @brief Constructs the @p TopLevelOctreeAnalyzer. Each @p BvhAnalyzer will have the actions passed as argument.
+		 */
 		TopLevelOctreeAnalyzer(std::pair<std::function<PerNodeActionType>, std::function<FinalActionType>>... actions) : topLevelAnalyzer{ actions... } {}
 
+		/**
+		 * @brief Given a @p TopLevelOctree structure, it analyzes it and returns a JSON.
+		 */
 		json analyze(const TopLevelOctree& topLevel) {
 			json analyses = topLevelAnalyzer.analyze(topLevel); //get the analyses of all the BVHs
 
@@ -81,6 +96,9 @@ namespace pah {
 			return analyses;
 		}
 
+		/**
+		 * @brief Given a @p TopLevelOctree structure, it analyzes it and returns a JSON. Moreover it saves the JSON to a file.
+		 */
 		json analyze(const TopLevelOctree& topLevel, std::string filePath) {
 			json json = analyze(topLevel);
 

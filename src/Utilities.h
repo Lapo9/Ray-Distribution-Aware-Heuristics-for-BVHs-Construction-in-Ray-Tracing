@@ -22,11 +22,17 @@ namespace pah {
 	using Matrix3 = glm::mat3;
 	using Matrix4 = glm::mat4;
 
+	/**
+	 * @brief Represents a random distribution in 3 dimensions. @p distribution(rng) must return a @p Vector3.
+	 */
 	template<typename D>
 	concept Distribution3d = requires(D distr, std::mt19937 rng) {
 		{ distr(rng) } -> std::same_as<Vector3>;
 	};
 
+	/**
+	 * @brief Represents anything that looks like a point (i.e. it is possible to access it like @p object.x/y[/z/w].
+	 */
 	template<typename P>
 	concept PointLike = requires(P point) {
 		{ point.x } -> std::convertible_to<float>; //must have float .x
@@ -36,11 +42,21 @@ namespace pah {
 											     { point.w } -> std::convertible_to<float>; }; //if it has .w it must also have .z, and they both must be float
 	};
 
+	/**
+	 * @brief Represents a random uniform 3-dimensional distribution.
+	 */
 	class Uniform3dDistribution {
 	public:
+		/**
+		 * @brief Builds a uniform 3D random distribution where each component of the possibly generated vectors must be inside the specified ranges.
+		 */
 		Uniform3dDistribution(float minX, float maxX, float minY, float maxY, float minZ, float maxZ) 
 			: distributionX{ minX, maxX }, distributionY{ minY, maxY }, distributionZ{ minZ, maxZ } {}
 
+		/**
+		 * @brief Returns a random 3D vector with each component inside the range specified during construction.
+		 * Internally it calls @p std::uniform_real_distribution<>::(rng) 3 times.
+		 */
 		Vector3 operator()(std::mt19937& rng) {
 			return Vector3{ distributionX(rng), distributionY(rng), distributionZ(rng) };
 		}
@@ -51,17 +67,27 @@ namespace pah {
 		std::uniform_real_distribution<> distributionZ;
 	};
 
-
+	/**
+	 * @brief Represents a triangle.
+	 */
 	struct Triangle {
 		Vector3 v1, v2, v3;
 
 		Triangle() = delete;
 		Triangle(Vector3 v1, Vector3 v2, Vector3 v3) : v1{ v1 }, v2{ v2 }, v3{ v3 } {}
 
+		/**
+		 * @brief Returns the barycenter of the @p Triangle.
+		 * 
+		 * @return .
+		 */
 		Vector3 center() const {
 			return (v1 + v2 + v3) / 3.0f;
 		}
 
+		/**
+		 * @brief Generates a random triangle.
+		 */
 		template<Distribution3d D, Distribution3d D2>  
 		static Triangle random(std::mt19937& rng, D& firstVertexDistribution, D2& otherVerticesDistributions) {
 			Vector3 v1 = firstVertexDistribution(rng);
@@ -70,6 +96,9 @@ namespace pah {
 			return Triangle{ v1, v2, v3 };
 		}
 
+		/**
+		 * @brief Generate a list of random triangles.
+		 */
 		template<Distribution3d D, Distribution3d D2>
 		static std::vector<Triangle> generateRandom(int qty, std::mt19937& rng, D& firstVertexDistribution, D2& otherVerticesDistributions) {
 			std::vector<Triangle> triangles;
@@ -80,10 +109,16 @@ namespace pah {
 		}
 	};
 
+	/**
+	 * @brief Represents the canonical 3D axes.
+	 */
 	enum class Axis {
 		X, Y, Z, None
 	};
 
+	/**
+	 * @brief Represents a plane.
+	 */
 	struct Plane {
 	private: 
 		Vector3 normal;
@@ -99,6 +134,9 @@ namespace pah {
 		void setNormal(Vector3 normal) { this->normal = glm::normalize(normal); }
 	};
 
+	/**
+	 * @brief Represents a 3D point of view.
+	 */
 	struct Pov {
 	private:
 		Vector3 position;
@@ -151,8 +189,16 @@ namespace pah {
 		}
 
 
+		/**
+		 * @brief Class that can be used to measure the elapsed time between 2 points in a single thread of the code.
+		 */
 		class TimeLogger {
 		public:
+			/**
+			 * @brief Creates a @p TimeLogger. The specified action will be executed when the @TimeLogger is stopped or destroyed.
+			 * 
+			 * @param ...finalActions .
+			 */
 			template<std::convertible_to<std::function<void(std::chrono::duration<float, std::milli>)>>... FinalActions>
 			TimeLogger(const FinalActions&... finalActions) : startTime{ std::chrono::high_resolution_clock::now() } {
 				(this->finalActions.push_back(finalActions), ...);
@@ -163,10 +209,17 @@ namespace pah {
 			TimeLogger(TimeLogger&&) = default;
 			TimeLogger& operator=(TimeLogger&&) = default;
 			
+			/**
+			 * @brief If the @p TimeLogger was not stopped before, executes the final action and destroys the @p TimeLogger. Else simply destroys it.
+			 * 
+			 */
 			~TimeLogger() {
-				if(runLogOnDestruction) log();
+				if(stopped) log();
 			}
 
+			/**
+			 * @brief Executes the final action, but the @p TimeLogger still continues to run.
+			 */
 			void log() {
 				auto duration = std::chrono::high_resolution_clock::now() - startTime;
 				assert((duration.count() > 0, "Recorded duration <= 0"));
@@ -175,17 +228,31 @@ namespace pah {
 				}
 			}
 
+			/**
+			 * @brief Executes the final action, and the @p TimeLogger stops.
+			 * 
+			 */
 			void stop() {
+				//TODO fix this
+				//if (stopped) {
+				//	throw std::exception("Cannot stop an already stopped TimeLogger.");
+				//}
 				log();
-				runLogOnDestruction = false;
+				stopped = false;
 			}
 
 			//possible final actions
 
+			/**
+			 * @brief Prints the measured time.
+			 */
 			static void print(std::chrono::duration<float, std::milli> duration, std::string name) {
 				std::cout << name << " " << duration << std::endl;
 			}
 
+			/**
+			 * @brief Prints the measured time to a JSON object.
+			 */
 			static void json(std::chrono::duration<float, std::milli> duration, nlohmann::json& jsonOut, std::string label) {
 				jsonOut[label] = duration.count();
 			}
@@ -193,7 +260,7 @@ namespace pah {
 		private:
 			std::chrono::time_point<std::chrono::high_resolution_clock> startTime;
 			std::vector<std::function<void(std::chrono::duration<float, std::milli> duration)>> finalActions;
-			bool runLogOnDestruction = true;
+			bool stopped = true;
 		};
 	}
 }
