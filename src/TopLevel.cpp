@@ -118,13 +118,13 @@ void pah::TopLevelOctree::buildOctreeRecursive(Node& node, const vector<Bvh*>& f
 		}
 	}
 
-	node.bvhs.append_range(collidingRegions); //TODO remove if the comment below is true
-	//At the moment the node only contains the regions that fully contain it: our approach is conservative.
-	//We prefer to have slightly smaller regions than slightly bigger ones, since it is likely that, at the border of the region, it wouldn't be useful to look in the local BVH first
+	//If conservativeApproach is true, the node only contains the regions that fully contain it.
+	//In this way we have slightly smaller regions than the original, since it is likely that, at the border of the region, it wouldn't be useful to look in the local BVH first.
+	if(!properties.conservativeApproach) node.bvhs.append_range(collidingRegions);
 }
 
 int pah::TopLevelOctree::positionToIndex(bool x, bool y, bool z) {
-	return 0 | (x >> 2) | (y >> 1) | z;
+	return 0 | (x << 2) | (y << 1) | z;
 }
 
 int pah::TopLevelOctree::positionToIndex(const Vector3& pos) {

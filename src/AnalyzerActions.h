@@ -151,7 +151,7 @@ namespace pah::analyzerActions {
 		 */
 		static void triangles(std::vector<const Triangle*>& triangles, ANALYZER_ACTION_FINAL_ARGUMENTS) {
 			for (auto& triangle : triangles) {
-				log["triangles"] = *triangle;
+				log["triangles"] += *triangle;
 			}
 		}
 

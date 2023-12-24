@@ -320,7 +320,7 @@ namespace pah {
 		}
 
 		bool fullyContains(const Aabb& aabb) const override {
-			if (this->aabb.fullyContains(aabb)) return true;
+			if (!this->aabb.fullyContains(aabb)) return false;
 			return this->obb.fullyContains(aabb);
 		}
 	};
@@ -361,7 +361,7 @@ namespace pah {
 
 			//else, we have to use SAT
 			auto obbVertices = obb.getPoints();
-			auto abbVertices = aabb.getPoints();
+			auto aabbVertices = aabb.getPoints();
 
 			//these are the potential separating axes; we use lambdas in order to evaluate them lazily (important to avoid useless cross products in case of early outs)
 			auto axes = vector<function<Vector3()>>{
@@ -388,10 +388,10 @@ namespace pah {
 				auto obbExtremesIndexes = projectedObbExtremes(axis, obb);
 				auto aabbExtremesIndexes = projectedAabbExtremes(axis);
 
-				// |--------------------|MA     MB    overlap iff mB <= MA && MB >= mA (not overlap iff mB >= MA || MB <= mA)
+				// |--------------------|MA     MB    overlap iff mB <= MA && MB >= mA (not overlap iff mB > MA || MB < mA)
 				// mA             mB|-----------|
-				if (dot(obbVertices[aabbExtremesIndexes.first], axis) >= dot(obbVertices[obbExtremesIndexes.second], axis) ||
-					dot(obbVertices[aabbExtremesIndexes.second], axis) <= dot(obbVertices[obbExtremesIndexes.first], axis)) return false;
+				if (dot(aabbVertices[aabbExtremesIndexes.first], axis) > dot(obbVertices[obbExtremesIndexes.second], axis) ||
+					dot(aabbVertices[aabbExtremesIndexes.second], axis) < dot(obbVertices[obbExtremesIndexes.first], axis)) return false;
 			}
 			return true; //if we havent't found any axis where there is no overlap, boxes are colliding
 		}
@@ -443,14 +443,14 @@ namespace pah {
 			auto normalized = glm::normalize(axis);
 			float x = normalized.x, y = normalized.y, z = normalized.z;
 
-			if (x >= 0 && y >= 0 && z <= 0) return { 0, 7 }; //yellow
-			if (x <= 0 && y <= 0 && z >= 0) return { 7, 0 }; //blue
-			if (x >= 0 && y >= 0 && z >= 0) return { 1, 6 }; //white
-			if (x <= 0 && y <= 0 && z <= 0) return { 6, 1 }; //black
-			if (x >= 0 && y <= 0 && z <= 0) return { 2, 5 }; //red
-			if (x <= 0 && y >= 0 && z >= 0) return { 5, 2 }; //cyan
-			if (x >= 0 && y <= 0 && z >= 0) return { 3, 4 }; //magenta
-			if (x <= 0 && y >= 0 && z <= 0) return { 4, 3 }; //green
+			if (x >= 0 && y >= 0 && z <= 0) return { 1, 6 }; //yellow
+			if (x <= 0 && y <= 0 && z >= 0) return { 6, 1 }; //blue
+			if (x >= 0 && y >= 0 && z >= 0) return { 0, 7 }; //white
+			if (x <= 0 && y <= 0 && z <= 0) return { 7, 0 }; //black
+			if (x >= 0 && y <= 0 && z <= 0) return { 3, 4 }; //red
+			if (x <= 0 && y >= 0 && z >= 0) return { 4, 3 }; //cyan
+			if (x >= 0 && y <= 0 && z >= 0) return { 2, 5 }; //magenta
+			if (x <= 0 && y >= 0 && z <= 0) return { 5, 2 }; //green
 		}
 
 		/**
@@ -459,7 +459,7 @@ namespace pah {
 		 */
 		static std::pair<int, int> projectedObbExtremes(const Vector3& axis, const Obb& obb) {
 			Matrix3 newBasis{ obb.right, obb.up, obb.forward };
-			Vector3 newAxis = newBasis * axis;
+			Vector3 newAxis = glm::inverse(newBasis) * axis;
 			return projectedAabbExtremes(newAxis);
 		}
 	}

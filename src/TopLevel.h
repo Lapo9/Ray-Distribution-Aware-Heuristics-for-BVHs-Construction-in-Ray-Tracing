@@ -92,6 +92,11 @@ namespace pah {
 
 		struct Properties {
 			int maxLevel;
+			/**
+			 * @brief If true, the leaves will only contain the regions that fully contain them. 
+			 * The issue is that, if /p maxLevel is too low this may create not fully connected regions.
+			 */
+			bool conservativeApproach;
 		};
 
 
@@ -112,6 +117,9 @@ namespace pah {
 		Node& getRoot() const;
 
 	private:
+		/**
+		 * @brief Recursively creates the nodes of the octree.
+		 */
 		void buildOctreeRecursive(Node& node, const std::vector<Bvh*>& fatherCollidingRegions, const std::vector<Bvh*>& fatherFullyContainedRegions, int currentLevel = 0);
 
 		/**
