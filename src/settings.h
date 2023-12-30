@@ -8,3 +8,5 @@
 #else
 #define TIME(body)
 #endif // TIMING
+
+#define TOLERANCE 0.01f

@@ -13,6 +13,8 @@ namespace glm{
 
 	void to_json(json& j, const pah::Vector3& vector);
 	void to_json(json& j, const pah::Vector2& vector);
+	void to_json(json& j, const pah::Matrix3& matrix);
+	void to_json(json& j, const pah::Matrix4& matrix);
 }
 
 
@@ -27,6 +29,7 @@ namespace pah {
 	void to_json(json& j, const PlaneInfluenceArea& planeInfluenceArea);
 	void to_json(json& j, const Region& region);
 	void to_json(json& j, const AabbForObb& aabbForObb);
+	void to_json(json& j, const Frustum& frustum);
 	void to_json(json& j, const Plane& plane);
 	void to_json(json& j, const Bvh::NodeTimingInfo& nti);
 	void to_json(json& j, const TopLevelOctree::Node&);

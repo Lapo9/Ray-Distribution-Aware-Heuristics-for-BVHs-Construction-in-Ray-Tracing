@@ -34,8 +34,14 @@ namespace pah::projection {
 
 		return glm::perspective(glm::degrees(fovY), aspectRatio, n, f);
 
-		//  2n/(r-l)    0           (l-r)/(r-l)     0
-		//  0           2n/(t-b)    (b-t)/(t-b)     0
+		//	n	0	0	0
+		//	0	n	0	0
+		//	0	0	f+n	-fn
+		//	0	0	-1	0
+
+		//this is a view-perspective matrix
+		//  2n/(r-l)    0           -(r+l)/(r-l)     0
+		//  0           2n/(t-b)    -(t+b)/(t-b)     0
 		//  0           0           (f+n)/(f-n)     -2fn/(f-n)
 		//  0           0           1               0
 	}
@@ -47,8 +53,20 @@ namespace pah::projection {
 	 */
 	static Matrix4 computePerspectiveMatrix(float f, float n, std::tuple<float, float> fovs) {
 		auto [fovX, fovY] = fovs;
-		float right = glm::sin(glm::radians(fovX) / 2.0f);
-		float top = glm::sin(glm::radians(fovY) / 2.0f);
+
+		//we use the catetus theorem: tan(a) = opposite / adjacent
+		//                  y^ 
+		//                  n|______ opp.
+		//                   |     /.
+		//                   |    / .
+		//              adj. |   /  .
+		//                   |  /   .
+		//                   |a/    . 
+		//    _ _ _ _ _ _ _ _|/_ _ _._ _ _ _ _ _ _>x 
+		//                  O|      r
+
+		float right = glm::tan(fovX / 2.0f) * n; 
+		float top = glm::tan(fovY / 2.0f) * n;
 		float aspectRatio = right / top;
 
 		return glm::perspective(fovY, aspectRatio, n, f);

@@ -79,6 +79,12 @@ void pah::to_json(json& j, const AabbForObb& aabbForObb) {
 	j["obb"] = aabbForObb.obb;
 }
 
+void pah::to_json(json& j, const Frustum& frustum) {
+	j["type"] = "frustum";
+	j["matrix"] = frustum.getMatrix();
+	j["vertices"] = frustum.getPoints();
+}
+
 void pah::to_json(json& j, const Plane& plane) {
 	j["point"] = plane.getPoint();
 	j["normal"] = plane.getNormal();
@@ -126,4 +132,40 @@ void glm::to_json(json& j, const pah::Vector3& vector) {
 void glm::to_json(json& j, const pah::Vector2& vector) {
 	j += vector.x;
 	j += vector.y;
+}
+
+void glm::to_json(json& j, const pah::Matrix4& matrix) {
+	j += matrix[0][0];
+	j += matrix[0][1];
+	j += matrix[0][2];
+	j += matrix[0][3];
+
+	j += matrix[1][0];
+	j += matrix[1][1];
+	j += matrix[1][2];
+	j += matrix[1][3];
+
+	j += matrix[2][0];
+	j += matrix[2][1];
+	j += matrix[2][2];
+	j += matrix[2][3];
+
+	j += matrix[3][0];
+	j += matrix[3][1];
+	j += matrix[3][2];
+	j += matrix[3][3];
+}
+
+void glm::to_json(json& j, const pah::Matrix3& matrix) {
+	j += matrix[0][0];
+	j += matrix[0][1];
+	j += matrix[0][2];
+
+	j += matrix[1][0];
+	j += matrix[1][1];
+	j += matrix[1][2];
+
+	j += matrix[2][0];
+	j += matrix[2][1];
+	j += matrix[2][2];
 }

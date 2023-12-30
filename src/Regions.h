@@ -15,12 +15,12 @@ namespace pah {
 		static bool areColliding(const Aabb& aabb1, const Aabb& aabb2);
 		static bool areColliding(const AabbForObb& aabbForObb, const Aabb& aabb);
 		static bool areColliding(const Obb& obb, const Aabb& aabb);
+		static bool areColliding(const Frustum& obb, const Aabb& aabb);
 		static bool almostParallel(const Vector3& lhs, const Vector3& rhs, float threshold);
 		static bool almostAabb(const Obb& obb);
 		static std::pair<int, int> projectedAabbExtremes(const Vector3& axis);
 		static std::pair<int, int> projectedObbExtremes(const Vector3& axis, const Obb& obb);
 	}
-
 
 
 	/**
@@ -250,7 +250,7 @@ namespace pah {
 		}
 
 		Aabb enclosingAabb() const override {
-			Aabb aabb{ Vector3{std::numeric_limits<float>::max()}, Vector3{ -std::numeric_limits<float>::max()} };
+			Aabb aabb = Aabb::minAabb();
 			auto vertices = getPoints();
 
 			//TODO probably there is a more efficient way
@@ -331,6 +331,196 @@ namespace pah {
 		}
 	};
 
+	/**
+	 * @brief Describes a 3D rectangular frustum.
+	 */
+	struct Frustum : public Region {
+		Frustum(const Matrix4& viewProjectionMatrix) : viewProjectionMatrix{ viewProjectionMatrix } {
+			fillVertices();
+			fillEdgesDirection();
+			fillFacesNormals();
+			fillEnclosingAabb();
+		}
+
+		/**
+		 * @brief Builds a frustum given the forward direction, the view point, fan and near planes and the field of views.
+		 */
+		Frustum(const Pov& pov, float far, float near, float fovX, float fovY)
+			: Frustum{ projection::computeViewMatrix(pov) * projection::computePerspectiveMatrix(far, near, { fovX, fovY }) } {}
+
+		// TODO finish
+		/* Frustum(const Vector3& lbf, const Vector3& rbf, const Vector3& ltf, const Vector3& lbb) {
+			using namespace glm;
+
+			Vector3 right = rbf - lbf;
+			Vector3 up = ltf - lbf;
+			assert(abs(dot(right, up)) < TOLERANCE, "lbf, rbf and ltf should be vertices of a rectangle, but the segments lbf-rbf and lbf-ltf are not perpendicular.");
+			
+			Vector3 forward = normalize(cross(right, up));
+			Vector3 center = (rbf + ltf) / 2.0f; //center of the front face of the frustum
+
+			Vector3 oblique = lbb - lbf;
+			
+			//to find the Pov we must find the intersection between oblique and forward
+			//if the intersection is not present, it means that the 4 points cannot create a frustum (we can do nothing)
+
+			//when we find the Pov, we can build the view matrix.
+			//after this, we transform lbf and lbb to view space: lbf.x is left, lbf.y is bottom, lbf.z is near, lbb.z is far.
+			//with this we can now build the perspective matrix, and the view-perspective matrix.
+
+		}*/
+
+		bool contains(const Vector3& point) const override {
+			if (!enclosingAabbObj.contains(point)) return false;
+
+			//look at "Fast Extraction of Viewing Frustum Planes from the WorldView-Projection Matrix" section 2 and the GeoGebra file "2dFrustum"
+			//basically p' = M*p --> p inside frustum iff -w' < x' < w' AND -w' < y' < w' AND -w' < z' < w'
+			auto p = viewProjectionMatrix * Vector4{ point, 1.0f }; //projected point
+			return -p.w < p.x&& p.x < p.w &&
+				-p.w < p.y&& p.y < p.w &&
+				-p.w < p.z&& p.z < p.w;
+		}
+
+		Aabb enclosingAabb() const override {
+			return enclosingAabbObj;
+		}
+
+		bool isCollidingWith(const Aabb& aabb) const override {
+			return collisionDetection::areColliding(*this, aabb);
+		}
+
+		bool fullyContains(const Aabb& aabb) const override {
+			if (!enclosingAabbObj.fullyContains(aabb)) return false;
+
+			for (const auto& vertex : vertices) {
+				if (!contains(vertex)) return false;
+			}
+			return true;
+		}
+
+		std::array<Vector3, 8> getPoints() const {
+			return vertices;
+		}
+
+		std::array<Vector3, 6> getEdgesDirections() const {
+			return edgesDirections;
+		}
+
+		std::array<Vector3, 6> getFacesNormals() const {
+			return facesNormals;
+		}
+
+		Matrix4 getMatrix() const {
+			return viewProjectionMatrix;
+		}
+
+	private:
+		/**
+		 * @brief Fills the array containing the normals to the 6 faces of the frustum.
+		 */
+		void fillFacesNormals() {
+			//look at "Fast Extraction of Viewing Frustum Planes from the WorldView-Projection Matrix" section 2
+			using namespace glm;
+			const auto& M = viewProjectionMatrix;
+
+			//left
+			facesNormals[0] = -normalize(Vector3{
+				M[1][4] + M[1][1],
+				M[2][4] + M[2][1],
+				M[3][4] + M[3][1]
+				});
+
+			//right
+			facesNormals[1] = -normalize(Vector3{
+				M[1][4] - M[1][1],
+				M[2][4] - M[2][1],
+				M[3][4] - M[3][1]
+				});
+
+			//bottom
+			facesNormals[2] = -normalize(Vector3{
+				M[1][4] + M[1][2],
+				M[2][4] + M[2][2],
+				M[3][4] + M[3][2]
+				});
+
+			//top
+			facesNormals[3] = -normalize(Vector3{
+				M[1][4] - M[1][2],
+				M[2][4] - M[2][2],
+				M[3][4] - M[3][2]
+				});
+
+			//near
+			facesNormals[4] = -normalize(Vector3{
+				M[1][4] + M[1][3],
+				M[2][4] + M[2][3],
+				M[3][4] + M[3][3]
+				});
+
+			//far
+			facesNormals[5] = -normalize(Vector3{
+				M[1][4] - M[1][3],
+				M[2][4] - M[2][3],
+				M[3][4] - M[3][3]
+				});
+		}
+
+		/**
+		 * @brief Fills the array containing the 6 directions of the 12 edges of a frustum.
+		 * There are only 6 because the "right" and "top" directions are repeated on 4 edges, whereas the "forward" edges are oblique.
+		 * @pre This function should only be called after @p fillVertices.
+		 */
+		void fillEdgesDirection() {
+			edgesDirections[0] = glm::normalize(vertices[4] - vertices[0]); //right
+			edgesDirections[1] = glm::normalize(vertices[2] - vertices[0]); //top
+
+			//oblique ones
+			edgesDirections[2] = glm::normalize(vertices[1] - vertices[0]);
+			edgesDirections[3] = glm::normalize(vertices[3] - vertices[2]);
+			edgesDirections[4] = glm::normalize(vertices[5] - vertices[4]);
+			edgesDirections[5] = glm::normalize(vertices[7] - vertices[6]);
+
+		}
+		
+		/**
+		 * @brief Fills the array containing the 8 vertices of the frustum.
+		 */
+		void fillVertices() {
+			//we know that the vertices of the frustum in clipping space (after the application of the view-projection matrix) are the vertices of the unit cube.
+			//therefore we "un-apply" the view-projection matrix (we apply its inverse) and then we use the vertices with w = 1 (we divide by w).
+			const auto& Mi = glm::inverse(viewProjectionMatrix);
+
+			for (int i = -1, count = 0; i <= 1; i += 2)
+				for (int j = -1; j <= 1; j += 2)
+					for (int k = -1; k <= 1; k += 2) {
+						Vector4 clippingSpaceVertex{ k,j,i,1 };
+						Vector4 homogeneousVertex = Mi * clippingSpaceVertex;
+						vertices[count] = Vector3{ homogeneousVertex } / homogeneousVertex.w;
+						count++;
+					}
+		}
+
+		/**
+		 * @brief Calculates the @p Aabb that more tightly encloses this @p Frustum.
+		 * @pre This function should only be called after @p fillVertices.
+		 */
+		void fillEnclosingAabb() {
+			enclosingAabbObj = Aabb::minAabb();
+
+			for (const auto& vertex : vertices) {
+				//update max and min of enclosing AABB
+				enclosingAabbObj.max = glm::max(enclosingAabbObj.max, vertex);
+				enclosingAabbObj.min = glm::min(enclosingAabbObj.min, vertex);
+			}
+		}
+
+		Matrix4 viewProjectionMatrix; //a frustum can be represented as a projection matrix (to define its shape) and a view matrix (to set its position)
+		std::array<Vector3, 6> facesNormals; //useful for the SAT algorithm for collision detection
+		std::array<Vector3, 6> edgesDirections; //useful for the SAT algorithm for collision detection
+		std::array<Vector3, 8> vertices;
+		Aabb enclosingAabbObj;
+	};
 
 	/**
 	 * @brief Functions and utilities to detect whether there is a collision between 2 @p Region s.
@@ -407,6 +597,13 @@ namespace pah {
 		 */
 		static bool areColliding(const Obb& obb, const Aabb& aabb) {
 			return areColliding(AabbForObb{ obb }, aabb);
+		}
+
+		/**
+		 * @brief Implementation of the separating axis theorem between a @p Frustum and an @p Aabb.
+		 */
+		static bool areColliding(const Frustum& obb, const Aabb& aabb) {
+			return false;
 		}
 
 		/**
