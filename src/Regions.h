@@ -4,6 +4,7 @@
 #include "glm/glm.hpp"
 
 #include "Utilities.h"
+#include "Projections.h"
 
 namespace pah {
 	//forward declarations
@@ -340,13 +341,17 @@ namespace pah {
 			fillEdgesDirection();
 			fillFacesNormals();
 			fillEnclosingAabb();
+
+			//TODO initialize fovs
 		}
 
 		/**
 		 * @brief Builds a frustum given the forward direction, the view point, fan and near planes and the field of views.
 		 */
 		Frustum(const Pov& pov, float far, float near, float fovX, float fovY)
-			: Frustum{ projection::computeViewMatrix(pov) * projection::computePerspectiveMatrix(far, near, { fovX, fovY }) } {}
+			: Frustum{ projection::computeViewMatrix(pov) * projection::computePerspectiveMatrix(far, near, { fovX, fovY }) } {
+			fovs = { fovX, fovY };
+		}
 
 		// TODO finish
 		/* Frustum(const Vector3& lbf, const Vector3& rbf, const Vector3& ltf, const Vector3& lbb) {
@@ -413,6 +418,11 @@ namespace pah {
 		Matrix4 getMatrix() const {
 			return viewProjectionMatrix;
 		}
+
+		const Vector3& getRight() const { return edgesDirections[0]; }
+		const Vector3& getUp() const { return edgesDirections[1]; }
+		const Vector3& getForward() const { return facesNormals[5]; }
+		const std::pair<float, float>& getFovs() const { return fovs; }
 
 	private:
 		/**
@@ -520,6 +530,7 @@ namespace pah {
 		std::array<Vector3, 6> edgesDirections; //useful for the SAT algorithm for collision detection
 		std::array<Vector3, 8> vertices;
 		Aabb enclosingAabbObj;
+		std::pair<float, float> fovs; //horizontal and vertical field of views
 	};
 
 	/**
@@ -548,7 +559,7 @@ namespace pah {
 			using namespace glm;
 
 			//first, we check if the enclosing AABB of the OBB overlaps with the AABB (it can save a lot of time)
-			bool aabbsColliding = areColliding(aabb, aabbForObb.aabb);
+			bool aabbsColliding = areColliding(aabb, aabbForObb.enclosingAabb());
 			if (!aabbsColliding) return false;
 
 			//then we check whether the OBB is "almost" an AABB (in this case we can approximate the collision to the AABB v AABB case)
@@ -602,8 +613,61 @@ namespace pah {
 		/**
 		 * @brief Implementation of the separating axis theorem between a @p Frustum and an @p Aabb.
 		 */
-		static bool areColliding(const Frustum& obb, const Aabb& aabb) {
-			return false;
+		static bool areColliding(const Frustum& frustum, const Aabb& aabb) {
+			using namespace std;
+			using namespace glm;
+
+			//first, we check if the enclosing AABB of the frustum overlaps with the AABB (it can save a lot of time)
+			bool aabbsColliding = areColliding(aabb, frustum.enclosingAabb());
+			if (!aabbsColliding) return false;
+
+			//else, we have to use SAT
+			auto frustumVertices = frustum.getPoints();
+			auto aabbVertices = aabb.getPoints();
+
+			//these are the potential separating axes; we use lambdas in order to evaluate them lazily (important to avoid useless cross products in case of early outs)
+			auto axes = vector<function<Vector3()>>{
+				[]() { return Vector3{1,0,0}; },
+				[]() { return Vector3{0,1,0}; },
+				[]() { return Vector3{0,0,1}; },
+				[&frustum]() { return frustum.getFacesNormals()[0]; },
+				[&frustum]() { return frustum.getFacesNormals()[1]; },
+				[&frustum]() { return frustum.getFacesNormals()[2]; },
+				[&frustum]() { return frustum.getFacesNormals()[3]; },
+				[&frustum]() { return frustum.getFacesNormals()[4]; },
+				[&frustum]() { return frustum.getFacesNormals()[5]; },
+				[&frustum]() { return cross(Vector3{1,0,0}, frustum.getEdgesDirections()[0]); },
+				[&frustum]() { return cross(Vector3{1,0,0}, frustum.getEdgesDirections()[1]); },
+				[&frustum]() { return cross(Vector3{1,0,0}, frustum.getEdgesDirections()[2]); },
+				[&frustum]() { return cross(Vector3{1,0,0}, frustum.getEdgesDirections()[3]); },
+				[&frustum]() { return cross(Vector3{1,0,0}, frustum.getEdgesDirections()[4]); },
+				[&frustum]() { return cross(Vector3{1,0,0}, frustum.getEdgesDirections()[5]); },
+				[&frustum]() { return cross(Vector3{0,1,0}, frustum.getEdgesDirections()[0]); },
+				[&frustum]() { return cross(Vector3{0,1,0}, frustum.getEdgesDirections()[1]); },
+				[&frustum]() { return cross(Vector3{0,1,0}, frustum.getEdgesDirections()[2]); },
+				[&frustum]() { return cross(Vector3{0,1,0}, frustum.getEdgesDirections()[3]); },
+				[&frustum]() { return cross(Vector3{0,1,0}, frustum.getEdgesDirections()[4]); },
+				[&frustum]() { return cross(Vector3{0,1,0}, frustum.getEdgesDirections()[5]); },
+				[&frustum]() { return cross(Vector3{0,0,1}, frustum.getEdgesDirections()[0]); },
+				[&frustum]() { return cross(Vector3{0,0,1}, frustum.getEdgesDirections()[1]); },
+				[&frustum]() { return cross(Vector3{0,0,1}, frustum.getEdgesDirections()[2]); },
+				[&frustum]() { return cross(Vector3{0,0,1}, frustum.getEdgesDirections()[3]); },
+				[&frustum]() { return cross(Vector3{0,0,1}, frustum.getEdgesDirections()[4]); },
+				[&frustum]() { return cross(Vector3{0,0,1}, frustum.getEdgesDirections()[5]); },
+			};
+
+			for (auto& getAxis : axes) {
+				auto axis = getAxis();
+				//get the points that, after the projection, will be the outermost (both for the OBB and the AABB)
+				auto frustumExtremesIndexes = projectedFrustumExtremes(axis, frustum);
+				auto aabbExtremesIndexes = projectedAabbExtremes(axis);
+
+				// |--------------------|MA     MB    overlap iff mB <= MA && MB >= mA (not overlap iff mB > MA || MB < mA)
+				// mA             mB|-----------|
+				if (dot(aabbVertices[aabbExtremesIndexes.first], axis) > dot(frustumVertices[frustumExtremesIndexes.second], axis) ||
+					dot(aabbVertices[aabbExtremesIndexes.second], axis) < dot(frustumVertices[frustumExtremesIndexes.first], axis)) return false;
+			}
+			return true; //if we havent't found any axis where there is no overlap, boxes are colliding
 		}
 
 		/**
@@ -664,6 +728,22 @@ namespace pah {
 			Matrix3 newBasis{ obb.right, obb.up, obb.forward };
 			Vector3 newAxis = glm::inverse(newBasis) * axis;
 			return projectedAabbExtremes(newAxis);
+		}
+
+		static std::pair<int, int> projectedFrustumExtremes(const Vector3& axis, const Frustum& frustum) {
+			Matrix3 newBasis{ frustum.getRight(), frustum.getUp(), frustum.getForward() };
+			Vector3 newAxis = glm::inverse(newBasis) * axis;
+			auto normalized = glm::normalize(newAxis);
+			float x = normalized.x, y = normalized.y, z = normalized.z;
+			float xAngle = glm::acos(z >= 0 ? x : -x);
+			float yAngle = glm::acos(z >= 0 ? y : -y);
+			const auto& [fovX, fovY] = frustum.getFovs();
+
+			//TODO study what happens for the Y angles (it should be similar), and find out how to combine the X and Y
+			//TODO if the z is < 0 I think I should invert the order of the extremes
+			if (xAngle <= glm::radians(90) - fovX / 2) return{ 0,5 };
+			if (xAngle > glm::radians(90) - fovX / 2 && xAngle <= glm::radians(90) + fovX / 2) return { 0,4 };
+			if (xAngle > glm::radians(90) + fovX / 2) return { 1,4 };
 		}
 	}
 }
