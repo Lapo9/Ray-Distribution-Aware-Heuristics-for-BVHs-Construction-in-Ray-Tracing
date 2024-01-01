@@ -1,7 +1,7 @@
 #pragma once
 
 #include <functional>
-#include <bitset>
+#include <limits>
 #include "glm/glm.hpp"
 
 #include "Utilities.h"
@@ -659,14 +659,14 @@ namespace pah {
 
 			for (auto& getAxis : axes) {
 				auto axis = getAxis();
-				//get the points that, after the projection, will be the outermost (both for the OBB and the AABB)
-				auto frustumExtremesIndexes = projectedFrustumExtremes(axis, frustum);
+				//get the points that, after the projection, will be the outermost (for the AABB we get the indexes, for the frustum the points themselves)
 				auto aabbExtremesIndexes = projectedAabbExtremes(axis);
+				auto frustumExtremes = projectedFrustumExtremes(axis, frustum);
 
 				// |--------------------|MA     MB    overlap iff mB <= MA && MB >= mA (not overlap iff mB > MA || MB < mA)
 				// mA             mB|-----------|
-				if (dot(aabbVertices[aabbExtremesIndexes.first], axis) > dot(frustumVertices[frustumExtremesIndexes.second], axis) ||
-					dot(aabbVertices[aabbExtremesIndexes.second], axis) < dot(frustumVertices[frustumExtremesIndexes.first], axis)) return false;
+				if (dot(aabbVertices[aabbExtremesIndexes.first], axis) > frustumExtremes.second ||
+					dot(aabbVertices[aabbExtremesIndexes.second], axis) < frustumExtremes.first) return false;
 			}
 			return true; //if we havent't found any axis where there is no overlap, boxes are colliding
 		}
@@ -722,7 +722,7 @@ namespace pah {
 		}
 
 		/**
-		 * @brief Given an axis and an OBB, it returns the indexes of the vertices (min and max) that are most far apart (the extremes) on the projection of an AABB to the specified axis.
+		 * @brief Given an axis and an @p Obb, it returns the indexes of the vertices (min and max) that are most far apart (the extremes) on the projection of an AABB to the specified axis.
 		 * What happens is that the function transforms the axis into the OBB coordinate system, and then treats it like an AABB.
 		 */
 		static std::pair<int, int> projectedObbExtremes(const Vector3& axis, const Obb& obb) {
@@ -731,44 +731,23 @@ namespace pah {
 			return projectedAabbExtremes(newAxis);
 		}
 
-		static std::pair<int, int> projectedFrustumExtremes(const Vector3& axis, const Frustum& frustum) {
-			using namespace glm;
+		/**
+		 * @brief Given a @p Frustum, it returns the minimum and maximum projection of its points to the specified @p axis.
+		 * To do so it projects all the points and saves the minimum and maximum projections.
+		 * We tried a better way (similar to the one we used fot the @p Aabb or @p Obb), but it doesn't work (look at commit ad30d3c). 
+		 */
+		static std::pair<float, float> projectedFrustumExtremes(const Vector3& axis, const Frustum& frustum) {
+			const auto vertices = frustum.getPoints();
+			float min = std::numeric_limits<float>::max(), max = -std::numeric_limits<float>::max();
+			auto normalized = glm::normalize(axis);
 
-			Matrix3 newBasis{ frustum.getRight(), frustum.getUp(), frustum.getForward() };
-			Vector3 newAxis = inverse(newBasis) * axis;
-			float x = newAxis.x, y = newAxis.y, z = newAxis.z;
+			for (const auto& vertex : vertices) {
+				float projection = glm::dot(axis, vertex);
+				min = glm::min(min, projection);
+				max = glm::max(max, projection);
+			}
 
-			//we need the angle of the normal of the vector projected on the xz plane and on the yz plane.
-			//we use (again): tan(a) = opp / adj, where opp = axis.z and adj = axis.x ==> a = atan(opp / adj).
-			//atan returns an angle from -90 to 90, but we need an angle between 0 and 180.
-			//atan is symmetric w.r.t. the origin (this is what we want, but if the z component is negative later on we invert the order of the extremes.
-			//if both x and z are 0, we return 0 by default.
-			float xAng = radians(90) + (x == z == 0 ? 0 : atan(z / x)); //we do 90 + ... because the normal is always rotated by 90°
-			float yAng = radians(90) + (y == z == 0 ? 0 : atan(z / y));
-			const auto& [fovX, fovY] = frustum.getHalfFovs();
-
-			std::bitset<8> min{ 0b11111111 }; //here we store the possible minimum extremes based on the xAng and yAng
-			std::bitset<8> max{ 0b11111111 }; //here we store the possible maximum extremes based on the xAng and yAng
-			
-			//find possible extremes based on axis angle in the xz plane
-			if (xAng <= radians(90) - fovX && z >= 0)								{ min &= 0b00000101; max &= 0b10100000; } //[2,0], [7,5]
-			if (xAng <= radians(90) - fovX && z < 0)								{ min &= 0b10100000; max &= 0b00000101; } //[7,5], [2,0]
-			if (xAng > radians(90) - fovX && xAng <= radians(90) + fovX && z >= 0)	{ min &= 0b00000101; max &= 0b01010000; } //[2,0], [6,4]
-			if (xAng > radians(90) - fovX && xAng <= radians(90) + fovX && z < 0)	{ min &= 0b01010000; max &= 0b00000101; } //[6,4], [2,0]
-			if (xAng > radians(90) + fovX && z >= 0)								{ min &= 0b00001010; max &= 0b01010000; } //[3,1], [6,4]
-			if (xAng > radians(90) + fovX && z >= 0)								{ min &= 0b01010000; max &= 0b00001010; } //[6,4], [3,1]							
-
-			//find possible extremes based on axis angle in the yz plane
-			if (yAng <= radians(90) - fovY && z >= 0)								{ min &= 0b00010001; max &= 0b10001000; } //[4,0], [7,3]
-			if (yAng <= radians(90) - fovY && z < 0)								{ min &= 0b10001000; max &= 0b00010001; } //[7,3], [4,0]
-			if (yAng > radians(90) - fovY && yAng <= radians(90) + fovY && z >= 0)	{ min &= 0b00010001; max &= 0b01000100; } //[4,0], [6,2]
-			if (yAng > radians(90) - fovY && yAng <= radians(90) + fovY && z < 0)	{ min &= 0b01000100; max &= 0b00010001; } //[6,2], [4,0]
-			if (yAng > radians(90) + fovY && z >= 0)								{ min &= 0b00100010; max &= 0b01000100; } //[5,1], [6,2]
-			if (yAng > radians(90) + fovY && z >= 0)								{ min &= 0b01000100; max &= 0b00100010; } //[6,2], [5,1]
-
-			//there should be just 1 bit set
-			int minIndex = glm::log2(min.to_ulong()), maxIndex = glm::log2(max.to_ulong());
-			return { minIndex, maxIndex };
+			return { min, max };
 		}
 	}
 }
