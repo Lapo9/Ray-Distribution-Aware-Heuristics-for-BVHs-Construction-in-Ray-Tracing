@@ -25,7 +25,6 @@
     <ClInclude Include="src\BvhAnalyzer.h" />
     <ClInclude Include="src\CustomJson.h" />
     <ClInclude Include="src\InfluenceArea.h" />
-    <ClInclude Include="src\Octree.h" />
     <ClInclude Include="src\Projections.h" />
     <ClInclude Include="src\Regions.h" />
     <ClInclude Include="src\settings.h" />

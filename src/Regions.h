@@ -342,8 +342,6 @@ namespace pah {
 			fillEdgesDirection();
 			fillFacesNormals();
 			fillEnclosingAabb();
-
-			//TODO initialize fovs
 		}
 
 		/**
@@ -654,7 +652,7 @@ namespace pah {
 				[&frustum]() { return cross(Vector3{0,0,1}, frustum.getEdgesDirections()[2]); },
 				[&frustum]() { return cross(Vector3{0,0,1}, frustum.getEdgesDirections()[3]); },
 				[&frustum]() { return cross(Vector3{0,0,1}, frustum.getEdgesDirections()[4]); },
-				[&frustum]() { return cross(Vector3{0,0,1}, frustum.getEdgesDirections()[5]); },
+				[&frustum]() { return cross(Vector3{0,0,1}, frustum.getEdgesDirections()[5]); }
 			};
 
 			for (auto& getAxis : axes) {

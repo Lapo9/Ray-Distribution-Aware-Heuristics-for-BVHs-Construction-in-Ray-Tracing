@@ -315,6 +315,7 @@ namespace pah {
 		static Bvh::ChooseSplittingPlanesReturnType chooseSplittingPlanesFacing(const Bvh::Node& node, const InfluenceArea& influenceArea, Axis, std::mt19937& rng) {
 			using namespace std;
 			using namespace utilities;
+
 			Vector3 dir = influenceArea.getRayDirection(node.aabb); //TODO this will not work for point influence areas, we need to think about them
 			Vector3 percs{ abs(dir.x) / (abs(dir.x) + abs(dir.y) + abs(dir.z)),  abs(dir.y) / (abs(dir.x) + abs(dir.y) + abs(dir.z)), abs(dir.z) / (abs(dir.x) + abs(dir.y) + abs(dir.z)) };
 

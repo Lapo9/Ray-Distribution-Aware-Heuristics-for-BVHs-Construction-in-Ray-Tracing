@@ -127,8 +127,8 @@ namespace pah::projection {
 			Vector3 side2 = Vector3{ projectedPoints[0] - projectedPoints[2], 0.0f };
 			Vector3 side3 = Vector3{ projectedPoints[0] - projectedPoints[3], 0.0f };
 
-			//  2_______________                                                                                           _______________
-			//  |\              \                                                                                         |               \
+				//  2_______________                                                                                           _______________
+				//  |\              \                                                                                         |               \
 				//  | \______________\7                                                                                       |                \
 				//  | 3|             |   ==> We have 3 parallelograms, the sum of their areas is the area of the polygon ==>  |                |
 				//   \ |             |                                                                                         \               |
@@ -236,7 +236,7 @@ namespace pah::projection {
 		 * @param fovs Horizontal and vertical FoVs in degrees.
 		 */
 		static Vector2 projectPoint(Vector4 point, Pov pov, std::tuple<float, float> fovs = std::tuple{ 90.0f, 90.0f }, float far = 1000.0f, float near = 0.1f) {
-			return computeViewMatrix(Pov{ pov }) * computePerspectiveMatrix(far, near, fovs) * point;
+			return projectPoint(point, computeViewMatrix(Pov{ pov }) * computePerspectiveMatrix(far, near, fovs));
 		}
 
 		/**
@@ -247,14 +247,23 @@ namespace pah::projection {
 			return projectPoint(Vector4{ point, 1.0f }, pov, fovs, far, near);
 		}
 
+		static Vector2 projectPoint(Vector4 point, Matrix4 viewProjectionMatrix) {
+			return viewProjectionMatrix * point;
+		}
+
+		static Vector2 projectPoint(Vector3 point, Matrix4 viewProjectionMatrix) {
+			return projectPoint(Vector4{ point, 1.0f }, viewProjectionMatrix);
+		}
+
 		/**
 		 * @brief Given some points it projects them based on the PoV, using perspective.
 		 * @param fovs Horizontal and vertical FoVs in degrees.
 		 */
 		static std::vector<Vector2> projectPoints(const std::vector<Vector3>& points, Pov pov, std::tuple<float, float> fovs = std::tuple{ 90.0f, 90.0f }, float far = 1000.0f, float near = 0.1f) {
 			std::vector<Vector2> projectedPoints;
+			Matrix4 viewProjectionMatrix = computeViewMatrix(Pov{ pov }) * computePerspectiveMatrix(far, near, fovs); //we compute it here to avoid recomputing it for each point
 			for (int i = 0; i < points.size(); ++i) {
-				projectedPoints.emplace_back(projectPoint(points[i], pov, fovs, far, near));
+				projectedPoints.emplace_back(projectPoint(points[i], viewProjectionMatrix));
 			}
 			return projectedPoints;
 		}

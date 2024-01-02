@@ -42,9 +42,6 @@
     <ClInclude Include="src\TopLevel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Octree.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\TopLevelAnalyzer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
