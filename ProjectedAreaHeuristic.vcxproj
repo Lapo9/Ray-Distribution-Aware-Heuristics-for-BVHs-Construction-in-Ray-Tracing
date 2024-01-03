@@ -37,6 +37,7 @@
     <ClCompile Include="src\CustomJson.cpp" />
     <ClCompile Include="src\InfluenceArea.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Regions.cpp" />
     <ClCompile Include="src\TopLevel.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

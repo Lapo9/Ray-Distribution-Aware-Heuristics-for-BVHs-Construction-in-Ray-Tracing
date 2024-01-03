@@ -231,12 +231,20 @@ namespace pah::projection {
 		};
 
 
+		static Vector2 projectPoint(Vector4 point, Matrix4 viewProjectionMatrix) {
+			return viewProjectionMatrix * point;
+		}
+
+		static Vector2 projectPoint(Vector3 point, Matrix4 viewProjectionMatrix) {
+			return projectPoint(Vector4{ point, 1.0f }, viewProjectionMatrix);
+		}
+
 		/**
 		 * @brief Projects the given point based on the PoV using perspective.
 		 * @param fovs Horizontal and vertical FoVs in degrees.
 		 */
 		static Vector2 projectPoint(Vector4 point, Pov pov, std::tuple<float, float> fovs = std::tuple{ 90.0f, 90.0f }, float far = 1000.0f, float near = 0.1f) {
-			return projectPoint(point, computeViewMatrix(Pov{ pov }) * computePerspectiveMatrix(far, near, fovs));
+			return projectPoint(point, computeViewMatrix(pov) * computePerspectiveMatrix(far, near, fovs));
 		}
 
 		/**
@@ -245,14 +253,6 @@ namespace pah::projection {
 		 */
 		static Vector2 projectPoint(Vector3 point, Pov pov, std::tuple<float, float> fovs = std::tuple{ 90.0f, 90.0f }, float far = 1000.0f, float near = 0.1f) {
 			return projectPoint(Vector4{ point, 1.0f }, pov, fovs, far, near);
-		}
-
-		static Vector2 projectPoint(Vector4 point, Matrix4 viewProjectionMatrix) {
-			return viewProjectionMatrix * point;
-		}
-
-		static Vector2 projectPoint(Vector3 point, Matrix4 viewProjectionMatrix) {
-			return projectPoint(Vector4{ point, 1.0f }, viewProjectionMatrix);
 		}
 
 		/**

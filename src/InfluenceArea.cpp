@@ -5,12 +5,16 @@
 using namespace std;
 using namespace pah;
 
+
+// ======| InfluenceArea |======
 pah::InfluenceArea::InfluenceArea(std::unique_ptr<Region>&& region) : bvhRegion{ std::move(region) } {}
 
 const pah::Region& pah::InfluenceArea::getBvhRegion() const {
 	return *bvhRegion;
 }
 
+
+// ======| PlaneInfluenceArea |======
 pah::PlaneInfluenceArea::PlaneInfluenceArea(Plane plane, Vector2 size, float density, float forwardSize)
 	: InfluenceArea{ make_unique<AabbForObb>(plane.getPoint() + plane.getNormal() * (forwardSize / 2.0f), Vector3{size.x, size.y, forwardSize / 2.0f}, plane.getNormal()) },
 	plane{ plane }, size{ size }, density{ density } {
@@ -45,6 +49,8 @@ float pah::PlaneInfluenceArea::getDensity() const {
 	return density;
 }
 
+
+// ======| PointInfluenceArea |======
 pah::PointInfluenceArea::PointInfluenceArea(Pov pov, float far, float near, float fovX, float fovY, float density)
 	: InfluenceArea{ make_unique<Frustum>(pov, far, near, fovX, fovY) } {}
 

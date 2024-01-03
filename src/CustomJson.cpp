@@ -2,6 +2,7 @@
 
 #include "settings.h"
 
+// ======| Bvh |======
 void pah::to_json(json& j, const Bvh::Node& node) {
 	j["id"] = (unsigned long long int) & node;
 	j["aabb"] = node.aabb;
@@ -13,13 +14,8 @@ void pah::to_json(json& j, const Bvh::Node& node) {
 	}
 }
 
-void pah::to_json(json& j, const Triangle& triangle) {
-	j["id"] = (unsigned long long int) &triangle;
-	j["v1"] = triangle.v1;
-	j["v2"] = triangle.v2;
-	j["v3"] = triangle.v3;
-}
 
+// ======| Influence areas |======
 void pah::to_json(json& j, const InfluenceArea& influenceArea) {
 	//we try to cast to the actual type, and then call the proper function with the run-time type; if no cast works, we throw.
 	//we have to do like this because C++ does NOT have multiple dispatch, therefore always this version of the function is called (with the static type InfluenceArea)
@@ -40,6 +36,7 @@ void pah::to_json(json& j, const PlaneInfluenceArea& planeInfluenceArea) {
 	j["bvhRegion"] = planeInfluenceArea.getBvhRegion();
 }
 
+// ======| Regions |======
 void pah::to_json(json& j, const Region& region) {
 	//we try to cast to the actual type, and then call the proper function with the run-time type; if no cast works, we throw.
 	//we have to do like this because C++ does NOT have multiple dispatch, therefore always this version of the function is called (with the static type Region)
@@ -85,6 +82,27 @@ void pah::to_json(json& j, const Frustum& frustum) {
 	j["vertices"] = frustum.getPoints();
 }
 
+// ======| Top level |======
+void pah::to_json(json& j, const pah::TopLevelOctree::Node& node) {
+	j["id"] = (unsigned long long int) &node;
+	j["aabb"] = node.aabb;
+	for (const auto& child : node.children) {
+		j["children"] += (long long int) &*child;
+	}
+	for (const auto& bvhPtr : node.bvhs) {
+		j["bvhs"] += (long long int) bvhPtr;
+	}
+	j["isLeaf"] = node.isLeaf();
+}
+
+// ======| Utilities |======
+void pah::to_json(json& j, const Triangle& triangle) {
+	j["id"] = (unsigned long long int) &triangle;
+	j["v1"] = triangle.v1;
+	j["v2"] = triangle.v2;
+	j["v3"] = triangle.v3;
+}
+
 void pah::to_json(json& j, const Plane& plane) {
 	j["point"] = plane.getPoint();
 	j["normal"] = plane.getNormal();
@@ -109,18 +127,6 @@ void pah::to_json(json& j, const Bvh::NodeTimingInfo& nti) {
 	TIME(j["nodesCreationTot"] =				nti.nodesCreationTot.count(););
 	TIME(j["nodesCreationCount"] =				nti.nodesCreationCount;);
 	TIME(j["nodesCreationAverage"] =			nti.nodesCreationMean().count(););
-}
-
-void pah::to_json(json& j, const pah::TopLevelOctree::Node& node) {
-	j["id"] = (unsigned long long int) &node;
-	j["aabb"] = node.aabb;
-	for (const auto& child : node.children) {
-		j["children"] += (long long int) &*child;
-	}
-	for (const auto& bvhPtr : node.bvhs) {
-		j["bvhs"] += (long long int) bvhPtr;
-	}
-	j["isLeaf"] = node.isLeaf();
 }
 
 void glm::to_json(json& j, const pah::Vector3& vector) {

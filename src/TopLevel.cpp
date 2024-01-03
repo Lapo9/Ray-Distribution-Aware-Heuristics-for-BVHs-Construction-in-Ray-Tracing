@@ -6,7 +6,10 @@
 #include <exception>
 
 using namespace std;
+using namespace pah;
 
+
+// ======| TopLevel |======
 void pah::TopLevel::build() {
 	unordered_map<pah::Bvh*, vector<const Triangle*>> bvhsTriangles; //maps the BVH and the triangles it contains
 
@@ -56,6 +59,7 @@ vector<pah::Bvh*> pah::TopLevelAabbs::containedIn(const Vector3& point) {
 }
 
 
+// ======| TopLevelOctree |======
 void pah::TopLevelOctree::build() {
 	//build the octree
 	auto bvhsPointers = bvhs | std::views::transform([](Bvh& bvh) { return &bvh; }) | std::ranges::to<vector>(); //make vector of pointers
@@ -69,7 +73,7 @@ void pah::TopLevelOctree::update() {
 	throw exception{ "TopLevelOctree::update function not implemented yet." };
 }
 
-std::vector<pah::Bvh*> pah::TopLevelOctree::containedIn(const Vector3& point) {
+vector<pah::Bvh*> pah::TopLevelOctree::containedIn(const Vector3& point) {
 	Node* current = &*root;
 	while (!current->isLeaf()) {
 		auto center = current->aabb.center();
@@ -79,7 +83,7 @@ std::vector<pah::Bvh*> pah::TopLevelOctree::containedIn(const Vector3& point) {
 	return current->bvhs;
 }
 
-pah::TopLevelOctree::Node& pah::TopLevelOctree::getRoot() const {
+TopLevelOctree::Node& pah::TopLevelOctree::getRoot() const {
 	return *root;
 }
 
@@ -131,7 +135,7 @@ int pah::TopLevelOctree::positionToIndex(const Vector3& pos) {
 	return positionToIndex(pos.x != 0, pos.y != 0, pos.z != 0);
 }
 
-pah::Vector3 pah::TopLevelOctree::indexToPosition(int i) {
+Vector3 pah::TopLevelOctree::indexToPosition(int i) {
 	bool forward = (i >> 0) & 1, upward = (i >> 1) & 1, rightward = ((i >> 2) & 1);
 	return Vector3{ rightward, upward, forward };
 }
