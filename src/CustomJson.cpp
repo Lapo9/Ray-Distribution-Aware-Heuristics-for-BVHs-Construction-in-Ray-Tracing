@@ -24,6 +24,11 @@ void pah::to_json(json& j, const InfluenceArea& influenceArea) {
 		to_json(j, planeInfluenceArea);
 		return;
 	} catch (const std::bad_cast&) { /* try next type */ }
+	try {
+		auto& pointInfluenceArea = dynamic_cast<const PointInfluenceArea&>(influenceArea);
+		to_json(j, pointInfluenceArea);
+		return;
+	} catch (const std::bad_cast&) { /* try next type */ }
 	
 	throw std::invalid_argument{ "The run-time type of influenceArea cannot be handled by the to_json function." };
 }
@@ -36,25 +41,37 @@ void pah::to_json(json& j, const PlaneInfluenceArea& planeInfluenceArea) {
 	j["bvhRegion"] = planeInfluenceArea.getBvhRegion();
 }
 
+void pah::to_json(json& j, const PointInfluenceArea& pointInfluenceArea) {
+	j["type"] = "point";
+	j["pov"] = pointInfluenceArea.getPov();
+	j["density"] = pointInfluenceArea.getDensity();
+	j["bvhRegion"] = pointInfluenceArea.getBvhRegion();
+}
+
 // ======| Regions |======
 void pah::to_json(json& j, const Region& region) {
 	//we try to cast to the actual type, and then call the proper function with the run-time type; if no cast works, we throw.
 	//we have to do like this because C++ does NOT have multiple dispatch, therefore always this version of the function is called (with the static type Region)
 	try {
-		auto& aabbRegion = dynamic_cast<const Aabb&>(region);
-		to_json(j, aabbRegion);
+		auto& aabb = dynamic_cast<const Aabb&>(region);
+		to_json(j, aabb);
 		return;
-	} catch (const std::bad_cast&) {}
+	} catch (const std::bad_cast&) { /* try next type */ }
 	try {
-		auto& obbRegion = dynamic_cast<const Obb&>(region);
-		to_json(j, obbRegion);
+		auto& obb = dynamic_cast<const Obb&>(region);
+		to_json(j, obb);
 		return;
-	} catch (const std::bad_cast&) {}
+	} catch (const std::bad_cast&) { /* try next type */ }
 	try {
-		auto& aabbForObbRegion = dynamic_cast<const AabbForObb&>(region);
-		to_json(j, aabbForObbRegion);
+		auto& aabbForObb = dynamic_cast<const AabbForObb&>(region);
+		to_json(j, aabbForObb);
 		return;
-	} catch (const std::bad_cast&) {}
+	} catch (const std::bad_cast&) { /* try next type */ }
+	try {
+		auto& frustum = dynamic_cast<const Frustum&>(region);
+		to_json(j, frustum);
+		return;
+	} catch (const std::bad_cast&) { /* try next type */ }
 
 	throw std::invalid_argument{ "The run-time type of region cannot be handled by the to_json function." };
 }
@@ -106,6 +123,12 @@ void pah::to_json(json& j, const Triangle& triangle) {
 void pah::to_json(json& j, const Plane& plane) {
 	j["point"] = plane.getPoint();
 	j["normal"] = plane.getNormal();
+}
+
+void pah::to_json(json& j, const Pov& pov) {
+	j["position"] = pov.getPosition();
+	j["direction"] = pov.getDirection();
+	j["up"] = pov.getUp();
 }
 
 void pah::to_json(json& j, const Bvh::NodeTimingInfo& nti) {

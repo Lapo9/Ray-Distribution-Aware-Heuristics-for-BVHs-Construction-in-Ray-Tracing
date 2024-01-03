@@ -284,44 +284,44 @@ void pah::Frustum::fillFacesNormals() {
 
 			//left
 			facesNormals[0] = -normalize(Vector3{
-				M[1][4] + M[1][1],
-				M[2][4] + M[2][1],
-				M[3][4] + M[3][1]
+				M[0][3] + M[0][0],
+				M[1][3] + M[1][0],
+				M[2][3] + M[2][0]
 										 });
 
 			//right
 			facesNormals[1] = -normalize(Vector3{
-				M[1][4] - M[1][1],
-				M[2][4] - M[2][1],
-				M[3][4] - M[3][1]
+				M[0][3] - M[0][0],
+				M[1][3] - M[1][0],
+				M[2][3] - M[2][0]
 										 });
 
 			//bottom
 			facesNormals[2] = -normalize(Vector3{
-				M[1][4] + M[1][2],
-				M[2][4] + M[2][2],
-				M[3][4] + M[3][2]
+				M[0][3] + M[0][1],
+				M[1][3] + M[1][1],
+				M[2][3] + M[2][1]
 										 });
 
 			//top
 			facesNormals[3] = -normalize(Vector3{
-				M[1][4] - M[1][2],
-				M[2][4] - M[2][2],
-				M[3][4] - M[3][2]
+				M[0][3] - M[0][1],
+				M[1][3] - M[1][1],
+				M[2][3] - M[2][1]
 										 });
 
 			//near
 			facesNormals[4] = -normalize(Vector3{
-				M[1][4] + M[1][3],
-				M[2][4] + M[2][3],
-				M[3][4] + M[3][3]
+				M[0][3] + M[0][2],
+				M[1][3] + M[1][2],
+				M[2][3] + M[2][2]
 										 });
 
 			//far
 			facesNormals[5] = -normalize(Vector3{
-				M[1][4] - M[1][3],
-				M[2][4] - M[2][3],
-				M[3][4] - M[3][3]
+				M[0][3] - M[0][2],
+				M[1][3] - M[1][2],
+				M[2][3] - M[2][2]
 										 });
 		}
 

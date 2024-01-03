@@ -52,7 +52,7 @@ namespace pah {
 	 */
 	class PlaneInfluenceArea : public InfluenceArea {
 	public:
-		PlaneInfluenceArea(Plane plane, Vector2 size, float density, float forwardSize);
+		PlaneInfluenceArea(Plane plane, Vector2 size, float forwardSize, float density);
 
 		float getProjectedArea(const Aabb& aabb) const override;
 		float getInfluence(const Aabb& aabb) const override;
@@ -79,6 +79,9 @@ namespace pah {
 		float getInfluence(const Aabb& aabb) const override;
 		Vector3 getRayDirection(const Aabb& aabb) const override;
 		std::vector<std::tuple<Axis, std::function<bool(float bestCostSoFar)>>> bestSplittingPlanes() const override;
+
+		const Pov& getPov() const;
+		float getDensity() const;
 
 	private:
 		float density;

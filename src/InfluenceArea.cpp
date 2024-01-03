@@ -15,7 +15,7 @@ const pah::Region& pah::InfluenceArea::getBvhRegion() const {
 
 
 // ======| PlaneInfluenceArea |======
-pah::PlaneInfluenceArea::PlaneInfluenceArea(Plane plane, Vector2 size, float density, float forwardSize)
+pah::PlaneInfluenceArea::PlaneInfluenceArea(Plane plane, Vector2 size, float forwardSize, float density)
 	: InfluenceArea{ make_unique<AabbForObb>(plane.getPoint() + plane.getNormal() * (forwardSize / 2.0f), Vector3{size.x, size.y, forwardSize / 2.0f}, plane.getNormal()) },
 	plane{ plane }, size{ size }, density{ density } {
 }
@@ -76,4 +76,12 @@ Vector3 pah::PointInfluenceArea::getRayDirection(const Aabb& aabb) const
 std::vector<std::tuple<Axis, std::function<bool(float bestCostSoFar)>>> pah::PointInfluenceArea::bestSplittingPlanes() const
 {
 	throw logic_error("Function not implemented yet!");
+}
+
+const pah::Pov& pah::PointInfluenceArea::getPov() const {
+	return pov;
+}
+
+float pah::PointInfluenceArea::getDensity() const {
+	return density;
 }

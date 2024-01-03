@@ -301,7 +301,7 @@ namespace pah::projection {
 		static std::vector<Vector3> findContourPoints(const Aabb& aabb, int i) {
 			using namespace std;
 			const vector<int>& verticesIndexes = hullTable[i].vertices; //get the array of indexes of the contour vertices
-			vector<Vector3> contourVertices;
+			vector<Vector3> contourVertices(verticesIndexes.size());
 			for (int j = 0; j < verticesIndexes.size(); j++) {
 				contourVertices[j] = aabb.getPoint(verticesIndexes[j]);
 			}

@@ -21,8 +21,10 @@ int main() {
 	auto triangles = Triangle::generateRandom(100, rng, mainDistribution3d, otherDistribution3d);
 
 	//create influence areas
-	PlaneInfluenceArea planeInfluenceArea1{ Plane{Vector3{1,4,0}, Vector3{0,0,1}}, Vector2{1,4}, 10, 20 };
-	PlaneInfluenceArea planeInfluenceArea2{ Plane{Vector3{0,2,1}, Vector3{1,0,1}}, Vector2{1,2}, 10, 15 };
+	PlaneInfluenceArea planeInfluenceArea1{ Plane{Vector3{1,4,0}, Vector3{0,0,1}}, Vector2{1,4}, 20, 10 };
+	PlaneInfluenceArea planeInfluenceArea2{ Plane{Vector3{0,2,1}, Vector3{1,0,1}}, Vector2{1,2}, 15, 10 };
+	PointInfluenceArea pointInfluenceArea1{ Pov{Vector3{1,1,1}, Vector3{1,0,0}}, 10, 1, 90, 45, 10 };
+	PointInfluenceArea pointInfluenceArea2{ Pov{Vector3{0,0,0}, Vector3{1,1,0}}, 8, 0.5, 90, 60, 10 };
 
 	//build BVHs
 	Bvh::Properties properties{};
@@ -33,9 +35,11 @@ int main() {
 
 	Bvh bvh1{ properties, planeInfluenceArea1, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing<1.0f>, bvhStrategies::shouldStopThresholdOrLevel };
 	Bvh bvh2{ properties, planeInfluenceArea2, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing<1.0f>, bvhStrategies::shouldStopThresholdOrLevel };
+	Bvh bvh3{ properties, pointInfluenceArea2, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing<1.0f>, bvhStrategies::shouldStopThresholdOrLevel };
+	Bvh bvh4{ properties, pointInfluenceArea2, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing<1.0f>, bvhStrategies::shouldStopThresholdOrLevel };
 
 	//build top level structure
-	TopLevelOctree topLevelStructure{ TopLevelOctree::Properties{ 3, false }, triangles, std::move(bvh1), std::move(bvh2) };
+	TopLevelOctree topLevelStructure{ TopLevelOctree::Properties{ 3, false }, triangles, std::move(bvh1), std::move(bvh3) };
 	topLevelStructure.build();
 
 	//analyze BVH
