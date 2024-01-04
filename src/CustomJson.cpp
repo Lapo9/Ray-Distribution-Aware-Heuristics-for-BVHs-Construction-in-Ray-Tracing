@@ -21,12 +21,14 @@ void pah::to_json(json& j, const InfluenceArea& influenceArea) {
 	//we have to do like this because C++ does NOT have multiple dispatch, therefore always this version of the function is called (with the static type InfluenceArea)
 	try {
 		auto& planeInfluenceArea = dynamic_cast<const PlaneInfluenceArea&>(influenceArea);
-		to_json(j, planeInfluenceArea);
+		j["type"] = "plane";
+		to_json(j["planeInfluenceArea"], planeInfluenceArea);
 		return;
 	} catch (const std::bad_cast&) { /* try next type */ }
 	try {
 		auto& pointInfluenceArea = dynamic_cast<const PointInfluenceArea&>(influenceArea);
-		to_json(j, pointInfluenceArea);
+		j["type"] = "point";
+		to_json(j["pointInfluenceArea"], pointInfluenceArea);
 		return;
 	} catch (const std::bad_cast&) { /* try next type */ }
 	
@@ -34,7 +36,6 @@ void pah::to_json(json& j, const InfluenceArea& influenceArea) {
 }
 
 void pah::to_json(json& j, const PlaneInfluenceArea& planeInfluenceArea) {
-	j["type"] = "plane";
 	j["plane"] = planeInfluenceArea.getPlane();
 	j["size"] = planeInfluenceArea.getSize();
 	j["density"] = planeInfluenceArea.getDensity();
@@ -54,22 +55,26 @@ void pah::to_json(json& j, const Region& region) {
 	//we have to do like this because C++ does NOT have multiple dispatch, therefore always this version of the function is called (with the static type Region)
 	try {
 		auto& aabb = dynamic_cast<const Aabb&>(region);
-		to_json(j, aabb);
+		j["type"] = "aabb";
+		to_json(j["aabb"], aabb);
 		return;
 	} catch (const std::bad_cast&) { /* try next type */ }
 	try {
 		auto& obb = dynamic_cast<const Obb&>(region);
-		to_json(j, obb);
+		j["type"] = "obb";
+		to_json(j["obb"], obb);
 		return;
 	} catch (const std::bad_cast&) { /* try next type */ }
 	try {
 		auto& aabbForObb = dynamic_cast<const AabbForObb&>(region);
-		to_json(j, aabbForObb);
+		j["type"] = "aabbForObb";
+		to_json(j["aabbForObb"], aabbForObb);
 		return;
 	} catch (const std::bad_cast&) { /* try next type */ }
 	try {
 		auto& frustum = dynamic_cast<const Frustum&>(region);
-		to_json(j, frustum);
+		j["type"] = "frustum";
+		to_json(j["frustum"], frustum);
 		return;
 	} catch (const std::bad_cast&) { /* try next type */ }
 
@@ -88,15 +93,14 @@ void pah::to_json(json& j, const Obb& obb) {
 }
 
 void pah::to_json(json& j, const AabbForObb& aabbForObb) {
-	j["type"] = "obb";
 	j["aabb"] = aabbForObb.aabb;
 	j["obb"] = aabbForObb.obb;
 }
 
 void pah::to_json(json& j, const Frustum& frustum) {
-	j["type"] = "frustum";
-	j["matrix"] = frustum.getMatrix();
+	j["matrix"] = frustum.getViewProjectionMatrix();
 	j["vertices"] = frustum.getPoints();
+	j["parameters"] = frustum.getViewProjectionMatrixParameters();
 }
 
 // ======| Top level |======
@@ -152,6 +156,25 @@ void pah::to_json(json& j, const Bvh::NodeTimingInfo& nti) {
 	TIME(j["nodesCreationAverage"] =			nti.nodesCreationMean().count(););
 }
 
+void pah::projection::to_json(json& j, const ProjectionMatrixParameters& params) {
+	j["n"] = params.n;
+	j["f"] = params.f;
+	j["b"] = params.b;
+	j["t"] = params.t;
+	j["l"] = params.l;
+	j["r"] = params.r;
+	j["fovX"] = params.fovX;
+	j["fovY"] = params.fovY;
+	j["ratio"] = params.ratio;
+}
+
+void glm::to_json(json& j, const pah::Vector4& vector) {
+	j += vector.x;
+	j += vector.y;
+	j += vector.z;
+	j += vector.w;
+}
+
 void glm::to_json(json& j, const pah::Vector3& vector) {
 	j += vector.x;
 	j += vector.y; 
@@ -164,37 +187,15 @@ void glm::to_json(json& j, const pah::Vector2& vector) {
 }
 
 void glm::to_json(json& j, const pah::Matrix4& matrix) {
-	j += matrix[0][0];
-	j += matrix[0][1];
-	j += matrix[0][2];
-	j += matrix[0][3];
-
-	j += matrix[1][0];
-	j += matrix[1][1];
-	j += matrix[1][2];
-	j += matrix[1][3];
-
-	j += matrix[2][0];
-	j += matrix[2][1];
-	j += matrix[2][2];
-	j += matrix[2][3];
-
-	j += matrix[3][0];
-	j += matrix[3][1];
-	j += matrix[3][2];
-	j += matrix[3][3];
+	j += matrix[0];
+	j += matrix[1];
+	j += matrix[2];
+	j += matrix[3];
 }
 
 void glm::to_json(json& j, const pah::Matrix3& matrix) {
-	j += matrix[0][0];
-	j += matrix[0][1];
-	j += matrix[0][2];
-
-	j += matrix[1][0];
-	j += matrix[1][1];
-	j += matrix[1][2];
-
-	j += matrix[2][0];
-	j += matrix[2][1];
-	j += matrix[2][2];
+	j += matrix[0];
+	j += matrix[1];
+	j += matrix[2];
 }
+

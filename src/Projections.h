@@ -28,11 +28,8 @@ namespace pah::projection {
 	static Matrix4 computePerspectiveMatrix(float f, float n, float halfWidth, float halfHeight) {
 		float r = halfWidth, l = -halfWidth;
 		float t = halfHeight, b = -halfHeight;
-		float aspectRatio = (r - l) / (t - b);
-		Vector2 topNearPoint = glm::normalize(Vector2{ n, t });
-		float fovY = glm::atan(topNearPoint.x, topNearPoint.y) * 2.0f;
 
-		return glm::perspective(glm::degrees(fovY), aspectRatio, n, f);
+		return glm::frustum(l, r, b, t, n, f);
 
 		//	n	0	0	0
 		//	0	n	0	0
@@ -40,10 +37,10 @@ namespace pah::projection {
 		//	0	0	-1	0
 
 		//this is a view-perspective matrix
-		//  2n/(r-l)    0           -(r+l)/(r-l)     0
-		//  0           2n/(t-b)    -(t+b)/(t-b)     0
-		//  0           0           (f+n)/(f-n)     -2fn/(f-n)
-		//  0           0           1               0
+		//  2n/(r-l)    0           -(r+l)/(r-l)		0
+		//  0           2n/(t-b)    -(t+b)/(t-b)		0
+		//  0           0           (f+n)/(f-n)		-2fn/(f-n)
+		//  0           0           -1				0
 	}
 
 	/**
@@ -70,6 +67,53 @@ namespace pah::projection {
 		float aspectRatio = right / top;
 
 		return glm::perspective(fovY, aspectRatio, n, f);
+	}
+
+	/**
+	 * @brief Structure containing the parameters of a projection matrix.
+	 * If the projection is not a perspective, @p fovX and @p fovY won't have any meaning.
+	 */
+	struct ProjectionMatrixParameters {
+		float n, f, b, t, l, r, fovX, fovY, ratio;
+	};
+
+	/**
+	 * @brief Given a perspective matrix, it returns its parameters (namely near, far, left, right, top and bottom planes, x and y field of views and the aspect ratio).
+	 * 
+	 * @param viewProjectionMatrix .
+	 * @return .
+	 */
+	static ProjectionMatrixParameters extractPerspectiveMatrixParameters(const Matrix4 projectionMatrix) {
+		const auto& M = projectionMatrix;
+
+		float n = M[3][2] / (M[2][2] - 1.0f);
+		float f = M[3][2] / (M[2][2] + 1.0f);
+		float b = n * (M[2][1] - 1.0f) / M[1][1];
+		float t = n * (M[2][1] + 1.0f) / M[1][1];
+		float l = n * (M[2][0] - 1.0f) / M[0][0];
+		float r = n * (M[2][0] + 1.0f) / M[0][0];
+		float ratio = M[1][1] / M[0][0];
+
+		//we use the catetus theorem: tan(a) = opposite / adjacent
+		//                  y^ 
+		//                  n|______ opp.
+		//                   |     /.
+		//                   |    / .
+		//              adj. |   /  .
+		//                   |  /   .
+		//                   |a/    . 
+		//    _ _ _ _ _ _ _ _|/_ _ _._ _ _ _ _ _ _>x 
+		//  
+		float fovY = glm::atan(t / n) * 2.0f;
+		float fovX = glm::atan(r / n) * 2.0f; //TODO gives a wrong value
+
+		return ProjectionMatrixParameters{ n, f, b, t, l, r, fovX, fovY, ratio };
+
+		//this is a view-perspective matrix
+		//  2n/(r-l)    0           (r+l)/(r-l)		0				 <==>		1/ratio*tan(fovY/2)		0		0		0			[in this second representation the frustum is symmetric by definition (l = r and t = b)]
+		//  0           2n/(t-b)    (t+b)/(t-b)		0				 <==>				0		1/tan(fovY/2)	0		0
+		//  0           0           -(f+n)/(f-n)		-2fn/(f-n)			 <==>				0			0	-(f+n)/(f-n)	-2fn/(f-n)
+		//  0           0           -1				0				 <==>				0			0		-1		0
 	}
 
 

@@ -6,11 +6,13 @@
 #include "InfluenceArea.h"
 #include "Regions.h"
 #include "TopLevel.h"
+#include "Projections.h"
 
 
 namespace glm{
 	using json = nlohmann::json;
 
+	void to_json(json& j, const pah::Vector4&);
 	void to_json(json& j, const pah::Vector3&);
 	void to_json(json& j, const pah::Vector2&);
 	void to_json(json& j, const pah::Matrix3&);
@@ -35,4 +37,8 @@ namespace pah {
 	void to_json(json& j, const Pov&);
 	void to_json(json& j, const Triangle&);
 	void to_json(json& j, const Bvh::NodeTimingInfo&);
+
+	namespace projection {
+		void to_json(json& j, const ProjectionMatrixParameters&);
+	}
 }

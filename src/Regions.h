@@ -23,6 +23,9 @@ namespace pah {
 		static std::pair<int, int> projectedAabbExtremes(const Vector3& axis);
 		static std::pair<int, int> projectedObbExtremes(const Vector3& axis, const Obb& obb);
 	}
+	namespace projection {
+		struct ProjectionMatrixParameters;
+	}
 
 	/**
 	 * @brief Base class for anything that can represent a 3D space region.
@@ -242,12 +245,27 @@ namespace pah {
 
 		std::array<Vector3, 6> getFacesNormals() const;
 
-		Matrix4 getMatrix() const;
+		/**
+		 * @brief Returns the stored view projection matrix..
+		 */
+		Matrix4 getViewProjectionMatrix() const;
+
+		/**
+		 * @brief Extracts the view matrix from the view projection matrix, by using the @p Frustum coordinate system (right, up, forward).
+		 * Since the view matrix is computed starting from the view projection matrix, it can have some rounding errors caused by floating points.
+		 */
+		Matrix4 extractViewMatrix() const;
+
+		/**
+		 * @brief Extracts the perspective matrix from the view projection matrix and the extracted view matrix. VPm = Pm * Vm ==> Pm = VPm * Vm^(-1).
+		 * Since the perspective matrix is computed starting from the view projection matrix, it can have some rounding errors caused by floating points.
+		 */
+		Matrix4 extractProjectionMatrix() const;
 
 		const Vector3& getRight() const;
 		const Vector3& getUp() const;
 		const Vector3& getForward() const;
-		const std::pair<float, float>& getHalfFovs() const;
+		projection::ProjectionMatrixParameters getViewProjectionMatrixParameters() const;
 
 	private:
 		/**
@@ -276,9 +294,8 @@ namespace pah {
 		Matrix4 viewProjectionMatrix; //a frustum can be represented as a projection matrix (to define its shape) and a view matrix (to set its position)
 		std::array<Vector3, 6> facesNormals; //useful for the SAT algorithm for collision detection
 		std::array<Vector3, 6> edgesDirections; //useful for the SAT algorithm for collision detection
-		std::array<Vector3, 8> vertices;
+		std::array<Vector3, 8> vertices; //useful for the SAT algorithm for collision detection
 		Aabb enclosingAabbObj;
-		std::pair<float, float> fovs; //horizontal and vertical field of views
 	};
 
 	/**
