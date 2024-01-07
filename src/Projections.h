@@ -49,6 +49,7 @@ namespace pah::projection {
 	 * @param fovs Horizontal and vertical FoVs in degrees.
 	 */
 	static Matrix4 computePerspectiveMatrix(float f, float n, std::tuple<float, float> fovs) {
+		using namespace glm;
 		auto [fovX, fovY] = fovs;
 
 		//we use the catetus theorem: tan(a) = opposite / adjacent
@@ -62,11 +63,11 @@ namespace pah::projection {
 		//    _ _ _ _ _ _ _ _|/_ _ _._ _ _ _ _ _ _>x 
 		//                  O|      r
 
-		float right = glm::tan(fovX / 2.0f) * n; 
-		float top = glm::tan(fovY / 2.0f) * n;
+		float right = n * tan(radians(fovX) / 2.0f);
+		float top = n * tan(radians(fovY) / 2.0f);
 		float aspectRatio = right / top;
 
-		return glm::perspective(fovY, aspectRatio, n, f);
+		return glm::perspective(radians(fovY), aspectRatio, n, f);
 	}
 
 	/**
@@ -105,7 +106,7 @@ namespace pah::projection {
 		//    _ _ _ _ _ _ _ _|/_ _ _._ _ _ _ _ _ _>x 
 		//  
 		float fovY = glm::atan(t / n) * 2.0f;
-		float fovX = glm::atan(r / n) * 2.0f; //TODO gives a wrong value
+		float fovX = glm::atan(r / n) * 2.0f;
 
 		return ProjectionMatrixParameters{ n, f, b, t, l, r, fovX, fovY, ratio };
 

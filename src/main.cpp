@@ -39,7 +39,7 @@ int main() {
 	Bvh bvh4{ properties, pointInfluenceArea2, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing<1.0f>, bvhStrategies::shouldStopThresholdOrLevel };
 
 	//build top level structure
-	TopLevelOctree topLevelStructure{ TopLevelOctree::Properties{ 3, false }, triangles, std::move(bvh1), std::move(bvh3) };
+	TopLevelOctree topLevelStructure{ TopLevelOctree::Properties{ 4, false }, triangles, std::move(bvh1), std::move(bvh3) };
 	topLevelStructure.build();
 
 	//analyze BVH
