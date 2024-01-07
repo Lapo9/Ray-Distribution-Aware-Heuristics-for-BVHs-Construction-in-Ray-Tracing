@@ -295,7 +295,7 @@ namespace pah {
 		std::array<Vector3, 6> facesNormals; //useful for the SAT algorithm for collision detection
 		std::array<Vector3, 6> edgesDirections; //useful for the SAT algorithm for collision detection
 		std::array<Vector3, 8> vertices; //useful for the SAT algorithm for collision detection
-		Aabb enclosingAabbObj;
+		Aabb enclosingAabbObj; //the smallest Aabb that encloses the Frustum
 	};
 
 	/**

@@ -23,12 +23,12 @@
     - [ ] *Deferred rendering integration?*
     - [ ] **Top level acceleration structure**
       - [ ] Many choices:
-        - [ ] Octree (fast to traverse, hard to construct)
+        - [x] Octree (fast to traverse, hard to construct)
         - [ ] Binary Space Partitioning
-        - [ ] AABB for OBB
+        - [x] AABB for OBB
         - [ ] Simplify OBB with AABBs or spheres
       - [ ] Traversal (choose best BVH based on ray direction)
-  - [ ] **Multi area plane splitting** 
+  - [x] **Multi area plane splitting** 
   - [ ] **Data collection**
     - [ ] How to collect data
     - [ ] Time results
