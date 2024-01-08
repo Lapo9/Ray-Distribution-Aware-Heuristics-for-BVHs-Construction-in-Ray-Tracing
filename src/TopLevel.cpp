@@ -5,8 +5,11 @@
 #include <unordered_map>
 #include <exception>
 
+#include "Utilities.h"
+
 using namespace std;
 using namespace pah;
+using namespace pah::utilities;
 
 
 // ======| TopLevel |======
@@ -61,6 +64,8 @@ vector<pah::Bvh*> pah::TopLevelAabbs::containedIn(const Vector3& point) {
 
 // ======| TopLevelOctree |======
 void pah::TopLevelOctree::build() {
+	INFO(TimeLogger timeLoggerTotalBuild{ [this](NodeTimingInfo::DurationMs duration) { totalBuildTime = duration; } });
+
 	//build the octree
 	auto bvhsPointers = bvhs | std::views::transform([](Bvh& bvh) { return &bvh; }) | std::ranges::to<vector>(); //make vector of pointers
 	buildOctreeRecursive(*root, bvhsPointers, {});
@@ -87,7 +92,17 @@ TopLevelOctree::Node& pah::TopLevelOctree::getRoot() const {
 	return *root;
 }
 
+INFO(const TopLevelOctree::NodeTimingInfo::DurationMs pah::TopLevelOctree::getTotalBuildTime() const {
+	return totalBuildTime;
+})
+
+TopLevelOctree::Properties pah::TopLevelOctree::getProperties() const {
+	return properties;
+}
+
 void pah::TopLevelOctree::buildOctreeRecursive(Node& node, const vector<Bvh*>& fatherCollidingRegions, const vector<Bvh*>& fatherFullyContainedRegions, int currentLevel) {
+	TIME(TimeLogger timeLoggerTotal{ [&timingInfo = node.timingInfo](NodeTimingInfo::DurationMs duration) { timingInfo.logTotal(duration); } };);
+
 	vector<Bvh*> collidingRegions;
 	node.bvhs = fatherFullyContainedRegions; //if the father node was fully contained in some region, for sure the child will also be
 	bool leafNode = true; //this will become false if there is a region that intersects the node, but doesn't fully contain it
@@ -118,12 +133,15 @@ void pah::TopLevelOctree::buildOctreeRecursive(Node& node, const vector<Bvh*>& f
 				node.aabb.max - halfExtents * (Vector3{1.0f, 1.0f, 1.0f} - position)
 			};
 			child = make_unique<Node>(childAabb); //create empty child
+			TIME(timeLoggerTotal.pause();); //in the time for this node, we don't want to include the time used to build all its descendents
 			buildOctreeRecursive(*child, collidingRegions, node.bvhs, currentLevel); //build child
+			TIME(timeLoggerTotal.resume(););
 		}
 	}
 
 	//If conservativeApproach is true, the node only contains the regions that fully contain it.
 	//In this way we have slightly smaller regions than the original, since it is likely that, at the border of the region, it wouldn't be useful to look in the local BVH first.
+	//On the other hand, this can give rise to not fully connected regions.
 	if(!properties.conservativeApproach) node.bvhs.append_range(collidingRegions);
 }
 
@@ -139,3 +157,4 @@ Vector3 pah::TopLevelOctree::indexToPosition(int i) {
 	bool forward = (i >> 0) & 1, upward = (i >> 1) & 1, rightward = ((i >> 2) & 1);
 	return Vector3{ rightward, upward, forward };
 }
+

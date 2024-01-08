@@ -77,8 +77,6 @@ namespace pah {
 			 * @brief Adds together 2 NodeTimingInfo objects.
 			 */
 			NodeTimingInfo& operator+=(const NodeTimingInfo& lhs) {
-
-				//else, compute the average between the 2
 				total = total + lhs.total;
 				splittingTot = splittingTot + lhs.splittingTot;
 				computeCostTot = computeCostTot + lhs.computeCostTot;
@@ -194,7 +192,8 @@ namespace pah {
 
 		const Node& getRoot() const; /**< @brief Returns the root of the @p Bvh. */
 		const InfluenceArea& getInfluenceArea() const; /**< @brief Returns the @p InfluenceArea of the @p Bvh. */
-		const NodeTimingInfo::DurationMs getTotalBuildTime() const; /**< @brief Returns the time it took to build this @p Bvh. */
+		INFO(const NodeTimingInfo::DurationMs getTotalBuildTime() const;); /**< @brief Returns the time it took to build this @p Bvh. */
+		const Properties getProperties() const; /**< @brief Returns the properties of this @p Bvh. */
 
 	private:
 		/**
@@ -239,7 +238,7 @@ namespace pah {
 		std::function<ShouldStopType> shouldStop;
 
 		std::mt19937 rng; //random number generator
-		NodeTimingInfo::DurationMs totalBuildTime; //total time of the last build
+		INFO(NodeTimingInfo::DurationMs totalBuildTime;); //total time of the last build
 		unsigned long long int id; //id of this BVH: it is a cheap way to check if 2 BVHs are equal
 	};
 

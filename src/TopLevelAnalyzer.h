@@ -81,6 +81,8 @@ namespace pah {
 		 */
 		json analyze(const TopLevelOctree& topLevel) {
 			json analyses = topLevelAnalyzer.analyze(topLevel); //get the analyses of all the BVHs
+			INFO(analyses["octree"]["timing"] += topLevel.getTotalBuildTime().count();); //add info about build time
+			analyses["octree"]["properties"] = topLevel.getProperties();
 
 			//now analyze the octree
 			std::queue<TopLevelOctree::Node*> toAnalyze;
@@ -88,7 +90,7 @@ namespace pah {
 			while (!toAnalyze.empty()) {
 				auto& currentNode = toAnalyze.front();
 				toAnalyze.pop(); //remove the element we got via front()
-				analyses["octree"] += *currentNode;
+				analyses["octree"]["nodes"] += *currentNode;
 				if (currentNode->isLeaf()) continue;
 				for(auto& childPtr : currentNode->children) toAnalyze.push(&*childPtr); //add all children to the queue				
 			}	

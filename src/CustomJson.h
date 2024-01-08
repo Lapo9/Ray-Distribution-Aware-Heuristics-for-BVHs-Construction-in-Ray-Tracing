@@ -37,6 +37,9 @@ namespace pah {
 	void to_json(json& j, const Pov&);
 	void to_json(json& j, const Triangle&);
 	void to_json(json& j, const Bvh::NodeTimingInfo&);
+	void to_json(json& j, const TopLevelOctree::NodeTimingInfo&);
+	void to_json(json& j, const Bvh::Properties&);
+	void to_json(json& j, const TopLevelOctree::Properties&);
 
 	namespace projection {
 		void to_json(json& j, const ProjectionMatrixParameters&);

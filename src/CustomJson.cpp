@@ -156,6 +156,22 @@ void pah::to_json(json& j, const Bvh::NodeTimingInfo& nti) {
 	TIME(j["nodesCreationAverage"] =			nti.nodesCreationMean().count(););
 }
 
+void pah::to_json(json& j, const TopLevelOctree::NodeTimingInfo& nti) {
+	TIME(j["total"] = nti.total.count(););
+}
+
+void pah::to_json(json& j, const Bvh::Properties& properties) {
+	j["bins"] = properties.bins;
+	j["maxLeafCost"] = properties.maxLeafCost;
+	j["maxLevels"] = properties.maxLevels;
+	j["maxTrianglesPerLeaf"] = properties.maxTrianglesPerLeaf;
+}
+
+void pah::to_json(json& j, const TopLevelOctree::Properties& properties) {
+	j["conservativeApproach"] = properties.conservativeApproach;
+	j["maxLevel"] = properties.maxLevel;
+}
+
 void pah::projection::to_json(json& j, const ProjectionMatrixParameters& params) {
 	j["n"] = params.n;
 	j["f"] = params.f;

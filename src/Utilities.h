@@ -214,14 +214,16 @@ namespace pah {
 			 * 
 			 */
 			~TimeLogger() {
-				if(stopped) log();
+				if(!stopped) log();
 			}
 
 			/**
 			 * @brief Executes the final action, but the @p TimeLogger still continues to run.
 			 */
 			void log() {
-				auto duration = std::chrono::high_resolution_clock::now() - startTime;
+				std::chrono::duration<float, std::milli> duration = std::chrono::high_resolution_clock::now() - startTime;
+				resume(); //if the timer was paused, we resume it, so that we get the correct paused time
+				duration -= pausedTime; //real duration = time passed from start to finish - paused time
 				assert((duration.count() > 0, "Recorded duration <= 0"));
 				for (const auto& finalAction : finalActions) {
 					finalAction(duration);
@@ -229,17 +231,37 @@ namespace pah {
 			}
 
 			/**
-			 * @brief Executes the final action, and the @p TimeLogger stops.
+			 * @brief Executes the final action, and the @p TimeLogger stops. Can be called only once.
 			 * 
 			 */
 			void stop() {
-				//TODO fix this
-				//if (stopped) {
-				//	throw std::exception("Cannot stop an already stopped TimeLogger.");
-				//}
+				throwIfStopped();
 				log();
-				stopped = false;
+				stopped = true;
 			}
+
+			/**
+			 * @brief Pauses the timer. If the timer was already paused, nothing happens.
+			 */
+			void pause() {
+				throwIfStopped();
+				if (!paused) {
+					lastPauseTime = std::chrono::high_resolution_clock::now();
+					paused = true;
+				}
+			}
+
+			/**
+			 * @brief Resumes the timer. If the timer was already running, nothing happens.
+			 */
+			void resume() {
+				throwIfStopped();
+				if (paused) {
+					pausedTime += std::chrono::high_resolution_clock::now() - lastPauseTime;
+					paused = false;
+				}
+			}
+
 
 			//possible final actions
 
@@ -258,9 +280,21 @@ namespace pah {
 			}
 
 		private:
+			/**
+			 * @brief Throws an exception if the timer is stopped.
+			 */
+			void throwIfStopped() const {
+				if (stopped) { 
+					throw std::exception("Cannot perform any action on an already stopped TimeLogger."); 
+				}
+			}
+
 			std::chrono::time_point<std::chrono::high_resolution_clock> startTime;
+			std::chrono::time_point<std::chrono::high_resolution_clock> lastPauseTime;
+			std::chrono::duration<float, std::milli> pausedTime; //the time the timer has been paused
 			std::vector<std::function<void(std::chrono::duration<float, std::milli> duration)>> finalActions;
-			bool stopped = true;
+			bool stopped = false;
+			bool paused = false;
 		};
 	}
 }

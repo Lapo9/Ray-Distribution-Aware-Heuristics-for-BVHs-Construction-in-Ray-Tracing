@@ -54,5 +54,5 @@ int main() {
 	};
 	json analysis = analyzer.analyze(topLevelStructure, "D:/Users/lapof/Documents/Development/ProjectedAreaHeuristicVisualizer/Assets/Data/bvh.json");
 
-	std::cout << std::setw(2) << analysis;
+	//std::cout << std::setw(2) << analysis;
 }

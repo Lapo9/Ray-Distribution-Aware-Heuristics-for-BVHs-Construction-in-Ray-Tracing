@@ -13,7 +13,7 @@ pah::Bvh::Bvh(const Properties& properties, const InfluenceArea& influenceArea, 
 	
 void pah::Bvh::build(const vector<const Triangle*>& triangles) {
 	//the final action simply adds the measured time to the total time
-	TimeLogger timeLogger{ [this](NodeTimingInfo::DurationMs duration) { totalBuildTime = duration; } };
+	INFO(TimeLogger timeLogger{ [this](NodeTimingInfo::DurationMs duration) { totalBuildTime = duration; } };);
 
 	random_device randomDevice;
 	build(triangles, randomDevice()); //the seed is random
@@ -92,8 +92,12 @@ const pah::InfluenceArea& pah::Bvh::getInfluenceArea() const {
 	return *influenceArea;
 }
 
-const pah::Bvh::NodeTimingInfo::DurationMs pah::Bvh::getTotalBuildTime() const {
+INFO(const pah::Bvh::NodeTimingInfo::DurationMs pah::Bvh::getTotalBuildTime() const {
 	return totalBuildTime;
+})
+
+const pah::Bvh::Properties pah::Bvh::getProperties() const {
+	return properties;
 }
 
 pah::Bvh::ComputeCostReturnType pah::Bvh::computeCostWrapper(const Node& parent, const Node& node, const InfluenceArea& influenceArea, float rootArea) {

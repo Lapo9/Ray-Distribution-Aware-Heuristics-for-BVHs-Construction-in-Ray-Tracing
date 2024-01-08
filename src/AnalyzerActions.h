@@ -131,6 +131,7 @@ namespace pah::analyzerActions {
 		static void core(std::pair<int, int>& nodesAndLeaves, ANALYZER_ACTION_FINAL_ARGUMENTS) {
 			log["globalInfo"]["numberOfNodes"] = nodesAndLeaves.first;
 			log["globalInfo"]["numberOfLeaves"] = nodesAndLeaves.second;
+			log["globalInfo"]["properties"] = bvh.getProperties();
 		}
 
 		/**
@@ -178,7 +179,7 @@ namespace pah::analyzerActions {
 			TIME(log["totalTiming"] = meanTimeInfo;);
 
 			//log total time
-			TIME(log["totalTiming"]["fullTotal"] = bvh.getTotalBuildTime().count(););
+			INFO(log["totalTiming"]["fullTotal"] = bvh.getTotalBuildTime().count(););
 		}
 	}
 }

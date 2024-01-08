@@ -63,13 +63,43 @@ namespace pah {
 	class TopLevelOctree : public TopLevel {
 	public:
 		//related classes
+		struct NodeTimingInfo {
+			using DurationMs = std::chrono::duration<float, std::milli>;
+			DurationMs total;
+
+			void logTotal(DurationMs duration) {
+				total = duration;
+			}
+
+			/**
+			 * @brief Adds together 2 NodeTimingInfo objects.
+			 */
+			NodeTimingInfo& operator+=(const NodeTimingInfo& lhs) {
+				total = total + lhs.total;
+				return *this;
+			}
+
+			friend NodeTimingInfo& operator+(NodeTimingInfo lhs, const NodeTimingInfo& rhs) {
+				return lhs += rhs;
+			}
+
+			friend bool operator==(const NodeTimingInfo& lhs, const NodeTimingInfo& rhs) {
+				return	lhs.total == rhs.total;
+			}
+		};
+
 		struct Node {
 			Aabb aabb;
 			std::vector<Bvh*> bvhs;
 			std::array<std::unique_ptr<Node>, 8> children;
+			TIME(NodeTimingInfo timingInfo;)
 
-			Node() {}
-			Node(const Aabb& aabb) : aabb{ aabb } {}
+			Node() {
+				TIME(timingInfo = NodeTimingInfo{};);
+			}
+			Node(const Aabb& aabb) : aabb{ aabb } {
+				TIME(timingInfo = NodeTimingInfo{};);
+			}
 
 			bool isLeaf() const {
 				if (leaf.has_value()) return leaf.value(); //if the user set that this node is a leaf, we can shortcut
@@ -115,6 +145,8 @@ namespace pah {
 		std::vector<Bvh*> containedIn(const Vector3&) override;
 
 		Node& getRoot() const;
+		INFO(const NodeTimingInfo::DurationMs getTotalBuildTime() const;); /**< @brief Returns the time it took to build this @p TopLevelOctree. */
+		Properties getProperties() const; /**< @brief Returns the properties of this @p TopLevelOctree. */
 
 	private:
 		/**
@@ -147,5 +179,6 @@ namespace pah {
 
 		std::unique_ptr<Node> root;
 		Properties properties;
+		INFO(NodeTimingInfo::DurationMs totalBuildTime;);
 	};
 }
