@@ -156,6 +156,21 @@ namespace pah {
 		void setUp(Vector3 up) { this->up = glm::normalize(up); }
 	};
 
+	struct Ray {
+	private:
+		Vector3 position;
+		Vector3 direction;
+
+	public:
+		Ray() : position{}, direction{ Vector3{1, 0, 0} } {}
+		Ray(Vector3 position, Vector3 direction) : position{ position }, direction{ direction } {}
+		
+		const Vector3& getPosition() const { return position; }
+		void setPosition(Vector3 position) { this->position = position; }
+		const Vector3& getDirection() const { return direction; }
+		void setDirection(Vector3 direction) { this->direction = glm::normalize(direction); }
+	};
+
 	namespace utilities {
 
 		/**

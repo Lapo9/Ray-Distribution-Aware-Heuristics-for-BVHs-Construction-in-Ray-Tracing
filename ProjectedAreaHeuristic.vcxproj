@@ -30,6 +30,7 @@
     <ClInclude Include="src\settings.h" />
     <ClInclude Include="src\TopLevel.h" />
     <ClInclude Include="src\TopLevelAnalyzer.h" />
+    <ClInclude Include="src\Traversal.h" />
     <ClInclude Include="src\Utilities.h" />
   </ItemGroup>
   <ItemGroup>

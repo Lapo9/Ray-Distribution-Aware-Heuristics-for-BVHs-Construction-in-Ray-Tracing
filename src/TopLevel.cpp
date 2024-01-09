@@ -14,11 +14,11 @@ using namespace pah::utilities;
 
 // ======| TopLevel |======
 void pah::TopLevel::build() {
-	unordered_map<pah::Bvh*, vector<const Triangle*>> bvhsTriangles; //maps the BVH and the triangles it contains
+	unordered_map<const pah::Bvh*, vector<const Triangle*>> bvhsTriangles; //maps the BVH and the triangles it contains
 
 	//understand the BVHs each triangle is contained into
 	for (auto& t : triangles) {
-		unordered_set<pah::Bvh*> containedInto; //the BVHs where thre triangle is contained into
+		unordered_set<const pah::Bvh*> containedInto; //the BVHs where thre triangle is contained into
 
 		//for each vertex, get the BVHs it is contained into, and add them to the set (we directly use the containedIn function, so this is polymorphic
 		containedInto.insert_range(containedIn(t.v1));
@@ -51,8 +51,8 @@ void pah::TopLevelAabbs::update() {
 	throw exception{ "TopLevelAabbs::update function not implemented yet." };
 }
 
-vector<pah::Bvh*> pah::TopLevelAabbs::containedIn(const Vector3& point) {
-	vector<Bvh*> containedIn;
+vector<const pah::Bvh*> pah::TopLevelAabbs::containedIn(const Vector3& point) const {
+	vector<const Bvh*> containedIn;
 	for (auto& bvh : bvhs) {
 		if (bvh.getInfluenceArea().getBvhRegion().contains(point)) {
 			containedIn.push_back(&bvh);
@@ -78,14 +78,14 @@ void pah::TopLevelOctree::update() {
 	throw exception{ "TopLevelOctree::update function not implemented yet." };
 }
 
-vector<pah::Bvh*> pah::TopLevelOctree::containedIn(const Vector3& point) {
+vector<const pah::Bvh*> pah::TopLevelOctree::containedIn(const Vector3& point) const {
 	Node* current = &*root;
 	while (!current->isLeaf()) {
 		auto center = current->aabb.center();
 		int index = positionToIndex(point.x > center.x, point.y > center.y, point.z > center.z); //get the index based on the position of the point (point is assumed to be inside the current node AABB)
 		current = &*current->children[index];
 	}
-	return current->bvhs;
+	return vector<const Bvh*>{ current->bvhs.begin(), current->bvhs.end() };
 }
 
 TopLevelOctree::Node& pah::TopLevelOctree::getRoot() const {

@@ -32,7 +32,7 @@ namespace pah {
 		/**
 		 * @brief Given a point, returns the @p Region s it belongs to.
 		 */
-		virtual std::vector<Bvh*> containedIn(const Vector3&) = 0;
+		virtual std::vector<const Bvh*> containedIn(const Vector3&) const = 0;
 
 		/**
 		 * @brief Returns the @p Bvh s that are part of this @p TopLevel structure.
@@ -57,7 +57,7 @@ namespace pah {
 
 		void build() override;
 		void update() override;
-		std::vector<Bvh*> containedIn(const Vector3&) override;
+		std::vector<const Bvh*> containedIn(const Vector3&) const override;
 	};
 
 	class TopLevelOctree : public TopLevel {
@@ -142,7 +142,7 @@ namespace pah {
 
 		void build() override;
 		void update() override;
-		std::vector<Bvh*> containedIn(const Vector3&) override;
+		std::vector<const Bvh*> containedIn(const Vector3&) const override;
 
 		Node& getRoot() const;
 		INFO(const NodeTimingInfo::DurationMs getTotalBuildTime() const;); /**< @brief Returns the time it took to build this @p TopLevelOctree. */
