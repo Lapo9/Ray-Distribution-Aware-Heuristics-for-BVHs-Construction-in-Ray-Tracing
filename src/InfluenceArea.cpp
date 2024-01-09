@@ -33,6 +33,10 @@ Vector3 pah::PlaneInfluenceArea::getRayDirection(const Aabb& aabb) const {
 	return plane.getNormal();
 }
 
+bool pah::PlaneInfluenceArea::isDirectionAffine(const Vector3& direction, float tolerance) const {
+	return collisionDetection::almostParallel(direction, plane.getNormal(), tolerance);
+}
+
 std::vector<std::tuple<pah::Axis, std::function<bool(float bestCostSoFar)>>> pah::PlaneInfluenceArea::bestSplittingPlanes() const {
 	throw logic_error("Function not implemented yet!");
 }
@@ -63,18 +67,19 @@ float pah::PointInfluenceArea::getProjectedArea(const Aabb& aabb) const
 	return projection::perspective::computeProjectedArea(aabb, centeredPov);
 }
 
-float pah::PointInfluenceArea::getInfluence(const Aabb& aabb) const
-{
+float pah::PointInfluenceArea::getInfluence(const Aabb& aabb) const{
 	return density;
 }
 
-Vector3 pah::PointInfluenceArea::getRayDirection(const Aabb& aabb) const
-{
+Vector3 pah::PointInfluenceArea::getRayDirection(const Aabb& aabb) const{
 	return aabb.center() - pov.getPosition();
 }
 
-std::vector<std::tuple<Axis, std::function<bool(float bestCostSoFar)>>> pah::PointInfluenceArea::bestSplittingPlanes() const
-{
+bool pah::PointInfluenceArea::isDirectionAffine(const Vector3& direction, float tolerance) const {
+	throw logic_error("Function not implemented yet!"); //TODO implement this (maybe subdivide the unit sphere into discrete sections)
+}
+
+std::vector<std::tuple<Axis, std::function<bool(float bestCostSoFar)>>> pah::PointInfluenceArea::bestSplittingPlanes() const{
 	throw logic_error("Function not implemented yet!");
 }
 

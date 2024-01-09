@@ -2,6 +2,7 @@
 
 #include <limits>
 #include <chrono>
+#include <queue>
 
 using namespace std;
 using namespace pah::utilities;
@@ -119,4 +120,26 @@ pah::Bvh::ShouldStopReturnType pah::Bvh::shouldStopWrapper(const Node& parent, c
 	TIME(TimeLogger timeLogger{ [&timingInfo = parent.nodeTimingInfo](auto duration) { timingInfo.logShouldStop(duration); } };);
 	return shouldStop(node, properties, currentLevel, nodeCost);
 	//here timeLogger will be destroyed, and it will log (by calling finalAction)
+}
+
+pah::Bvh::TraversalResults pah::Bvh::traverse(const Ray& ray) const {
+	TraversalResults res{};
+	queue<const Node*> toVisit{};
+	toVisit.push(&root);
+
+	while (toVisit.size() > 0) {
+		const Node& current = *toVisit.front();
+		toVisit.pop(); //queue::front doesn't remove the element from the queue, it just accesses it
+		if (collisionDetection::areColliding(ray, current.aabb)) {
+			res.intersectionsCount++;
+			if (current.isLeaf()) {
+				res.traversalCost += LEAF_COST * current.triangles.size();
+			}
+			else {
+				res.traversalCost += NODE_COST * 2.0f;
+				toVisit.push(&*current.leftChild);
+				toVisit.push(&*current.rightChild);
+			}
+		}
+	}
 }

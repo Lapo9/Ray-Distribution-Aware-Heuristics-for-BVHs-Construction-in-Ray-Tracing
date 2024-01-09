@@ -495,11 +495,19 @@ static bool collisionDetection::areColliding(const Frustum & frustum, const Aabb
 	return true; //if we havent't found any axis where there is no overlap, boxes are colliding
 }
 
-static bool collisionDetection::almostParallel(const Vector3 & lhs, const Vector3 & rhs, float threshold) {
-	return abs(dot(lhs, rhs)) < threshold;
+bool pah::collisionDetection::areColliding(const Ray& ray, const Aabb& aabb) {
+	logic_error("Function not implemented yet!"); //TODO implement this
 }
 
-static bool collisionDetection::almostAabb(const Obb & obb) {
+bool pah::collisionDetection::areColliding(const Ray& ray, const Aabb& aabb) {
+	logic_error("Function not implemented yet!"); //TODO implement this
+}
+
+static bool collisionDetection::almostParallel(const Vector3 & lhs, const Vector3 & rhs, float threshold) {
+	return abs(dot(lhs, rhs)) > abs(length(lhs) * length(rhs)) - threshold * abs(length(lhs) * length(rhs)); //if vectors are parallel then a . b = ||a|| * ||b||
+}
+
+static bool collisionDetection::almostAabb(const Obb& obb) {
 	return
 		(almostParallel(obb.forward, Vector3{ 0,0,1 }) && almostParallel(obb.right, Vector3{ 1,0,0 })) ||
 		(almostParallel(obb.forward, Vector3{ 0,0,1 }) && almostParallel(obb.up, Vector3{ 1,0,0 })) ||

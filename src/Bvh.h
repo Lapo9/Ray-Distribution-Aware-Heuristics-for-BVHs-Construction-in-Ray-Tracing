@@ -151,6 +151,14 @@ namespace pah {
 		};
 
 		/**
+		 * @brief Info about the results of a traversal of the @p Bvh of a @p Ray.
+		 */
+		struct TraversalResults {
+			int intersectionsCount;
+			int traversalCost;
+		};
+
+		/**
 		 * @brief Properties used to build the @p Bvh.
 		 */
 		struct Properties {
@@ -189,6 +197,12 @@ namespace pah {
 		 * @brief Constructs the @p Bvh on a set of triangles. It is possible to specify the seed for the random operations during the construction.
 		 */
 		void build(const std::vector<const Triangle*>& triangles, unsigned int seed);
+
+		/**
+		 * @brief Traverses the @p Bvh and returns some stats about the traversal.
+		 */
+		TraversalResults traverse(const Ray& ray) const;
+
 
 		const Node& getRoot() const; /**< @brief Returns the root of the @p Bvh. */
 		const InfluenceArea& getInfluenceArea() const; /**< @brief Returns the @p InfluenceArea of the @p Bvh. */

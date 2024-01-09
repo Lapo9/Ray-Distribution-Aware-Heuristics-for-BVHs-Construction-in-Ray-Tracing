@@ -5,6 +5,7 @@
 #include "glm/glm.hpp"
 
 #include "Utilities.h"
+#include "settings.h"
 
 namespace pah {
 	//forward declarations
@@ -324,9 +325,19 @@ namespace pah {
 		static bool areColliding(const Frustum& frustum, const Aabb& aabb);
 
 		/**
+		 * @brief Returns whether a @p Ray is colliding with an @p Aabb.
+		 */
+		static bool areColliding(const Ray& ray, const Aabb& aabb);
+
+		/**
+		 * @brief Returns whether a @p Ray is colliding with a @p Triangle.
+		 */
+		static bool areColliding(const Ray& frustum, const Triangle& aabb);
+
+		/**
 		 * @brief Checks whether 2 vectors are almost parallel.
 		 */
-		static bool almostParallel(const Vector3& lhs, const Vector3& rhs, float threshold = 0.01f);
+		static bool almostParallel(const Vector3& lhs, const Vector3& rhs, float threshold = TOLERANCE);
 
 		/**
 		 * @brief Checks whether and OBB is "almost" an AABB.

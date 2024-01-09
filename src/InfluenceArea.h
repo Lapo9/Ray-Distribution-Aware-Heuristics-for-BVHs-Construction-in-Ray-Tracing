@@ -34,6 +34,11 @@ namespace pah {
 		 */
 		virtual Vector3 getRayDirection(const Aabb& aabb) const = 0;
 
+		/**
+		 * @brief Returns whether a direction is "affine" to this influence area.
+		 */
+		virtual bool isDirectionAffine(const Vector3& direction, float tolerance) const = 0;
+
 		// TODO probably this will be removed. It should return the best way to split the AABB
 		virtual std::vector<std::tuple<Axis, std::function<bool(float bestCostSoFar)>>> bestSplittingPlanes() const = 0;
 
@@ -57,6 +62,7 @@ namespace pah {
 		float getProjectedArea(const Aabb& aabb) const override;
 		float getInfluence(const Aabb& aabb) const override;
 		Vector3 getRayDirection(const Aabb& aabb) const override;
+		bool isDirectionAffine(const Vector3& direction, float tolerance) const override;
 		std::vector<std::tuple<Axis, std::function<bool(float bestCostSoFar)>>> bestSplittingPlanes() const override;
 
 		const Plane& getPlane() const;
@@ -78,6 +84,7 @@ namespace pah {
 		float getProjectedArea(const Aabb& aabb) const override;
 		float getInfluence(const Aabb& aabb) const override;
 		Vector3 getRayDirection(const Aabb& aabb) const override;
+		bool isDirectionAffine(const Vector3& direction, float tolerance) const override;
 		std::vector<std::tuple<Axis, std::function<bool(float bestCostSoFar)>>> bestSplittingPlanes() const override;
 
 		const Pov& getPov() const;
