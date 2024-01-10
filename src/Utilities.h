@@ -168,15 +168,15 @@ namespace pah {
 
 	struct Ray {
 	private:
-		Vector3 position;
+		Vector3 origin;
 		Vector3 direction;
 
 	public:
-		Ray() : position{}, direction{ Vector3{1, 0, 0} } {}
-		Ray(Vector3 position, Vector3 direction) : position{ position }, direction{ direction } {}
+		Ray() : origin{}, direction{ Vector3{1, 0, 0} } {}
+		Ray(Vector3 origin, Vector3 direction) : origin{ origin }, direction{ direction } {}
 		
-		const Vector3& getPosition() const { return position; }
-		void setPosition(Vector3 position) { this->position = position; }
+		const Vector3& getOrigin() const { return origin; }
+		void setOrigin(Vector3 origin) { this->origin = origin; }
 		const Vector3& getDirection() const { return direction; }
 		void setDirection(Vector3 direction) { this->direction = glm::normalize(direction); }
 	};

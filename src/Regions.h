@@ -326,11 +326,14 @@ namespace pah {
 
 		/**
 		 * @brief Returns whether a @p Ray is colliding with an @p Aabb, and the distance of the hit (if present).
+		 * Implementation of the branchless slab ray-box intersection algorithm (https://tavianator.com/2011/ray_box.html).
+		 * See this for a 2D visualization: https://www.geogebra.org/m/np3tnjvb
 		 */
 		static std::pair<bool, float> areColliding(const Ray& ray, const Aabb& aabb);
 
 		/**
 		 * @brief Returns whether a @p Ray is colliding with a @p Triangle, and the distance of the hit (if present).
+		 * https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/ray-triangle-intersection-geometric-solution.html
 		 */
 		static std::pair<bool, float> areColliding(const Ray& ray, const Triangle& triangle);
 

@@ -39,7 +39,7 @@ TopLevel::TraversalInfo pah::TopLevel::traverse(const TopLevel& topLevel, const 
 	TraversalInfo res{};
 	TIME(TimeLogger timeLogger{ [&res](auto duration) {res.traversalTime = duration; } });
 
-	const auto& relevantBvhs = topLevel.containedIn(ray.getPosition()); //here we have the BVHs where the starting point of the ray is contained (we don't know if the direction is relevant tho)
+	const auto& relevantBvhs = topLevel.containedIn(ray.getOrigin()); //here we have the BVHs where the starting point of the ray is contained (we don't know if the direction is relevant tho)
 	res.totalBvhs = relevantBvhs.size();
 
 	for (const auto& bvh : relevantBvhs) {

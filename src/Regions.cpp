@@ -496,7 +496,39 @@ static bool collisionDetection::areColliding(const Frustum & frustum, const Aabb
 }
 
 pair<bool, float> pah::collisionDetection::areColliding(const Ray& ray, const Aabb& aabb) {
-	logic_error("Function not implemented yet!"); //TODO implement this
+	Vector3 invDir = 1.0f / ray.getDirection(); //we cache the inverse of the direction
+
+	// Here we find the value of t where the ray intersects the plane parallel to the yz plane and passing from aabb.min (or aabb.max in the second case).
+	// The parametric equation of a point on the ray is: P = O + t*N where O is ray.origin and N is ray.direction.
+	// Since we want the intersection with a plane parallel to the yz plane, we can fix P.x = PX = aabb.min
+	// Now: (PX, p.y, p.z) = (O.x + O.y + O.z) + t * (N.x, N.y, N.z) --> PX = O.x + t * N.x --> t = (PX - O.x) / N.x
+	float tx1 = (aabb.min.x - ray.getOrigin().x) * invDir.x;
+	float tx2 = (aabb.max.x - ray.getOrigin().x) * invDir.x;
+
+	// These are the values of t where there are the closest and furthest intersection with the AABB
+	float tMin = glm::min(tx1, tx2); 
+	float tMax = glm::max(tx1, tx2);
+
+	// We do the same with the xz plane.
+	float ty1 = (aabb.min.y - ray.getOrigin().y) * invDir.y;
+	float ty2 = (aabb.max.y - ray.getOrigin().y) * invDir.y;
+
+	// The smallest t for an intersection with the AABB, is the maximum between the t that intersects with the yz plane and the t that intersects with the xz plane (it is easier to visualize this in 2D).
+	// Analogue for tMax.
+	tMin = glm::max(tMin, glm::min(ty1, ty2));
+	tMax = glm::min(tMax, glm::max(ty1, ty2));
+
+	// Same for xy plane.
+	float tz1 = (aabb.min.z - ray.getOrigin().z) * invDir.z;
+	float tz2 = (aabb.max.z - ray.getOrigin().z) * invDir.z;
+
+	tMin = glm::max(tMin, glm::min(tz1, tz2));
+	tMax = glm::min(tMax, glm::max(tz1, tz2));
+
+	// Now, if tMax is > tMin, we have an intersection (the closest one at ray.origin + tMin * ray.dir)
+	return { tMax > tMin, tMin };
+
+	//TODO yet to be tested
 }
 
 pair<bool, float> pah::collisionDetection::areColliding(const Ray& ray, const Triangle& triangle) {
@@ -509,13 +541,13 @@ pair<bool, float> pah::collisionDetection::areColliding(const Ray& ray, const Tr
 	if (abs(dot(N, R)) < TOLERANCE) return { false, 0.0f };
 	
 	// P = O + tR is the parametric equation of the ray.
-	// A * x + B * y + C * z + D = 0 is the equation of the plane where the triangle lies.
+	// A*x + B*y + C*z + D = 0 is the equation of the plane where the triangle lies.
 	// We know that any vertex of the triangle (e.g. V0) is on the plane, and that the normal to the plane N = (A, B, C), and D is the distance from the origin (O) to the plane.
-	// Therefore D = -(Ax + By + Cz) = -(Nx * V0x + Ny * V0y + Nz * V0z) = -dot(N, V0)
+	// Therefore D = -(A.x + B.y + C.z) = -(N.x * V0.x + N.y * V0.y + N.z * V0.z) = -dot(N, V0)
 	float D = -dot(N, triangle.v1);
 
 	// To find the ray-plane intersection we can force the point of the plane to be P:
-	// A * Px + B * Py + C * Pz + D = 0 --> A * (Ox + t*Rx) + B * (Oy + t*Ry) + C * (Oz + t*Rz) + D = 0 --> t = -(dot(N, O) + D) / dot(N, R)
+	// A * P.x + B * P.y + C * P.z + D = 0 --> A * (O.x + t*R.x) + B * (O.y + t*R.y) + C * (O.z + t*R.z) + D = 0 --> t = -(dot(N, O) + D) / dot(N, R)
 	float t = -(dot(N, O) + D) / dot(N, R);
 
 	// If the triangle is behind the ray origin, there is no intersection
@@ -524,7 +556,7 @@ pair<bool, float> pah::collisionDetection::areColliding(const Ray& ray, const Tr
 	// Now we have to find out whether the point is inside the triangle .
 	// The point is inside iff it is "to the left" of all sides (taken in counter clockwise order).
 	// If it is "to the left" of an edge, then the normal (N) and the cross product between the edge and the vector connecting the start of the edge and the point (P) should face the same direction (i.e. their dot product > 0).
-	const auto& P = ray.getPosition() + R * t; //coordinates of the intersection point between the ray and the plane
+	const auto& P = ray.getOrigin() + R * t; //coordinates of the intersection point between the ray and the plane
 	Vector3 e1 = triangle.v2 - triangle.v1; //vector representing a triangle edge
 	Vector3 p1 = P - triangle.v1; //vector from the vertex of the triangle to the intersection point
 	if (dot(N, cross(e1, p1)) <= 0) return { false, 0.0f };
