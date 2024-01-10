@@ -21,6 +21,7 @@ namespace pah {
 	using Vector4 = glm::vec4;
 	using Matrix3 = glm::mat3;
 	using Matrix4 = glm::mat4;
+	using DurationMs = std::chrono::duration<float, std::milli>;
 
 	/**
 	 * @brief Represents a random distribution in 3 dimensions. @p distribution(rng) must return a @p Vector3.
@@ -83,6 +84,15 @@ namespace pah {
 		 */
 		Vector3 center() const {
 			return (v1 + v2 + v3) / 3.0f;
+		}
+
+		/**
+		 * @brief Returns the normal to this @p Triangle.
+		 */
+		Vector3 normal() const {
+			Vector3 e1 = v2 - v1; //first edge
+			Vector3 e2 = v3 - v1; //second edge
+			return glm::normalize(glm::cross(e1, e2));
 		}
 
 		/**

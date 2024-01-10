@@ -325,14 +325,14 @@ namespace pah {
 		static bool areColliding(const Frustum& frustum, const Aabb& aabb);
 
 		/**
-		 * @brief Returns whether a @p Ray is colliding with an @p Aabb.
+		 * @brief Returns whether a @p Ray is colliding with an @p Aabb, and the distance of the hit (if present).
 		 */
-		static bool areColliding(const Ray& ray, const Aabb& aabb);
+		static std::pair<bool, float> areColliding(const Ray& ray, const Aabb& aabb);
 
 		/**
-		 * @brief Returns whether a @p Ray is colliding with a @p Triangle.
+		 * @brief Returns whether a @p Ray is colliding with a @p Triangle, and the distance of the hit (if present).
 		 */
-		static bool areColliding(const Ray& frustum, const Triangle& aabb);
+		static std::pair<bool, float> areColliding(const Ray& ray, const Triangle& triangle);
 
 		/**
 		 * @brief Checks whether 2 vectors are almost parallel.

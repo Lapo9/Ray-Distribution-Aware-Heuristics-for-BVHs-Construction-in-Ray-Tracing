@@ -13,6 +13,19 @@ namespace pah {
 	 */
 	class TopLevel {
 	public:
+		//related classes
+		struct TraversalInfo {
+			int bvhsTraversed; /**< How many @p Bvh s we traversed before fnding the hit. */
+			int totalBvhs; /**< How many potential @p Bvh s we could have traversed. */
+			Triangle* closestHit;
+			float closestHitDistance;
+			TIME(DurationMs traversalTime;);
+
+			bool hit() const {
+				return closestHit != nullptr;
+			}
+		};
+
 		template<std::same_as<Bvh>... Bvh>
 		TopLevel(const std::vector<Triangle>& triangles, Bvh&&... bvhs) : triangles{ triangles } {
 			(this->bvhs.emplace_back(std::move(bvhs)), ...);
@@ -33,6 +46,8 @@ namespace pah {
 		 * @brief Given a point, returns the @p Region s it belongs to.
 		 */
 		virtual std::vector<const Bvh*> containedIn(const Vector3&) const = 0;
+
+		virtual TraversalInfo traverse(const TopLevel& topLevel, const Ray& ray);
 
 		/**
 		 * @brief Returns the @p Bvh s that are part of this @p TopLevel structure.
@@ -64,7 +79,6 @@ namespace pah {
 	public:
 		//related classes
 		struct NodeTimingInfo {
-			using DurationMs = std::chrono::duration<float, std::milli>;
 			DurationMs total;
 
 			void logTotal(DurationMs duration) {
@@ -145,7 +159,7 @@ namespace pah {
 		std::vector<const Bvh*> containedIn(const Vector3&) const override;
 
 		Node& getRoot() const;
-		INFO(const NodeTimingInfo::DurationMs getTotalBuildTime() const;); /**< @brief Returns the time it took to build this @p TopLevelOctree. */
+		INFO(const DurationMs getTotalBuildTime() const;); /**< @brief Returns the time it took to build this @p TopLevelOctree. */
 		Properties getProperties() const; /**< @brief Returns the properties of this @p TopLevelOctree. */
 
 	private:
@@ -179,6 +193,6 @@ namespace pah {
 
 		std::unique_ptr<Node> root;
 		Properties properties;
-		INFO(NodeTimingInfo::DurationMs totalBuildTime;);
+		INFO(DurationMs totalBuildTime;);
 	};
 }

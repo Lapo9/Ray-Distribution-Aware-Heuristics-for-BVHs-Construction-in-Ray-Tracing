@@ -495,12 +495,51 @@ static bool collisionDetection::areColliding(const Frustum & frustum, const Aabb
 	return true; //if we havent't found any axis where there is no overlap, boxes are colliding
 }
 
-bool pah::collisionDetection::areColliding(const Ray& ray, const Aabb& aabb) {
+pair<bool, float> pah::collisionDetection::areColliding(const Ray& ray, const Aabb& aabb) {
 	logic_error("Function not implemented yet!"); //TODO implement this
 }
 
-bool pah::collisionDetection::areColliding(const Ray& ray, const Aabb& aabb) {
-	logic_error("Function not implemented yet!"); //TODO implement this
+pair<bool, float> pah::collisionDetection::areColliding(const Ray& ray, const Triangle& triangle) {
+	
+	const auto& N = triangle.normal(); //normal to the triangle
+	const auto& R = ray.getDirection(); //direction of the ray
+	Vector3 O{ 0.0f, 0.0f, 0.0f }; //origin
+
+	//if the ray and the plane of the triangle are parallel, there is no intersection
+	if (abs(dot(N, R)) < TOLERANCE) return { false, 0.0f };
+	
+	// P = O + tR is the parametric equation of the ray.
+	// A * x + B * y + C * z + D = 0 is the equation of the plane where the triangle lies.
+	// We know that any vertex of the triangle (e.g. V0) is on the plane, and that the normal to the plane N = (A, B, C), and D is the distance from the origin (O) to the plane.
+	// Therefore D = -(Ax + By + Cz) = -(Nx * V0x + Ny * V0y + Nz * V0z) = -dot(N, V0)
+	float D = -dot(N, triangle.v1);
+
+	// To find the ray-plane intersection we can force the point of the plane to be P:
+	// A * Px + B * Py + C * Pz + D = 0 --> A * (Ox + t*Rx) + B * (Oy + t*Ry) + C * (Oz + t*Rz) + D = 0 --> t = -(dot(N, O) + D) / dot(N, R)
+	float t = -(dot(N, O) + D) / dot(N, R);
+
+	// If the triangle is behind the ray origin, there is no intersection
+	if (t < 0) return { false, 0.0f };
+
+	// Now we have to find out whether the point is inside the triangle .
+	// The point is inside iff it is "to the left" of all sides (taken in counter clockwise order).
+	// If it is "to the left" of an edge, then the normal (N) and the cross product between the edge and the vector connecting the start of the edge and the point (P) should face the same direction (i.e. their dot product > 0).
+	const auto& P = ray.getPosition() + R * t; //coordinates of the intersection point between the ray and the plane
+	Vector3 e1 = triangle.v2 - triangle.v1; //vector representing a triangle edge
+	Vector3 p1 = P - triangle.v1; //vector from the vertex of the triangle to the intersection point
+	if (dot(N, cross(e1, p1)) <= 0) return { false, 0.0f };
+
+	Vector3 e2 = triangle.v3 - triangle.v2;
+	Vector3 p2 = P - triangle.v2;
+	if (dot(N, cross(e2, p2)) <= 0) return { false, 0.0f };
+
+	Vector3 e3 = triangle.v1 - triangle.v3;
+	Vector3 p3 = P - triangle.v3;
+	if (dot(N, cross(e3, p3)) <= 0) return { false, 0.0f };
+
+	return { true, t };
+
+	//TODO yet to be tested
 }
 
 static bool collisionDetection::almostParallel(const Vector3 & lhs, const Vector3 & rhs, float threshold) {

@@ -19,8 +19,10 @@ namespace pah {
 	class Bvh {
 	public:
 		//related classes
+		/**
+		 * @brief Contains info about the time it took to build a @p Bvh::Node.
+		 */
 		struct NodeTimingInfo {
-			using DurationMs = std::chrono::duration<float, std::milli>;
 			DurationMs total;
 			DurationMs splittingTot;
 			DurationMs computeCostTot;
@@ -156,6 +158,13 @@ namespace pah {
 		struct TraversalResults {
 			int intersectionsCount;
 			int traversalCost;
+			Triangle* closestHit;
+			float closestHitDistance;
+			TIME(DurationMs traversalTime;);
+
+			bool hit() const {
+				return closestHit != nullptr;
+			}
 		};
 
 		/**
@@ -206,7 +215,7 @@ namespace pah {
 
 		const Node& getRoot() const; /**< @brief Returns the root of the @p Bvh. */
 		const InfluenceArea& getInfluenceArea() const; /**< @brief Returns the @p InfluenceArea of the @p Bvh. */
-		INFO(const NodeTimingInfo::DurationMs getTotalBuildTime() const;); /**< @brief Returns the time it took to build this @p Bvh. */
+		INFO(const DurationMs getTotalBuildTime() const;); /**< @brief Returns the time it took to build this @p Bvh. */
 		const Properties getProperties() const; /**< @brief Returns the properties of this @p Bvh. */
 
 	private:
@@ -252,7 +261,7 @@ namespace pah {
 		std::function<ShouldStopType> shouldStop;
 
 		std::mt19937 rng; //random number generator
-		INFO(NodeTimingInfo::DurationMs totalBuildTime;); //total time of the last build
+		INFO(DurationMs totalBuildTime;); //total time of the last build
 		unsigned long long int id; //id of this BVH: it is a cheap way to check if 2 BVHs are equal
 	};
 

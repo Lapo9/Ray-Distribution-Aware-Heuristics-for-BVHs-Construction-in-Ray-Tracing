@@ -35,6 +35,30 @@ void pah::TopLevel::build() {
 	}
 }
 
+TopLevel::TraversalInfo pah::TopLevel::traverse(const TopLevel& topLevel, const Ray& ray) {
+	TraversalInfo res{};
+	TIME(TimeLogger timeLogger{ [&res](auto duration) {res.traversalTime = duration; } });
+
+	const auto& relevantBvhs = topLevel.containedIn(ray.getPosition()); //here we have the BVHs where the starting point of the ray is contained (we don't know if the direction is relevant tho)
+	res.totalBvhs = relevantBvhs.size();
+
+	for (const auto& bvh : relevantBvhs) {
+		//here we check that the direction of the ray is relevant to this particuar BVH
+		if (bvh->getInfluenceArea().isDirectionAffine(ray.getDirection(), TOLERANCE)) { //TODO tolerance here should be a bigger value (we have to tune it)
+			res.bvhsTraversed++;
+			const auto& results = bvh->traverse(ray);
+			if (results.hit()) {
+				res.closestHit = results.closestHit;
+				res.closestHitDistance = results.closestHitDistance;
+				return;
+			}
+		}
+	}
+
+	timeLogger.stop();
+	return res;
+}
+
 const vector<pah::Bvh>& pah::TopLevel::getBvhs() const {
 	return bvhs;
 }
