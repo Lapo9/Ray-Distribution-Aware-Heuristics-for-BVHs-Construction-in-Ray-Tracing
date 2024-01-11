@@ -55,8 +55,16 @@ float pah::PlaneInfluenceArea::getDensity() const {
 
 
 // ======| PointInfluenceArea |======
+
+// Look at the comment of PointInfluenceArea::planePatch to understand how we built it. The order of the point is such that it creates a counterclockwise rectangle.
 pah::PointInfluenceArea::PointInfluenceArea(Pov pov, float far, float near, float fovX, float fovY, float density)
-	: InfluenceArea{ make_unique<Frustum>(pov, far, near, fovX, fovY) } {}
+	: InfluenceArea{ make_unique<Frustum>(pov, far, near, fovX, fovY) },
+	planePatch{
+		dynamic_cast<Frustum&>(*bvhRegion).getEdgesDirections()[2],
+		dynamic_cast<Frustum&>(*bvhRegion).getEdgesDirections()[4],
+		dynamic_cast<Frustum&>(*bvhRegion).getEdgesDirections()[5],
+		dynamic_cast<Frustum&>(*bvhRegion).getEdgesDirections()[3]
+	} { }
 
 float pah::PointInfluenceArea::getProjectedArea(const Aabb& aabb) const
 {
@@ -76,7 +84,7 @@ Vector3 pah::PointInfluenceArea::getRayDirection(const Aabb& aabb) const{
 }
 
 bool pah::PointInfluenceArea::isDirectionAffine(const Vector3& direction, float tolerance) const {
-	throw logic_error("Function not implemented yet!"); //TODO implement this (maybe subdivide the unit sphere into discrete sections)
+	return collisionDetection::areColliding(Ray{ Vector3{0,0,0}, direction }, planePatch).hit;
 }
 
 std::vector<std::tuple<Axis, std::function<bool(float bestCostSoFar)>>> pah::PointInfluenceArea::bestSplittingPlanes() const{

@@ -93,5 +93,10 @@ namespace pah {
 	private:
 		float density;
 		Pov pov;
+
+		// As we said, the planePatch is a planar, rectangular patch that covers the entire frustum. It is as if we created a rectangle and place it in front of the camera, such that it covers all the view.
+		// The dimension of this rectangle would vary depending on the distance to the camera: we place our rectangle at distance 1 (its vertices all have distance 1, so technically the rectangle is closer than 1 to the origin).
+		// Thanks to this, we can detect if a ray is "affine" to this frustum, in the sense that a ray has a direction that is in the range of the directions making up the frustum.
+		ConvexHull<4> planePatch;
 	};
 }

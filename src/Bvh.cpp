@@ -134,14 +134,14 @@ pah::Bvh::TraversalResults pah::Bvh::traverse(const Ray& ray) const {
 		const Node& current = *toVisit.front();
 		toVisit.pop(); //queue::front doesn't remove the element from the queue, it just accesses it
 		//we enter the if statement iff there is a hit with the box and this hit is closer than the closest hit found so far
-		if (const auto& boxHitInfo = collisionDetection::areColliding(ray, current.aabb); boxHitInfo.first && boxHitInfo.second < closestHit) {
+		if (const auto& boxHitInfo = collisionDetection::areColliding(ray, current.aabb); boxHitInfo.hit && boxHitInfo.distance < closestHit) {
 			res.intersectionsCount++;
 			if (current.isLeaf()) {
 				const auto& triangles = current.triangles;
 				res.traversalCost += LEAF_COST * triangles.size();
 				for (const auto& triangle : triangles) {
 					const auto& hitInfo = collisionDetection::areColliding(ray, *triangle);
-					if (hitInfo.first) closestHit = min(closestHit, hitInfo.second);
+					if (hitInfo.hit) closestHit = min(closestHit, hitInfo.distance);
 				}
 			}
 			else {

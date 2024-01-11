@@ -157,7 +157,7 @@ namespace pah {
 		 */
 		struct TraversalResults {
 			int intersectionsCount;
-			int traversalCost;
+			float traversalCost;
 			Triangle* closestHit;
 			float closestHitDistance;
 			TIME(DurationMs traversalTime;);

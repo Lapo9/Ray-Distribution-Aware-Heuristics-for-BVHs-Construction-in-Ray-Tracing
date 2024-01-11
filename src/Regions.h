@@ -21,6 +21,11 @@ namespace pah {
 	 */
 	namespace collisionDetection {
 
+		struct RayCollisionInfo {
+			bool hit;
+			float distance;
+		};
+
 		/**
 		 * @brief Returns whether 2 @p Aabb s are colliding.
 		 */
@@ -46,14 +51,14 @@ namespace pah {
 		 * Implementation of the branchless slab ray-box intersection algorithm (https://tavianator.com/2011/ray_box.html).
 		 * See this for a 2D visualization: https://www.geogebra.org/m/np3tnjvb
 		 */
-		std::pair<bool, float> areColliding(const Ray& ray, const Aabb& aabb);
+		RayCollisionInfo areColliding(const Ray& ray, const Aabb& aabb);
 
 		/**
 		 * @brief Returns whether a @p Ray is colliding with a @p ConvexHull, and the distance of the hit (if present).
 		 * This is a generalization of this method for triangles: https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/ray-triangle-intersection-geometric-solution.html
 		 */
 		template<std::size_t M>
-		std::pair<bool, float> areColliding(const Ray& ray, const ConvexHull<M> hull) {
+		RayCollisionInfo areColliding(const Ray& ray, const ConvexHull<M> hull) {
 			using namespace glm;
 			// IMPORTANT: in the comments we always use the world triangle in place of convex hull
 			// It should help to think about this method as if the hull was always a triangle, it is then easier to generalize to any N-sided convex hull.
@@ -69,7 +74,7 @@ namespace pah {
 			// A*x + B*y + C*z + D = 0 is the equation of the plane where the triangle lies.
 			// We know that any vertex of the triangle (e.g. V0) is on the plane, and that the normal to the plane N = (A, B, C), and D is the distance from the origin (O) to the plane.
 			// Therefore D = -(A.x + B.y + C.z) = -(N.x * V0.x + N.y * V0.y + N.z * V0.z) = -dot(N, V0)
-			float D = -dot(N, hull.v0);
+			float D = -dot(N, hull[0]);
 
 			// To find the ray-plane intersection we can force the point of the plane to be P:
 			// A * P.x + B * P.y + C * P.z + D = 0 --> A * (O.x + t*R.x) + B * (O.y + t*R.y) + C * (O.z + t*R.z) + D = 0 --> t = -(dot(N, O) + D) / dot(N, R)

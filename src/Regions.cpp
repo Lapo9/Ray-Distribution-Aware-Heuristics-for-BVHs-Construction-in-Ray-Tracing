@@ -495,7 +495,7 @@ bool collisionDetection::areColliding(const Frustum & frustum, const Aabb & aabb
 	return true; //if we havent't found any axis where there is no overlap, boxes are colliding
 }
 
-pair<bool, float> pah::collisionDetection::areColliding(const Ray& ray, const Aabb& aabb) {
+collisionDetection::RayCollisionInfo pah::collisionDetection::areColliding(const Ray& ray, const Aabb& aabb) {
 	Vector3 invDir = 1.0f / ray.getDirection(); //we cache the inverse of the direction
 
 	// Here we find the value of t where the ray intersects the plane parallel to the yz plane and passing from aabb.min (or aabb.max in the second case).
@@ -556,7 +556,7 @@ pair<int, int> collisionDetection::projectedAabbExtremes(const Vector3 & axis) {
 	if (x >= 0 && y <= 0 && z <= 0) return { 3, 4 }; //red
 	if (x <= 0 && y >= 0 && z >= 0) return { 4, 3 }; //cyan
 	if (x >= 0 && y <= 0 && z >= 0) return { 2, 5 }; //magenta
-	if (x <= 0 && y >= 0 && z <= 0) return { 5, 2 }; //green
+	/*if (x <= 0 && y >= 0 && z <= 0)*/		return { 5, 2 }; //green
 }
 
 pair<int, int> collisionDetection::projectedObbExtremes(const Vector3 & axis, const Obb & obb) {

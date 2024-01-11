@@ -74,8 +74,8 @@ namespace pah {
 	struct ConvexHull {
 	public:
 		template<std::same_as<Vector3>... Vec3> //requires { sizeof...(Vec3) > 2; }
-			ConvexHull(const Vec3&... vertices) : vertices(sizeof...(Vec3)) {
-			fillVertices(std::make_index_sequence<sizeof...(Vec3)>);
+		ConvexHull(const Vec3&... vertices) : vertices{} {
+			fillVertices(std::make_index_sequence<sizeof...(Vec3)>{}, vertices...);
 		}
 
 		/**
@@ -105,6 +105,14 @@ namespace pah {
 		}
 
 		/**
+		 * @brief Returns the specified vertex of the @p ConvexHull.
+		 * The index must be withing 0 and @p N.
+		 */
+		Vector3 operator[](std::size_t i) const {
+			return vertices[i];
+		}
+
+		/**
 		 * @brief Returns the array of the vertices of the @p ConvexHull..
 		 */
 		const std::array<Vector3, N>& getVertices() const {
@@ -117,7 +125,12 @@ namespace pah {
 		 */
 		template<std::size_t... Is, std::same_as<Vector3>... Vec3>
 		void fillVertices(std::index_sequence<Is...>, const Vec3&... vertices) {
-			([this](std::size_t i, const Vec3& vec) { std::get<i>(this->vertices) = vec; }(Is, vertices), ...); //basically a compile time for loop
+			([this]<std::size_t I>(const Vec3& vec) { std::get<I>(this->vertices) = vec; }.template operator()<Is>(vertices), ...); //basically a compile time loop to fill the array with the variadic arg
+			//break down of the statement above:
+			// 1) Create a templated lambda: this lambda statically accesses the array at index I, and sets the content to vec
+			// 2) The lambda is immediately called, but since it is templated and I mus be explicitly specified, we have to use the syntax: foo.template operator()<TemplateArg>(functionarg);
+			// 3) The arguments to pass to the lambda are variadic template arguments (the first one is non-type), therefore we use the right fold syntax for the comma operator: (foo, ...);
+
 			if constexpr (N > 3) checkCoplanar(); //if the hull has 3 vertices, they are always coplanar
 		}
 
@@ -126,7 +139,7 @@ namespace pah {
 		 *
 		 */
 		void checkCoplanar() const {
-			if (vertices.size == 3) return; //3 vertices are always coplanar
+			if (vertices.size() == 3) return; //3 vertices are always coplanar
 
 			Vector3 normal = glm::cross(vertices[0], vertices[1]);
 			for (int i = 1; i < vertices.size() - 1; ++i) {
@@ -174,6 +187,17 @@ namespace pah {
 		 * The index must be withing 0 and 3.
 		 */
 		Vector3& operator[](std::size_t i) {
+			if (i == 0) return v0;
+			if (i == 1) return v1;
+			if (i == 2) return v2;
+			throw std::out_of_range{ "Index must be 0, 1 or 2." };
+		}
+
+		/**
+		 * @brief Returns the specified vertex of the @p Triangle.
+		 * The index must be withing 0 and 3.
+		 */
+		Vector3 operator[](std::size_t i) const {
 			if (i == 0) return v0;
 			if (i == 1) return v1;
 			if (i == 2) return v2;
