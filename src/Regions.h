@@ -14,15 +14,123 @@ namespace pah {
 	struct Obb;
 	struct AabbForObb;
 	struct Frustum;
+
+
+	/**
+	 * @brief Functions and utilities to detect whether there is a collision between 2 @p Region s.
+	 */
 	namespace collisionDetection {
-		static bool areColliding(const Aabb& aabb1, const Aabb& aabb2);
-		static bool areColliding(const AabbForObb& aabbForObb, const Aabb& aabb);
-		static bool areColliding(const Obb& obb, const Aabb& aabb);
-		static bool areColliding(const Frustum& obb, const Aabb& aabb);
-		static bool almostParallel(const Vector3& lhs, const Vector3& rhs, float threshold);
-		static bool almostAabb(const Obb& obb);
-		static std::pair<int, int> projectedAabbExtremes(const Vector3& axis);
-		static std::pair<int, int> projectedObbExtremes(const Vector3& axis, const Obb& obb);
+
+		/**
+		 * @brief Returns whether 2 @p Aabb s are colliding.
+		 */
+		bool areColliding(const Aabb& aabb1, const Aabb& aabb2);
+
+		/**
+		 * @brief Implementation of the separating axis theorem between an @p AabbForObb and an @p Aabb.
+		 */
+		bool areColliding(const AabbForObb& aabbForObb, const Aabb& aabb);
+
+		/**
+		 * @brief Implementation of the separating axis theorem between an @p Obb and an @p Aabb.
+		 */
+		bool areColliding(const Obb& obb, const Aabb& aabb);
+
+		/**
+		 * @brief Implementation of the separating axis theorem between a @p Frustum and an @p Aabb.
+		 */
+		bool areColliding(const Frustum& frustum, const Aabb& aabb);
+
+		/**
+		 * @brief Returns whether a @p Ray is colliding with an @p Aabb, and the distance of the hit (if present).
+		 * Implementation of the branchless slab ray-box intersection algorithm (https://tavianator.com/2011/ray_box.html).
+		 * See this for a 2D visualization: https://www.geogebra.org/m/np3tnjvb
+		 */
+		std::pair<bool, float> areColliding(const Ray& ray, const Aabb& aabb);
+
+		/**
+		 * @brief Returns whether a @p Ray is colliding with a @p ConvexHull, and the distance of the hit (if present).
+		 * This is a generalization of this method for triangles: https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/ray-triangle-intersection-geometric-solution.html
+		 */
+		template<std::size_t M>
+		std::pair<bool, float> areColliding(const Ray& ray, const ConvexHull<M> hull) {
+			using namespace glm;
+			// IMPORTANT: in the comments we always use the world triangle in place of convex hull
+			// It should help to think about this method as if the hull was always a triangle, it is then easier to generalize to any N-sided convex hull.
+			
+			const auto& N = hull.normal(); //normal to the triangle
+			const auto& R = ray.getDirection(); //direction of the ray
+			Vector3 O{ 0.0f, 0.0f, 0.0f }; //origin
+
+			//if the ray and the plane of the triangle are parallel, there is no intersection
+			if (abs(dot(N, R)) < TOLERANCE) return { false, 0.0f };
+
+			// P = O + tR is the parametric equation of the ray.
+			// A*x + B*y + C*z + D = 0 is the equation of the plane where the triangle lies.
+			// We know that any vertex of the triangle (e.g. V0) is on the plane, and that the normal to the plane N = (A, B, C), and D is the distance from the origin (O) to the plane.
+			// Therefore D = -(A.x + B.y + C.z) = -(N.x * V0.x + N.y * V0.y + N.z * V0.z) = -dot(N, V0)
+			float D = -dot(N, hull.v0);
+
+			// To find the ray-plane intersection we can force the point of the plane to be P:
+			// A * P.x + B * P.y + C * P.z + D = 0 --> A * (O.x + t*R.x) + B * (O.y + t*R.y) + C * (O.z + t*R.z) + D = 0 --> t = -(dot(N, O) + D) / dot(N, R)
+			float t = -(dot(N, O) + D) / dot(N, R);
+
+			// If the triangle is behind the ray origin, there is no intersection
+			if (t < 0) return { false, 0.0f };
+
+			// Now we have to find out whether the point is inside the triangle .
+			// The point is inside iff it is "to the left" of all sides (taken in counter clockwise order).
+			// If it is "to the left" of an edge, then the normal (N) and the cross product between the edge and the vector connecting the start of the edge and the point (P) should face the same direction (i.e. their dot product > 0).
+			const auto& P = ray.getOrigin() + R * t; //coordinates of the intersection point between the ray and the plane
+			for (std::size_t i = 0; i < M - 1; ++i) {
+				Vector3 edge = hull[i + 1] - hull[i]; //vector representing a triangle edge
+				Vector3 p = P - hull[i]; //vector from the vertex of the triangle to the intersection point
+				if (dot(N, cross(edge, p)) <= 0) return { false, 0.0f };
+			}
+
+			return { true, t };
+		}
+
+		/**
+		 * @brief Checks whether 2 vectors are almost parallel.
+		 */
+		bool almostParallel(const Vector3& lhs, const Vector3& rhs, float threshold = TOLERANCE);
+
+		/**
+		 * @brief Checks whether and OBB is "almost" an AABB.
+		 */
+		bool almostAabb(const Obb& obb);
+
+		/**
+		 * @brief Given an axis, it returns the indexes of the vertices (min and max) that are most far apart (the extremes) on the projection of an AABB to the specified axis.
+		 * The indexes refer to the order in which the function Aabb::getPoints return the vertices of an AABB.
+		 * Look at the visualization in the project ProjectedAreaHeuristic-Visualization to better understand the logic behind this funciton.
+		 *
+		 *  2_______________6
+		 *  |\             .\
+		 *  | \____________._\7
+		 * 0| 3|          4. |
+		 *  .\ |           . |
+		 *  . \|1__________._|5
+		 *  .  .           . .
+		 *  |--|-----------|-|    in this case A and D are the outermost., which correspond to points with index 0 (or 2) and 7 (or 5)
+		 *  A  B           C D
+		 *
+		 */
+		std::pair<int, int> projectedAabbExtremes(const Vector3& axis);
+
+		/**
+		 * @brief Given an axis and an @p Obb, it returns the indexes of the vertices (min and max) that are most far apart (the extremes) on the projection of an AABB to the specified axis.
+		 * What happens is that the function transforms the axis into the OBB coordinate system, and then treats it like an AABB.
+		 */
+		std::pair<int, int> projectedObbExtremes(const Vector3& axis, const Obb& obb);
+
+		/**
+		 * @brief Given a @p Frustum, it returns the minimum and maximum projection of its points to the specified @p axis.
+		 * To do so it projects all the points and saves the minimum and maximum projections.
+		 * We tried a better way (similar to the one we used fot the @p Aabb or @p Obb), but it doesn't work (look at commit ad30d3c).
+		 */
+		std::pair<float, float> projectedFrustumExtremes(const Vector3& axis, const Frustum& frustum);
 	}
 	namespace projection {
 		struct ProjectionMatrixParameters;
@@ -232,6 +340,9 @@ namespace pah {
 
 		}*/
 
+		/**
+		 * @brief 2D visualization: https://www.geogebra.org/m/zmbraqmp
+		 */
 		bool contains(const Vector3& point) const override;
 
 		Aabb enclosingAabb() const override;
@@ -298,84 +409,4 @@ namespace pah {
 		std::array<Vector3, 8> vertices; //useful for the SAT algorithm for collision detection
 		Aabb enclosingAabbObj; //the smallest Aabb that encloses the Frustum
 	};
-
-	/**
-	 * @brief Functions and utilities to detect whether there is a collision between 2 @p Region s.
-	 */
-	namespace collisionDetection {
-
-		/**
-		 * @brief Returns whether 2 @p Aabb s are colliding.
-		 */
-		static bool areColliding(const Aabb& aabb1, const Aabb& aabb2);
-
-		/**
-		 * @brief Implementation of the separating axis theorem between an @p AabbForObb and an @p Aabb.
-		 */
-		static bool areColliding(const AabbForObb& aabbForObb, const Aabb& aabb);
-
-		/**
-		 * @brief Implementation of the separating axis theorem between an @p Obb and an @p Aabb.
-		 */
-		static bool areColliding(const Obb& obb, const Aabb& aabb);
-
-		/**
-		 * @brief Implementation of the separating axis theorem between a @p Frustum and an @p Aabb.
-		 */
-		static bool areColliding(const Frustum& frustum, const Aabb& aabb);
-
-		/**
-		 * @brief Returns whether a @p Ray is colliding with an @p Aabb, and the distance of the hit (if present).
-		 * Implementation of the branchless slab ray-box intersection algorithm (https://tavianator.com/2011/ray_box.html).
-		 * See this for a 2D visualization: https://www.geogebra.org/m/np3tnjvb
-		 */
-		static std::pair<bool, float> areColliding(const Ray& ray, const Aabb& aabb);
-
-		/**
-		 * @brief Returns whether a @p Ray is colliding with a @p Triangle, and the distance of the hit (if present).
-		 * https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/ray-triangle-intersection-geometric-solution.html
-		 */
-		static std::pair<bool, float> areColliding(const Ray& ray, const Triangle& triangle);
-
-		/**
-		 * @brief Checks whether 2 vectors are almost parallel.
-		 */
-		static bool almostParallel(const Vector3& lhs, const Vector3& rhs, float threshold = TOLERANCE);
-
-		/**
-		 * @brief Checks whether and OBB is "almost" an AABB.
-		 */
-		static bool almostAabb(const Obb& obb);
-
-		/**
-		 * @brief Given an axis, it returns the indexes of the vertices (min and max) that are most far apart (the extremes) on the projection of an AABB to the specified axis.
-		 * The indexes refer to the order in which the function Aabb::getPoints return the vertices of an AABB.
-		 * Look at the visualization in the project ProjectedAreaHeuristic-Visualization to better understand the logic behind this funciton.
-		 *  
-		 *  2_______________6
-		 *  |\             .\
-		 *  | \____________._\7
-		 * 0| 3|          4. |
-		 *  .\ |           . |
-		 *  . \|1__________._|5
-		 *  .  .           . .  
-		 *  |--|-----------|-|    in this case A and D are the outermost., which correspond to points with index 0 (or 2) and 7 (or 5)
-		 *  A  B           C D
-		 * 
-		 */
-		static std::pair<int, int> projectedAabbExtremes(const Vector3& axis);
-
-		/**
-		 * @brief Given an axis and an @p Obb, it returns the indexes of the vertices (min and max) that are most far apart (the extremes) on the projection of an AABB to the specified axis.
-		 * What happens is that the function transforms the axis into the OBB coordinate system, and then treats it like an AABB.
-		 */
-		static std::pair<int, int> projectedObbExtremes(const Vector3& axis, const Obb& obb);
-
-		/**
-		 * @brief Given a @p Frustum, it returns the minimum and maximum projection of its points to the specified @p axis.
-		 * To do so it projects all the points and saves the minimum and maximum projections.
-		 * We tried a better way (similar to the one we used fot the @p Aabb or @p Obb), but it doesn't work (look at commit ad30d3c). 
-		 */
-		static std::pair<float, float> projectedFrustumExtremes(const Vector3& axis, const Frustum& frustum);
-	}
 }

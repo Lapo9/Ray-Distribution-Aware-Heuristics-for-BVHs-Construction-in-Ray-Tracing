@@ -12,6 +12,8 @@
 
 #include  "../libs/json.hpp"
 
+#include "settings.h"
+
 namespace pah {
 	#define PerNodeActionType void(GlobalObject&, const Bvh::Node&, const Bvh&, int currLvl, json&)
 	#define FinalActionType void(GlobalObject&, const Bvh&, json&)
@@ -68,31 +70,114 @@ namespace pah {
 		std::uniform_real_distribution<> distributionZ;
 	};
 
+	template<std::size_t N>
+	struct ConvexHull {
+	public:
+		template<std::same_as<Vector3>... Vec3> //requires { sizeof...(Vec3) > 2; }
+			ConvexHull(const Vec3&... vertices) : vertices(sizeof...(Vec3)) {
+			fillVertices(std::make_index_sequence<sizeof...(Vec3)>);
+		}
+
+		/**
+		 * @brief Returns the barycenter of the @p ConvexHull.
+		 */
+		Vector3 barycenter() const {
+			Vector3 sum{ 0.0f, 0.0f, 0.0f };
+			for (int i = 0; i < N; ++i) {
+				sum += vertices[i];
+			}
+			return sum / N;
+		}
+
+		/**
+		 * @brief Returns the normal to this @p ConvexHull.
+		 */
+		Vector3 normal() const {
+			return glm::cross(vertices[1] - vertices[0], vertices[2] - vertices[0]);
+		}
+
+		/**
+		 * @brief Returns the specified vertex of the @p ConvexHull.
+		 * The index must be withing 0 and @p N.
+		 */
+		Vector3& operator[](std::size_t i) {
+			return vertices[i];
+		}
+
+		/**
+		 * @brief Returns the array of the vertices of the @p ConvexHull..
+		 */
+		const std::array<Vector3, N>& getVertices() const {
+			return vertices;
+		}
+
+	private:
+		/**
+		 * @brief Given a parameter pack of vertices, it fills the array pf vertices of this object.
+		 */
+		template<std::size_t... Is, std::same_as<Vector3>... Vec3>
+		void fillVertices(std::index_sequence<Is...>, const Vec3&... vertices) {
+			([this](std::size_t i, const Vec3& vec) { std::get<i>(this->vertices) = vec; }(Is, vertices), ...); //basically a compile time for loop
+			if constexpr (N > 3) checkCoplanar(); //if the hull has 3 vertices, they are always coplanar
+		}
+
+		/**
+		 * @brief Checks if the vertices of the @p ConvexHull are coplanar. If they are not, it throws an exception.
+		 *
+		 */
+		void checkCoplanar() const {
+			if (vertices.size == 3) return; //3 vertices are always coplanar
+
+			Vector3 normal = glm::cross(vertices[0], vertices[1]);
+			for (int i = 1; i < vertices.size() - 1; ++i) {
+				Vector3 normalsDelta = glm::abs(glm::cross(vertices[i], vertices[i + 1]) - normal);
+				if (normalsDelta.x > TOLERANCE || normalsDelta.y > TOLERANCE || normalsDelta.z > TOLERANCE) {
+					throw std::logic_error{ "Points for this ConvexHull are not coplanar." };
+				}
+			}
+		}
+
+
+		std::array<Vector3, N> vertices;
+	};
+	template<std::same_as<Vector3>... Vec3> ConvexHull(const Vec3&... vertices) -> ConvexHull<sizeof...(Vec3)>; /**< @brief Deduction guide. */
+
+	using Triangle = ConvexHull<3>;
 	/**
 	 * @brief Represents a triangle.
 	 */
-	struct Triangle {
-		Vector3 v1, v2, v3;
+	template<>
+	struct ConvexHull<3> {
+		Vector3 v0, v1, v2;
 
-		Triangle() = delete;
-		Triangle(Vector3 v1, Vector3 v2, Vector3 v3) : v1{ v1 }, v2{ v2 }, v3{ v3 } {}
+		ConvexHull() = delete;
+		ConvexHull(Vector3 v0, Vector3 v1, Vector3 v2) : v0{ v0 }, v1{ v1 }, v2{ v2 } {}
 
 		/**
 		 * @brief Returns the barycenter of the @p Triangle.
-		 * 
-		 * @return .
 		 */
-		Vector3 center() const {
-			return (v1 + v2 + v3) / 3.0f;
+		Vector3 barycenter() const {
+			return (v0 + v1 + v2) / 3.0f;
 		}
 
 		/**
 		 * @brief Returns the normal to this @p Triangle.
 		 */
 		Vector3 normal() const {
-			Vector3 e1 = v2 - v1; //first edge
-			Vector3 e2 = v3 - v1; //second edge
+			Vector3 e1 = v1 - v0; //first edge
+			Vector3 e2 = v2 - v0; //second edge
 			return glm::normalize(glm::cross(e1, e2));
+		}
+
+		/**
+		 * @brief Returns the specified vertex of the @p Triangle.
+		 * The index must be withing 0 and 3.
+		 */
+		Vector3& operator[](std::size_t i) {
+			if (i == 0) return v0;
+			if (i == 1) return v1;
+			if (i == 2) return v2;
+			throw std::out_of_range{ "Index must be 0, 1 or 2." };
 		}
 
 		/**
@@ -100,10 +185,10 @@ namespace pah {
 		 */
 		template<Distribution3d D, Distribution3d D2>  
 		static Triangle random(std::mt19937& rng, D& firstVertexDistribution, D2& otherVerticesDistributions) {
-			Vector3 v1 = firstVertexDistribution(rng);
+			Vector3 v0 = firstVertexDistribution(rng);
+			Vector3 v1 = v0 + otherVerticesDistributions(rng);
 			Vector3 v2 = v1 + otherVerticesDistributions(rng);
-			Vector3 v3 = v1 + otherVerticesDistributions(rng);
-			return Triangle{ v1, v2, v3 };
+			return Triangle{ v0, v1, v2 }; 
 		}
 
 		/**
@@ -116,7 +201,7 @@ namespace pah {
 				triangles.emplace_back(random(rng, firstVertexDistribution, otherVerticesDistributions));
 			}
 			return triangles;
-		}
+		}	
 	};
 
 	/**

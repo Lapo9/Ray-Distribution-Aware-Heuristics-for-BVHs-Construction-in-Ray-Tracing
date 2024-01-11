@@ -119,9 +119,9 @@ void pah::to_json(json& j, const pah::TopLevelOctree::Node& node) {
 // ======| Utilities |======
 void pah::to_json(json& j, const Triangle& triangle) {
 	j["id"] = (unsigned long long int) &triangle;
+	j["v0"] = triangle.v0;
 	j["v1"] = triangle.v1;
 	j["v2"] = triangle.v2;
-	j["v3"] = triangle.v3;
 }
 
 void pah::to_json(json& j, const Plane& plane) {

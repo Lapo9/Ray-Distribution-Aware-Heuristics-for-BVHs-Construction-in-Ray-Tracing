@@ -21,9 +21,9 @@ void pah::TopLevel::build() {
 		unordered_set<const pah::Bvh*> containedInto; //the BVHs where thre triangle is contained into
 
 		//for each vertex, get the BVHs it is contained into, and add them to the set (we directly use the containedIn function, so this is polymorphic
+		containedInto.insert_range(containedIn(t.v0));
 		containedInto.insert_range(containedIn(t.v1));
 		containedInto.insert_range(containedIn(t.v2));
-		containedInto.insert_range(containedIn(t.v3));
 
 		//add the triangle to each BVH where it is contained into (at least one vertex)
 		for (const auto& bvh : containedInto) bvhsTriangles[bvh].push_back(&t);
@@ -50,7 +50,7 @@ TopLevel::TraversalInfo pah::TopLevel::traverse(const TopLevel& topLevel, const 
 			if (results.hit()) {
 				res.closestHit = results.closestHit;
 				res.closestHitDistance = results.closestHitDistance;
-				return;
+				break;
 			}
 		}
 	}
@@ -88,7 +88,7 @@ vector<const pah::Bvh*> pah::TopLevelAabbs::containedIn(const Vector3& point) co
 
 // ======| TopLevelOctree |======
 void pah::TopLevelOctree::build() {
-	INFO(TimeLogger timeLoggerTotalBuild{ [this](NodeTimingInfo::DurationMs duration) { totalBuildTime = duration; } });
+	INFO(TimeLogger timeLoggerTotalBuild{ [this](DurationMs duration) { totalBuildTime = duration; } });
 
 	//build the octree
 	auto bvhsPointers = bvhs | std::views::transform([](Bvh& bvh) { return &bvh; }) | std::ranges::to<vector>(); //make vector of pointers
@@ -116,7 +116,7 @@ TopLevelOctree::Node& pah::TopLevelOctree::getRoot() const {
 	return *root;
 }
 
-INFO(const TopLevelOctree::NodeTimingInfo::DurationMs pah::TopLevelOctree::getTotalBuildTime() const {
+INFO(const DurationMs pah::TopLevelOctree::getTotalBuildTime() const {
 	return totalBuildTime;
 })
 
@@ -125,7 +125,7 @@ TopLevelOctree::Properties pah::TopLevelOctree::getProperties() const {
 }
 
 void pah::TopLevelOctree::buildOctreeRecursive(Node& node, const vector<Bvh*>& fatherCollidingRegions, const vector<Bvh*>& fatherFullyContainedRegions, int currentLevel) {
-	TIME(TimeLogger timeLoggerTotal{ [&timingInfo = node.timingInfo](NodeTimingInfo::DurationMs duration) { timingInfo.logTotal(duration); } };);
+	TIME(TimeLogger timeLoggerTotal{ [&timingInfo = node.timingInfo](DurationMs duration) { timingInfo.logTotal(duration); } };);
 
 	vector<Bvh*> collidingRegions;
 	node.bvhs = fatherFullyContainedRegions; //if the father node was fully contained in some region, for sure the child will also be

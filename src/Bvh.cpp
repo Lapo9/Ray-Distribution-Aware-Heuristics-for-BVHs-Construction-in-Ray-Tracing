@@ -14,7 +14,7 @@ pah::Bvh::Bvh(const Properties& properties, const InfluenceArea& influenceArea, 
 	
 void pah::Bvh::build(const vector<const Triangle*>& triangles) {
 	//the final action simply adds the measured time to the total time
-	INFO(TimeLogger timeLogger{ [this](NodeTimingInfo::DurationMs duration) { totalBuildTime = duration; } };);
+	INFO(TimeLogger timeLogger{ [this](DurationMs duration) { totalBuildTime = duration; } };);
 
 	random_device randomDevice;
 	build(triangles, randomDevice()); //the seed is random
@@ -33,7 +33,7 @@ void pah::Bvh::build(const vector<const Triangle*>& triangles, unsigned int seed
 
 void pah::Bvh::splitNode(Node& node, Axis fatherSplittingAxis, int currentLevel) {
 	//the final action simply adds the measured time to the total time
-	TIME(TimeLogger timeLoggerTotal{ [&timingInfo = node.nodeTimingInfo](NodeTimingInfo::DurationMs duration) { timingInfo.logTotal(duration); } };);
+	TIME(TimeLogger timeLoggerTotal{ [&timingInfo = node.nodeTimingInfo](DurationMs duration) { timingInfo.logTotal(duration); } };);
 
 	float bestLeftSoFar = numeric_limits<float>::max(), bestRightSoFar = numeric_limits<float>::max();
 	Node bestLeft{ Aabb::maxAabb() }, bestRight{ Aabb::maxAabb() };
@@ -43,7 +43,7 @@ void pah::Bvh::splitNode(Node& node, Axis fatherSplittingAxis, int currentLevel)
 	bool found = false; //flag to check if we found at least one split (maybe all the splits place the triangles on one side, leaving the other one empty)
 
 	//the final action simply adds the measured time to the total split time
-	TIME(TimeLogger timeLoggerSplitting{ [&timingInfo = node.nodeTimingInfo](NodeTimingInfo::DurationMs duration) { timingInfo.logSplittingTot(duration); } };);
+	TIME(TimeLogger timeLoggerSplitting{ [&timingInfo = node.nodeTimingInfo](DurationMs duration) { timingInfo.logSplittingTot(duration); } };);
 	//try to split for each axis provided by chooseSplittingPlanes
 	for (const auto& [axis, criterium] : splittingPlanes) {
 		if (found && !criterium(bestLeftSoFar + bestRightSoFar)) break; //is it worth it to try this split? (it is always worth it if we haven't found a split on the previou axis)
@@ -93,7 +93,7 @@ const pah::InfluenceArea& pah::Bvh::getInfluenceArea() const {
 	return *influenceArea;
 }
 
-INFO(const pah::Bvh::NodeTimingInfo::DurationMs pah::Bvh::getTotalBuildTime() const {
+INFO(const pah::DurationMs pah::Bvh::getTotalBuildTime() const {
 	return totalBuildTime;
 })
 

@@ -99,11 +99,9 @@ namespace pah {
 		 * What happens is that, for each function in @p actions, it calls it with the corresponding @p globalObject as argument (plus other possible arguments).
 		 * The implementation is carried out in @p performGlobalActionsImpl, this wrapper lacks the boilerplate arguments.
 		 * In this case we call the final functions.
-		 *
-		 * @tparam Size The size of the tuple. Is is defaulted to the size of a tuple of the same type as @p globalObjects .
 		 */
-		template<std::size_t Size = std::tuple_size_v<std::tuple<GlobalObject...>>>
 		void performFinalActions(const Bvh& bvh, json& log) {
+			constexpr auto Size = std::tuple_size_v<std::tuple<GlobalObject...>>; //the size of the tuple
 			performFinalActionsImpl(std::make_index_sequence<Size>{}, bvh, log); //call with an index sequence from 0 to Size
 		}
 

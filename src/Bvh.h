@@ -235,12 +235,12 @@ namespace pah {
 		static std::tuple<std::vector<const Triangle*>, std::vector<const Triangle*>> splitTriangles(const Node& node, const std::vector<const Triangle*>& triangles, Axis axis, float splittingPlanePosition) {
 			using namespace utilities;
 			//the final action simply adds the measured time to the total split triangles time, and increases the split triangles counter
-			TIME(TimeLogger timeLogger{ [&timingInfo = node.nodeTimingInfo](NodeTimingInfo::DurationMs duration) { timingInfo.splitTrianglesTot += duration; timingInfo.splitTrianglesCount++; } };);
+			TIME(TimeLogger timeLogger{ [&timingInfo = node.nodeTimingInfo](DurationMs duration) { timingInfo.splitTrianglesTot += duration; timingInfo.splitTrianglesCount++; } };);
 
 			std::vector<const Triangle*> left, right;
 
 			for (auto t : triangles) {
-				if (at(t->center(), axis) < splittingPlanePosition) left.push_back(t);
+				if (at(t->barycenter(), axis) < splittingPlanePosition) left.push_back(t);
 				else right.push_back(t);
 			}
 

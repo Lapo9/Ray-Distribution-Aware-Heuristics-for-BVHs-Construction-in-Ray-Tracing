@@ -10,30 +10,30 @@ using namespace pah;
 	// ======| Aabb |======
 pah::Aabb::Aabb(const vector<const Triangle*>&triangles) : min{ numeric_limits<float>::max() }, max{ -numeric_limits<float>::max() } {
 	for (const auto& t : triangles) {
+		if (t->v0.x < min.x) min.x = t->v0.x;
 		if (t->v1.x < min.x) min.x = t->v1.x;
 		if (t->v2.x < min.x) min.x = t->v2.x;
-		if (t->v3.x < min.x) min.x = t->v3.x;
 
+		if (t->v0.y < min.y) min.y = t->v0.y;
 		if (t->v1.y < min.y) min.y = t->v1.y;
 		if (t->v2.y < min.y) min.y = t->v2.y;
-		if (t->v3.y < min.y) min.y = t->v3.y;
 
+		if (t->v0.z < min.z) min.z = t->v0.z;
 		if (t->v1.z < min.z) min.z = t->v1.z;
 		if (t->v2.z < min.z) min.z = t->v2.z;
-		if (t->v3.z < min.z) min.z = t->v3.z;
 
 
+		if (t->v0.x > max.x) max.x = t->v0.x;
 		if (t->v1.x > max.x) max.x = t->v1.x;
 		if (t->v2.x > max.x) max.x = t->v2.x;
-		if (t->v3.x > max.x) max.x = t->v3.x;
 
+		if (t->v0.y > max.y) max.y = t->v0.y;
 		if (t->v1.y > max.y) max.y = t->v1.y;
 		if (t->v2.y > max.y) max.y = t->v2.y;
-		if (t->v3.y > max.y) max.y = t->v3.y;
 
+		if (t->v0.z > max.z) max.z = t->v0.z;
 		if (t->v1.z > max.z) max.z = t->v1.z;
 		if (t->v2.z > max.z) max.z = t->v2.z;
-		if (t->v3.z > max.z) max.z = t->v3.z;
 	}
 }
 
@@ -378,7 +378,7 @@ void pah::Frustum::fillEnclosingAabb() {
 
 
 // ======| namesapce collisionDetection |======
-static bool collisionDetection::areColliding(const Aabb & aabb1, const Aabb & aabb2) {
+bool collisionDetection::areColliding(const Aabb & aabb1, const Aabb & aabb2) {
 	return
 		aabb1.min.x <= aabb2.max.x &&
 		aabb1.max.x >= aabb2.min.x &&
@@ -388,7 +388,7 @@ static bool collisionDetection::areColliding(const Aabb & aabb1, const Aabb & aa
 		aabb1.max.z >= aabb2.min.z;
 }
 
-static bool collisionDetection::areColliding(const AabbForObb & aabbForObb, const Aabb & aabb) {
+bool collisionDetection::areColliding(const AabbForObb & aabbForObb, const Aabb & aabb) {
 	//first, we check if the enclosing AABB of the OBB overlaps with the AABB (it can save a lot of time)
 	bool aabbsColliding = areColliding(aabb, aabbForObb.enclosingAabb());
 	if (!aabbsColliding) return false;
@@ -434,11 +434,11 @@ static bool collisionDetection::areColliding(const AabbForObb & aabbForObb, cons
 	return true; //if we havent't found any axis where there is no overlap, boxes are colliding
 }
 
-static bool collisionDetection::areColliding(const Obb & obb, const Aabb & aabb) {
+bool collisionDetection::areColliding(const Obb & obb, const Aabb & aabb) {
 	return areColliding(AabbForObb{ obb }, aabb);
 }
 
-static bool collisionDetection::areColliding(const Frustum & frustum, const Aabb & aabb) {
+bool collisionDetection::areColliding(const Frustum & frustum, const Aabb & aabb) {
 	using namespace std;
 		using namespace glm;
 
@@ -531,54 +531,11 @@ pair<bool, float> pah::collisionDetection::areColliding(const Ray& ray, const Aa
 	//TODO yet to be tested
 }
 
-pair<bool, float> pah::collisionDetection::areColliding(const Ray& ray, const Triangle& triangle) {
-	
-	const auto& N = triangle.normal(); //normal to the triangle
-	const auto& R = ray.getDirection(); //direction of the ray
-	Vector3 O{ 0.0f, 0.0f, 0.0f }; //origin
-
-	//if the ray and the plane of the triangle are parallel, there is no intersection
-	if (abs(dot(N, R)) < TOLERANCE) return { false, 0.0f };
-	
-	// P = O + tR is the parametric equation of the ray.
-	// A*x + B*y + C*z + D = 0 is the equation of the plane where the triangle lies.
-	// We know that any vertex of the triangle (e.g. V0) is on the plane, and that the normal to the plane N = (A, B, C), and D is the distance from the origin (O) to the plane.
-	// Therefore D = -(A.x + B.y + C.z) = -(N.x * V0.x + N.y * V0.y + N.z * V0.z) = -dot(N, V0)
-	float D = -dot(N, triangle.v1);
-
-	// To find the ray-plane intersection we can force the point of the plane to be P:
-	// A * P.x + B * P.y + C * P.z + D = 0 --> A * (O.x + t*R.x) + B * (O.y + t*R.y) + C * (O.z + t*R.z) + D = 0 --> t = -(dot(N, O) + D) / dot(N, R)
-	float t = -(dot(N, O) + D) / dot(N, R);
-
-	// If the triangle is behind the ray origin, there is no intersection
-	if (t < 0) return { false, 0.0f };
-
-	// Now we have to find out whether the point is inside the triangle .
-	// The point is inside iff it is "to the left" of all sides (taken in counter clockwise order).
-	// If it is "to the left" of an edge, then the normal (N) and the cross product between the edge and the vector connecting the start of the edge and the point (P) should face the same direction (i.e. their dot product > 0).
-	const auto& P = ray.getOrigin() + R * t; //coordinates of the intersection point between the ray and the plane
-	Vector3 e1 = triangle.v2 - triangle.v1; //vector representing a triangle edge
-	Vector3 p1 = P - triangle.v1; //vector from the vertex of the triangle to the intersection point
-	if (dot(N, cross(e1, p1)) <= 0) return { false, 0.0f };
-
-	Vector3 e2 = triangle.v3 - triangle.v2;
-	Vector3 p2 = P - triangle.v2;
-	if (dot(N, cross(e2, p2)) <= 0) return { false, 0.0f };
-
-	Vector3 e3 = triangle.v1 - triangle.v3;
-	Vector3 p3 = P - triangle.v3;
-	if (dot(N, cross(e3, p3)) <= 0) return { false, 0.0f };
-
-	return { true, t };
-
-	//TODO yet to be tested
-}
-
-static bool collisionDetection::almostParallel(const Vector3 & lhs, const Vector3 & rhs, float threshold) {
+bool collisionDetection::almostParallel(const Vector3 & lhs, const Vector3 & rhs, float threshold) {
 	return abs(dot(lhs, rhs)) > abs(length(lhs) * length(rhs)) - threshold * abs(length(lhs) * length(rhs)); //if vectors are parallel then a . b = ||a|| * ||b||
 }
 
-static bool collisionDetection::almostAabb(const Obb& obb) {
+bool collisionDetection::almostAabb(const Obb& obb) {
 	return
 		(almostParallel(obb.forward, Vector3{ 0,0,1 }) && almostParallel(obb.right, Vector3{ 1,0,0 })) ||
 		(almostParallel(obb.forward, Vector3{ 0,0,1 }) && almostParallel(obb.up, Vector3{ 1,0,0 })) ||
@@ -588,7 +545,7 @@ static bool collisionDetection::almostAabb(const Obb& obb) {
 		(almostParallel(obb.up, Vector3{ 0,0,1 }) && almostParallel(obb.right, Vector3{ 1,0,0 }));
 }
 
-static pair<int, int> collisionDetection::projectedAabbExtremes(const Vector3 & axis) {
+pair<int, int> collisionDetection::projectedAabbExtremes(const Vector3 & axis) {
 	auto normalized = normalize(axis);
 	float x = normalized.x, y = normalized.y, z = normalized.z;
 
@@ -602,13 +559,13 @@ static pair<int, int> collisionDetection::projectedAabbExtremes(const Vector3 & 
 	if (x <= 0 && y >= 0 && z <= 0) return { 5, 2 }; //green
 }
 
-static pair<int, int> collisionDetection::projectedObbExtremes(const Vector3 & axis, const Obb & obb) {
+pair<int, int> collisionDetection::projectedObbExtremes(const Vector3 & axis, const Obb & obb) {
 	Matrix3 newBasis{ obb.right, obb.up, obb.forward };
 	Vector3 newAxis = inverse(newBasis) * axis;
 	return projectedAabbExtremes(newAxis);
 }
 
-static pair<float, float> collisionDetection::projectedFrustumExtremes(const Vector3 & axis, const Frustum & frustum) {
+pair<float, float> collisionDetection::projectedFrustumExtremes(const Vector3 & axis, const Frustum & frustum) {
 	const auto vertices = frustum.getPoints();
 	float min = numeric_limits<float>::max(), max = -numeric_limits<float>::max();
 	auto normalized = normalize(axis);
