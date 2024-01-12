@@ -282,7 +282,7 @@ namespace pah {
 
 	public:
 		Ray() : origin{}, direction{ Vector3{1, 0, 0} } {}
-		Ray(Vector3 origin, Vector3 direction) : origin{ origin }, direction{ direction } {}
+		Ray(Vector3 origin, Vector3 direction) : origin{ origin }, direction{ glm::normalize(direction) } {}
 		
 		const Vector3& getOrigin() const { return origin; }
 		void setOrigin(Vector3 origin) { this->origin = origin; }

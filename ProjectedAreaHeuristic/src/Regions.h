@@ -63,10 +63,10 @@ namespace pah {
 			// IMPORTANT: in the comments we always use the world triangle in place of convex hull
 			// It should help to think about this method as if the hull was always a triangle, it is then easier to generalize to any N-sided convex hull.
 			
-			const auto& N = hull.normal(); //normal to the triangle
 			const auto& R = ray.getDirection(); //direction of the ray
-			Vector3 O{ 0.0f, 0.0f, 0.0f }; //origin
-
+			const auto& O = ray.getOrigin(); //origin
+			auto N = hull.normal(); //normal to the triangle
+			
 			//if the ray and the plane of the triangle are parallel, there is no intersection
 			if (abs(dot(N, R)) < TOLERANCE) return { false, 0.0f };
 
