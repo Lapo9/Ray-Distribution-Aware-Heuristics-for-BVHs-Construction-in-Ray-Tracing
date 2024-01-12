@@ -3,6 +3,7 @@
 #include "../../ProjectedAreaHeuristic/src/Utilities.h"
 #include "../../ProjectedAreaHeuristic/src/Regions.h"
 
+
 namespace collisions {
 	// Standard Ray-Triangle scenario
 	TEST(RayTriangle, StandardHit) {
@@ -34,6 +35,21 @@ namespace collisions {
 		EXPECT_FALSE(res1.hit) << "Ray r1 should not be colliding with Triangle t1.";
 	}
 
+	// The Ray and the planw of the Triangle are parallel
+	TEST(RayTriangle, ParallelRay) {
+		using namespace pah;
+
+		Triangle t1{ Vector3{1,1,1}, Vector3{2,2,2}, Vector3{1,2,3} };
+		Ray r1{ Vector3{2,-1,0}, Vector3{1,1,1} };
+		auto res1 = collisionDetection::areColliding(r1, t1);
+		EXPECT_FALSE(res1.hit) << "Ray r1 should not be colliding with Triangle t1.";
+
+		Triangle t2{ Vector3{1,1,1}, Vector3{2,2,1}, Vector3{1,2,1} };
+		Ray r2{ Vector3{1,0,1}, Vector3{0,1,0} };
+		auto res2 = collisionDetection::areColliding(r2, t2);
+		EXPECT_FALSE(res2.hit) << "Ray r2 should not be colliding with Triangle t2.";
+	}
+
 	// Standard Ray-Aabb scenario
 	TEST(RayAabb, StandardHit) {
 		using namespace pah;
@@ -62,6 +78,7 @@ namespace collisions {
 		EXPECT_FALSE(res2.hit) << "Ray r2 should not be colliding with Aabb aabb1.";
 	}
 
+	// The Ray origin is inside the Aabb
 	TEST(RayAabb, OriginInsideAabb) {
 		using namespace pah;
 		Aabb aabb1{ Vector3{2,2,-2}, Vector3{4,4,-1} };

@@ -527,8 +527,6 @@ collisionDetection::RayCollisionInfo pah::collisionDetection::areColliding(const
 
 	// Now, if tMax is > tMin, we have an intersection (the closest one at ray.origin + tMin * ray.dir). This intersection must be at a positive distance (if not it is "behind" the ray.
 	return { tMax > tMin && tMax >= 0, tMin >= 0 ? tMin : tMax };
-
-	//TODO yet to be tested
 }
 
 bool collisionDetection::almostParallel(const Vector3 & lhs, const Vector3 & rhs, float threshold) {
