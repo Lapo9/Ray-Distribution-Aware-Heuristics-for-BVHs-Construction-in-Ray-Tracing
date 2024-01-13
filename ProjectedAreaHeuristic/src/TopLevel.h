@@ -14,15 +14,39 @@ namespace pah {
 	class TopLevel {
 	public:
 		//related classes
-		struct TraversalInfo {
+		struct TraversalResults {
 			int bvhsTraversed; /**< How many @p Bvh s we traversed before fnding the hit. */
 			int totalBvhs; /**< How many potential @p Bvh s we could have traversed. */
+			int intersectionsTotal;
+			int intersectionsWithNodes;
+			int intersectionsWithTriangles;
+			float totalCost;
+			int intersectionsWhenHit;
+			int intersectionsWithNodesWhenHit;
+			int intersectionsWithTrianglesWhenHit;
+			float costWhenHit;
 			Triangle* closestHit;
 			float closestHitDistance;
 			TIME(DurationMs traversalTime;);
 
 			bool hit() const {
 				return closestHit != nullptr;
+			}
+
+			TraversalResults& operator+=(const Bvh::TraversalResults& rhs) {
+				bvhsTraversed++;
+				intersectionsTotal += rhs.intersectionsTotal;
+				intersectionsWithNodes += rhs.intersectionsWithNodes;
+				intersectionsWithTriangles += rhs.intersectionsWithTriangles;
+				totalCost += rhs.traversalCost;
+				
+				if (rhs.hit()) {
+					intersectionsWhenHit += rhs.intersectionsTotal;
+					intersectionsWithNodesWhenHit += rhs.intersectionsWithNodes;
+					intersectionsWithTrianglesWhenHit += rhs.intersectionsWithTriangles;
+					costWhenHit += rhs.traversalCost;
+				}
+				return *this;
 			}
 		};
 
@@ -47,7 +71,7 @@ namespace pah {
 		 */
 		virtual std::vector<const Bvh*> containedIn(const Vector3&) const = 0;
 
-		virtual TraversalInfo traverse(const TopLevel& topLevel, const Ray& ray);
+		virtual TraversalResults traverse(const Ray& ray) const;
 
 		/**
 		 * @brief Returns the @p Bvh s that are part of this @p TopLevel structure.

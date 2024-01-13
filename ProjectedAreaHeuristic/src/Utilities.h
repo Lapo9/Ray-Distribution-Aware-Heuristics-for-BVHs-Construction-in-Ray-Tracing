@@ -28,9 +28,19 @@ namespace pah {
 	/**
 	 * @brief Represents a random distribution in 3 dimensions. @p distribution(rng) must return a @p Vector3.
 	 */
-	template<typename D>
-	concept Distribution3d = requires(D distr, std::mt19937 rng) {
-		{ distr(rng) } -> std::same_as<Vector3>;
+	template<typename D, typename Rng = std::mt19937>
+	concept Distribution3d = std::uniform_random_bit_generator<Rng> &&
+		requires(D distr, Rng rng) {
+			{ distr(rng) } -> std::same_as<Vector3>;
+	};
+
+	/**
+	 * @brief Represents a random distribution in 2 dimensions. @p distribution(rng) must return a @p Vector2.
+	 */
+	template<typename D, typename Rng = std::mt19937>
+	concept Distribution2d = std::uniform_random_bit_generator<Rng> &&
+		requires(D distr, Rng rng) {
+			{ distr(rng) } -> std::same_as<Vector2>;
 	};
 
 	/**
@@ -60,7 +70,7 @@ namespace pah {
 		 * @brief Returns a random 3D vector with each component inside the range specified during construction.
 		 * Internally it calls @p std::uniform_real_distribution<>::(rng) 3 times.
 		 */
-		Vector3 operator()(std::mt19937& rng) {
+		Vector3 operator()(std::uniform_random_bit_generator auto& rng) {
 			return Vector3{ distributionX(rng), distributionY(rng), distributionZ(rng) };
 		}
 
@@ -69,6 +79,32 @@ namespace pah {
 		std::uniform_real_distribution<> distributionY;
 		std::uniform_real_distribution<> distributionZ;
 	};
+
+	/**
+	 * @brief Represents a random uniform 2-dimensional distribution.
+	 */
+	class Uniform2dDistribution {
+	public:
+		/**
+		 * @brief Builds a uniform 2D random distribution where each component of the possibly generated vectors must be inside the specified ranges.
+		 */
+		Uniform2dDistribution(float minX, float maxX, float minY, float maxY)
+			: distributionX{ minX, maxX }, distributionY{ minY, maxY } {
+		}
+
+		/**
+		 * @brief Returns a random 2D vector with each component inside the range specified during construction.
+		 * Internally it calls @p std::uniform_real_distribution<>::(rng) 2 times.
+		 */
+		Vector2 operator()(std::uniform_random_bit_generator auto& rng) {
+			return Vector2{ distributionX(rng), distributionY(rng) };
+		}
+
+	private:
+		std::uniform_real_distribution<> distributionX;
+		std::uniform_real_distribution<> distributionY;
+	};
+
 
 	template<std::size_t N>
 	struct ConvexHull {

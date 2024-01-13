@@ -260,6 +260,7 @@ namespace pah {
 
 	/**
 	 * @brief An oriented bounding box.
+	 * At the moment it is possible to build only @p Obb s with a pitch and yaw angle, but not a roll (roll == 0 always).
 	 */
 	struct Obb : public Region {
 		Vector3 center;

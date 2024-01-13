@@ -156,7 +156,9 @@ namespace pah {
 		 * @brief Info about the results of a traversal of the @p Bvh of a @p Ray.
 		 */
 		struct TraversalResults {
-			int intersectionsCount;
+			int intersectionsTotal;
+			int intersectionsWithNodes;
+			int intersectionsWithTriangles;
 			float traversalCost;
 			Triangle* closestHit;
 			float closestHitDistance;

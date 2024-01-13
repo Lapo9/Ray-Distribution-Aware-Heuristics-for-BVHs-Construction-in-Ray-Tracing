@@ -35,18 +35,18 @@ void pah::TopLevel::build() {
 	}
 }
 
-TopLevel::TraversalInfo pah::TopLevel::traverse(const TopLevel& topLevel, const Ray& ray) {
-	TraversalInfo res{};
+TopLevel::TraversalResults pah::TopLevel::traverse(const Ray& ray) const {
+	TraversalResults res{};
 	TIME(TimeLogger timeLogger{ [&res](auto duration) {res.traversalTime = duration; } });
 
-	const auto& relevantBvhs = topLevel.containedIn(ray.getOrigin()); //here we have the BVHs where the starting point of the ray is contained (we don't know if the direction is relevant tho)
+	const auto& relevantBvhs = containedIn(ray.getOrigin()); //here we have the BVHs where the starting point of the ray is contained (we don't know if the direction is relevant tho)
 	res.totalBvhs = relevantBvhs.size();
 
 	for (const auto& bvh : relevantBvhs) {
 		//here we check that the direction of the ray is relevant to this particuar BVH
 		if (bvh->getInfluenceArea().isDirectionAffine(ray.getDirection(), TOLERANCE)) { //TODO tolerance here should be a bigger value (we have to tune it)
-			res.bvhsTraversed++;
 			const auto& results = bvh->traverse(ray);
+			res += results; //here we sum some attributes such as the number of intersections and the traversal cost
 			if (results.hit()) {
 				res.closestHit = results.closestHit;
 				res.closestHitDistance = results.closestHitDistance;

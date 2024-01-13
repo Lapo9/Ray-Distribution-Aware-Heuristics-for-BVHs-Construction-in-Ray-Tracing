@@ -20,6 +20,20 @@ namespace pah::projection {
 		// forward = pov.Direction;
 		// right = pov.Up X forward
 		// up = forward X right
+		// translation = (right . pov.Origin, up . pov.Origin, forward . pov.Origin) where A . B is dot(A, B)
+	}
+
+	/**
+	 * @brief Returns a matrix to go from one space to another space with origin at @p origin and basis @p right, @p up and @p forward (as seen from the space we are currently in).
+	 */
+	static Matrix4 computeChangeOfCoordinatesMatrix(Vector3 right, Vector3 up, Vector3 forward, Vector3 origin) {
+		using namespace glm;
+		return Matrix4{
+			Vector4{right.x, up.x, forward.x, 0},
+			Vector4{right.y, up.y, forward.y, 0},
+			Vector4{right.z, up.z, forward.z, 0},
+			Vector4{-dot(right, origin), -dot(up, origin), -dot(forward, origin), 1}
+		};
 	}
 
 	/**

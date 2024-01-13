@@ -31,6 +31,42 @@ void pah::Bvh::build(const vector<const Triangle*>& triangles, unsigned int seed
 	splitNode(root, Axis::X, 1);
 }
 
+pah::Bvh::TraversalResults pah::Bvh::traverse(const Ray& ray) const {	
+	TraversalResults res{};
+	TIME(TimeLogger timeLogger{ [&res](auto duration) {res.traversalTime = duration; } });
+
+	queue<const Node*> toVisit{};
+	toVisit.push(&root);
+
+	while (toVisit.size() > 0) {
+		float closestHit = numeric_limits<float>::max();
+		const Node& current = *toVisit.front();
+		toVisit.pop(); //queue::front doesn't remove the element from the queue, it just accesses it
+		//we enter the if statement iff there is a hit with the box and this hit is closer than the closest hit found so far
+		if (const auto& boxHitInfo = collisionDetection::areColliding(ray, current.aabb); boxHitInfo.hit && boxHitInfo.distance < closestHit) {
+			res.intersectionsTotal++;
+			res.intersectionsWithNodes++;
+			if (current.isLeaf()) {
+				const auto& triangles = current.triangles;
+				res.traversalCost += LEAF_COST * triangles.size();
+				for (const auto& triangle : triangles) {
+					res.intersectionsWithTriangles++;
+					const auto& hitInfo = collisionDetection::areColliding(ray, *triangle);
+					if (hitInfo.hit) closestHit = min(closestHit, hitInfo.distance);
+				}
+			}
+			else {
+				res.traversalCost += NODE_COST * 2.0f;
+				toVisit.push(&*current.leftChild);
+				toVisit.push(&*current.rightChild);
+			}
+		}
+	}
+
+	timeLogger.stop();
+	return res;
+}
+
 void pah::Bvh::splitNode(Node& node, Axis fatherSplittingAxis, int currentLevel) {
 	//the final action simply adds the measured time to the total time
 	TIME(TimeLogger timeLoggerTotal{ [&timingInfo = node.nodeTimingInfo](DurationMs duration) { timingInfo.logTotal(duration); } };);
@@ -122,36 +158,3 @@ pah::Bvh::ShouldStopReturnType pah::Bvh::shouldStopWrapper(const Node& parent, c
 	//here timeLogger will be destroyed, and it will log (by calling finalAction)
 }
 
-pah::Bvh::TraversalResults pah::Bvh::traverse(const Ray& ray) const {	
-	TraversalResults res{};
-	TIME(TimeLogger timeLogger{ [&res](auto duration) {res.traversalTime = duration; } });
-
-	queue<const Node*> toVisit{};
-	toVisit.push(&root);
-
-	while (toVisit.size() > 0) {
-		float closestHit = numeric_limits<float>::max();
-		const Node& current = *toVisit.front();
-		toVisit.pop(); //queue::front doesn't remove the element from the queue, it just accesses it
-		//we enter the if statement iff there is a hit with the box and this hit is closer than the closest hit found so far
-		if (const auto& boxHitInfo = collisionDetection::areColliding(ray, current.aabb); boxHitInfo.hit && boxHitInfo.distance < closestHit) {
-			res.intersectionsCount++;
-			if (current.isLeaf()) {
-				const auto& triangles = current.triangles;
-				res.traversalCost += LEAF_COST * triangles.size();
-				for (const auto& triangle : triangles) {
-					const auto& hitInfo = collisionDetection::areColliding(ray, *triangle);
-					if (hitInfo.hit) closestHit = min(closestHit, hitInfo.distance);
-				}
-			}
-			else {
-				res.traversalCost += NODE_COST * 2.0f;
-				toVisit.push(&*current.leftChild);
-				toVisit.push(&*current.rightChild);
-			}
-		}
-	}
-
-	timeLogger.stop();
-	return res;
-}

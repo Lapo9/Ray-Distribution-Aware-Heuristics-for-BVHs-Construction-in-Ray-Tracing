@@ -14,6 +14,7 @@ using namespace pah;
 using namespace nlohmann;
 
 int main() {
+	auto M = projection::computeViewMatrix(Pov{ Vector3{9,8,7}, Vector3{1,0,0.5f} });
 	//generate triangles
 	mt19937 rng{ 1 };
 	Uniform3dDistribution mainDistribution3d{ 0,10, 0,10, 0,10 };
@@ -55,4 +56,6 @@ int main() {
 	json analysis = analyzer.analyze(topLevelStructure, "D:/Users/lapof/Documents/Development/ProjectedAreaHeuristicVisualizer/Assets/Data/bvh.json");
 
 	//std::cout << std::setw(2) << analysis;
+
+	return 0;
 }
