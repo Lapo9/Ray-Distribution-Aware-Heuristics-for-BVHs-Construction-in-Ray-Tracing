@@ -145,7 +145,7 @@ namespace pah {
 		void generateRays(const Rng& rng, unsigned int quantity, float directionTolerance = 0) override {
 			PlaneInfluenceArea* planeInfluenceArea = dynamic_cast<PlaneInfluenceArea*>(influenceArea);
 			const auto& planeSize = planeInfluenceArea->getSize();
-			Uniform2dDistribution distr{ -planeSize.x, planeSize.y, -planeSize.y, planeSize.y };
+			UniformRectangleDistribution distr{ -planeSize.x, planeSize.y, -planeSize.y, planeSize.y };
 
 			// point in world space * view matrix = point in cam.space <==> point in cam. space * (view matrix)^-1 = point in world space
 			// P in space A * M = P in space B <==> P in space B * M^-1 = P in space A

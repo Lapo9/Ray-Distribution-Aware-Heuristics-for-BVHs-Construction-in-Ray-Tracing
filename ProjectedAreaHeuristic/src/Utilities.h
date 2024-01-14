@@ -56,14 +56,60 @@ namespace pah {
 	};
 
 	/**
+	 * @brief Represents the distribution specified by a probability density function (PDF).
+	 * The PDF by definition must always be positive and integrate to 1.
+	 * The cumulative density function (CDF) is the integral of the PDF.
+	 */
+	class InvertedCdfDistribution {
+	public:
+
+		/**
+		 * @brief Given the inverted cumulative density function (CDF) of a probability density function (PDF), it returns samples with the distribution specified by the PDF.
+		 * 
+		 * @param invertedCdf The inverse of the CDF. The CDF is the integral of the PDF. The PDF must integrate to 1 and be positive.
+		 */
+		InvertedCdfDistribution(std::function<float(float)> invertedCdf, float min = 0.0f, float max = 1.0f) : uniformDistribution{}, invertedCdf{ invertedCdf }, min { min }, max{ max } {}
+		
+		float operator()(std::uniform_random_bit_generator auto& rng) {
+			float uniformSample = uniformDistribution(rng);
+			return invertedCdf(uniformSample) * (max - min) + min;
+		}
+
+	private:
+		std::uniform_real_distribution<> uniformDistribution;
+		std::function<float(float)> invertedCdf;
+		float min;
+		float max;
+	};
+
+	class UniformSphereCapDistribution {
+	public:
+		UniformSphereCapDistribution(Vector3 center, Vector3 orientation, float radius, float halfCapAngle) : 
+			rollDistribution{ 0, 2 * glm::pi<float>() }, 
+			yawDistribution{ [](auto x) {return glm::pow(4.66f * x / (3 * 2 * 1), 1.0f/3.0f); }, 0, glm::pi<float>() / 2.0f } {
+		}
+
+		Vector3 operator()(std::uniform_random_bit_generator auto& rng) {
+			float yaw = yawDistribution(rng);
+			float roll = rollDistribution(rng);
+
+
+		}
+
+	private:
+		std::uniform_real_distribution<> rollDistribution;
+		InvertedCdfDistribution yawDistribution;
+	};
+
+	/**
 	 * @brief Represents a random uniform 3-dimensional distribution.
 	 */
-	class Uniform3dDistribution {
+	class UniformBoxDistribution {
 	public:
 		/**
 		 * @brief Builds a uniform 3D random distribution where each component of the possibly generated vectors must be inside the specified ranges.
 		 */
-		Uniform3dDistribution(float minX, float maxX, float minY, float maxY, float minZ, float maxZ) 
+		UniformBoxDistribution(float minX, float maxX, float minY, float maxY, float minZ, float maxZ) 
 			: distributionX{ minX, maxX }, distributionY{ minY, maxY }, distributionZ{ minZ, maxZ } {}
 
 		/**
@@ -83,12 +129,12 @@ namespace pah {
 	/**
 	 * @brief Represents a random uniform 2-dimensional distribution.
 	 */
-	class Uniform2dDistribution {
+	class UniformRectangleDistribution {
 	public:
 		/**
 		 * @brief Builds a uniform 2D random distribution where each component of the possibly generated vectors must be inside the specified ranges.
 		 */
-		Uniform2dDistribution(float minX, float maxX, float minY, float maxY)
+		UniformRectangleDistribution(float minX, float maxX, float minY, float maxY)
 			: distributionX{ minX, maxX }, distributionY{ minY, maxY } {
 		}
 
