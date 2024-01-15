@@ -124,8 +124,10 @@ namespace pah {
 				//create rotation matrices
 				const auto& yawRotation = glm::rotate(yaw, right);
 				const auto& rollRotation = glm::rotate(roll, orientation);
-				res = rollRotation * yawRotation * res; //rotate the vector that points to the reuired direction
+				res = rollRotation * yawRotation * res; //rotate the vector that points to the required direction
 				return center + res * radius; //compute the final point
+
+				//TODO yet to be tested
 			}
 
 		private:
@@ -136,6 +138,55 @@ namespace pah {
 			Vector3 center;
 			Vector3 orientation;
 			Vector3 right;
+		};
+
+		/**
+		 * @brief Represents a uniform distribution over the surface of a square sphere cap.
+		 * Visualization at: https://www.geogebra.org/calculator/bzswwgvj.
+		 */
+		class UniformSquareSphereCapDistribution {
+
+			/**
+			 * @brief Builds a distribution to sample points on the surface of a square sphere cap.
+			 *
+			 * @param center The center of the sphere.
+			 * @param orientation The orientation of the apex of the sphere cap.
+			 * @param radius The radius of the sphere.
+			 */
+			UniformSquareSphereCapDistribution(float yawAngle, float pitchAngle, Vector3 orientation = { 0,1,0 }, Vector3 center = { 0,0,0 }, float radius = 1) :
+				yawDistribution{ -yawAngle, yawAngle }, pitchDistribution{ -pitchAngle, pitchAngle }, yawAngle{ yawAngle }, pitchAngle{ pitchAngle },
+				radius{ radius }, center{ center }, orientation{ glm::normalize(orientation) },
+				right{ this->orientation != Vector3{0,1,0} && this->orientation != Vector3(0,-1,0) ? glm::cross(this->orientation, Vector3(0,1,0)) : Vector3(1,0,0) },
+				up{ glm::cross(right, this->orientation) } {
+			}
+
+			/**
+			 * @brief Returns a uniformly random point on the surface of a square sphere cap of the specified radius and angle.
+			 */
+			Vector3 operator()(std::uniform_random_bit_generator auto& rng) {
+				//extract the 2 angles
+				float yaw = yawDistribution(rng);
+				float pitch = rollDistribution(rng);
+
+				Vector3 res = orientation;
+				const auto& yawRotation = glm::rotate(yaw, right);
+				const auto& pitchRotation = glm::rotate(pitch, up);
+				res = pitchRotation * yawRotation * res; //rotate the vector that points to the required direction
+				return center + res * radius; //compute the final point
+
+				//TODO yet to be tested
+			}
+
+		private:
+			std::uniform_real_distribution<> yawDistribution;
+			std::uniform_real_distribution<> pitchDistribution;
+			float yawAngle;
+			float pitchAngle;
+			float radius;
+			Vector3 center;
+			Vector3 orientation;
+			Vector3 right;
+			Vector3 up;
 		};
 
 		/**
