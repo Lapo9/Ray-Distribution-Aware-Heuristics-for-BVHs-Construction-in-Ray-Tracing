@@ -17,8 +17,8 @@ int main() {
 	auto M = projection::computeViewMatrix(Pov{ Vector3{9,8,7}, Vector3{1,0,0.5f} });
 	//generate triangles
 	mt19937 rng{ 1 };
-	UniformBoxDistribution mainDistribution3d{ 0,10, 0,10, 0,10 };
-	UniformBoxDistribution otherDistribution3d{ -1,1, -1,1 , -1,1 };
+	distributions::UniformBoxDistribution mainDistribution3d{ 0,10, 0,10, 0,10 };
+	distributions::UniformBoxDistribution otherDistribution3d{ -1,1, -1,1 , -1,1 };
 	auto triangles = Triangle::generateRandom(100, rng, mainDistribution3d, otherDistribution3d);
 
 	//create influence areas

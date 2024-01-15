@@ -140,12 +140,13 @@ namespace pah {
 	template<std::uniform_random_bit_generator Rng = std::mt19937>
 	class PlaneRayCaster : public RayCaster<Rng> {
 	public:
-		PlaneRayCaster(const PlaneInfluenceArea& planeInfluenceArea) : RayCaster<Rng>(planeInfluenceArea) {}
+		PlaneRayCaster(const PlaneInfluenceArea& planeInfluenceArea) : RayCaster<Rng>(planeInfluenceArea), uniformRectangleDistribution{ -planeInfluenceArea->getSize().x, planeInfluenceArea->getSize().x, -planeInfluenceArea->getSize().y, planeInfluenceArea->getSize().y } {}
 		
 		void generateRays(const Rng& rng, unsigned int quantity, float directionTolerance = 0) override {
+			rays = std::vector<Ray>(quantity); //clear the vector
+
 			PlaneInfluenceArea* planeInfluenceArea = dynamic_cast<PlaneInfluenceArea*>(influenceArea);
 			const auto& planeSize = planeInfluenceArea->getSize();
-			UniformRectangleDistribution distr{ -planeSize.x, planeSize.y, -planeSize.y, planeSize.y };
 
 			// point in world space * view matrix = point in cam.space <==> point in cam. space * (view matrix)^-1 = point in world space
 			// P in space A * M = P in space B <==> P in space B * M^-1 = P in space A
@@ -159,8 +160,18 @@ namespace pah {
 			//basically, this matrix allow as to go from the coordinate system centered at the center of the plane and with the z-axis perpendicular to the plane (which is the one we use to build the OBB) to the world space.
 			//therefore, now, we can get a random point on the plane, get its coordinates in world space and use those to create the ray (the direction is always perpendicular to the plane itself).
 
+			distributions::UniformSphereCapDistribution directionDistribution{ directionTolerance, forward }; //distribution to give variance to the direction of the rays
 
+			//eventually, create the rays
+			for (int i = 0; i < quantity; ++i) {
+				rays.emplace_back{ uniformRectangleDistribution(rng), directionDistribution(rng) };
+			}
+
+			//TODO yet to be tested
 		}
+
+	private:
+		distributions::UniformRectangleDistribution uniformRectangleDistribution;
 	};
 
 
