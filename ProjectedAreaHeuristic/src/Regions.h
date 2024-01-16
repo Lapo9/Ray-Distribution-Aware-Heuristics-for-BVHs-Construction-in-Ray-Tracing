@@ -322,7 +322,7 @@ namespace pah {
 		/**
 		 * @brief Builds a frustum given the forward direction, the view point, fan and near planes and the field of views.
 		 */
-		Frustum(const Pov& pov, float far, float near, float fovX, float fovY);
+		Frustum(const Pov& pov, float far, float near);
 
 		// TODO finish
 		/* Frustum(const Vector3& lbf, const Vector3& rbf, const Vector3& ltf, const Vector3& lbb) {

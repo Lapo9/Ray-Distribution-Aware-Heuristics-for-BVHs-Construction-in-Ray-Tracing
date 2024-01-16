@@ -15,10 +15,12 @@ using namespace pah::utilities;
 // ======| TopLevel |======
 void pah::TopLevel::build() {
 	unordered_map<const pah::Bvh*, vector<const Triangle*>> bvhsTriangles; //maps the BVH and the triangles it contains
+	//build the fallback BVH with all the triangles
+	fallbackBvh.build(triangles | views::transform([](const Triangle& t) {return &t; }) | ranges::to<vector>());
 
 	//understand the BVHs each triangle is contained into
 	for (auto& t : triangles) {
-		unordered_set<const pah::Bvh*> containedInto; //the BVHs where thre triangle is contained into
+		unordered_set<const pah::Bvh*> containedInto; //the BVHs the triangle is contained into
 
 		//for each vertex, get the BVHs it is contained into, and add them to the set (we directly use the containedIn function, so this is polymorphic
 		containedInto.insert_range(containedIn(t.v0));
@@ -50,8 +52,19 @@ TopLevel::TraversalResults pah::TopLevel::traverse(const Ray& ray) const {
 			if (results.hit()) {
 				res.closestHit = results.closestHit;
 				res.closestHitDistance = results.closestHitDistance;
-				break;
+				break; //if we find an hit, we don't need to traverse the remaining BVHs
 			}
+		}
+	}
+
+	//if we couldn't find a hit, we fallback to the global BVH
+	if (!res.hit()) {
+		res.fallbackBvhSearch = true;
+		const auto& results = fallbackBvh.traverse(ray);
+		res += results; //here we sum some attributes such as the number of intersections and the traversal cost
+		if (results.hit()) {
+			res.closestHit = results.closestHit;
+			res.closestHitDistance = results.closestHitDistance;
 		}
 	}
 

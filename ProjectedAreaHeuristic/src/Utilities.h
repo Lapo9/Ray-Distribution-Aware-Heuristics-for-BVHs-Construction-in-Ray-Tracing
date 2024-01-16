@@ -55,192 +55,11 @@ namespace pah {
 											     { point.w } -> std::convertible_to<float>; }; //if it has .w it must also have .z, and they both must be float
 	};
 
-	namespace distributions {
-		/**
-		 * @brief Represents the distribution specified by a probability density function (PDF).
-		 * The PDF by definition must always be positive and integrate to 1.
-		 * The cumulative density function (CDF) is the integral of the PDF.
-		 */
-		class InvertedCdfDistribution {
-		public:
+	
 
-			/**
-			 * @brief Given the inverted cumulative density function (CDF) of a probability density function (PDF), it returns samples with the distribution specified by the PDF.
-			 *
-			 * @param inverseCdf The inverse of the CDF. The CDF is the integral of the PDF. The PDF must integrate to 1 and be positive.
-			 */
-			InvertedCdfDistribution(std::function<float(float)> inverseCdf) : uniformDistribution{}, inverseCdf{ inverseCdf } {}
-
-			float operator()(std::uniform_random_bit_generator auto& rng) {
-				float uniformSample = uniformDistribution(rng);
-				return inverseCdf(uniformSample);
-			}
-
-		private:
-			std::uniform_real_distribution<> uniformDistribution;
-			std::function<float(float)> inverseCdf;
-		};
-
-		/**
-		 * @brief Represents a uniform distribution over the surface of a sphere cap.
-		 * Visualilzation at: https://www.geogebra.org/m/sbtknqat.
-		 * Explanation of the sampling method at: https://www.desmos.com/calculator/sg5bz4pft8
-		 */
-		class UniformSphereCapDistribution {
-		public:
-
-			/**
-			 * @brief Builds a distribution to sample points on the surface of a sphere cap.
-			 *
-			 * @param center The center of the sphere.
-			 * @param orientation The orientation of the apex of the sphere cap.
-			 * @param radius The radius of the sphere.
-			 * @param halfCapAngle The polar angle of the sphere cap.
-			 */
-			UniformSphereCapDistribution(float halfCapAngle, Vector3 orientation = {0,1,0}, Vector3 center = {0,0,0}, float radius = 1) :
-				rollDistribution{ 0, 2 * glm::pi<float>() },
-				yawDistribution{ [R = radius, pi = glm::pi<float>(), k = radius * 2.85f * glm::pow(halfCapAngle, 1.81f)](float x) {
-					float a = 2.0f * pi * R / k;
-					return glm::acos((a - x) / a); //Explanation here: https://www.desmos.com/calculator/sg5bz4pft8
-				} },
-				center{ center }, orientation{ glm::normalize(orientation) }, radius{ radius }, halfCapAngle{ halfCapAngle },
-				right{ this->orientation != Vector3{0,1,0} && this->orientation != Vector3(0,-1,0) ? glm::cross(this->orientation, Vector3(0,1,0)) : Vector3(1,0,0) } {
-				if (radius <= 0) {
-					throw std::logic_error{ "The radius of a UniformSphereCapDistribution must be > 0" };
-				}
-			}
-
-			/**
-			 * @brief Returns a uniformly random point on the surface of a sphere cap of the specified radius and angle.
-			 */
-			Vector3 operator()(std::uniform_random_bit_generator auto& rng) {				
-				if (halfCapAngle == 0f) return orientation;
-
-				//extract the 2 angles
-				float yaw = yawDistribution(rng);
-				float roll = rollDistribution(rng);
-
-				Vector3 res = orientation;
-				//create rotation matrices
-				const auto& yawRotation = glm::rotate(yaw, right);
-				const auto& rollRotation = glm::rotate(roll, orientation);
-				res = rollRotation * yawRotation * res; //rotate the vector that points to the required direction
-				return center + res * radius; //compute the final point
-
-				//TODO yet to be tested
-			}
-
-		private:
-			std::uniform_real_distribution<> rollDistribution;
-			InvertedCdfDistribution yawDistribution;
-			float radius;
-			float halfCapAngle;
-			Vector3 center;
-			Vector3 orientation;
-			Vector3 right;
-		};
-
-		/**
-		 * @brief Represents a uniform distribution over the surface of a square sphere cap.
-		 * Visualization at: https://www.geogebra.org/calculator/bzswwgvj.
-		 */
-		class UniformSquareSphereCapDistribution {
-
-			/**
-			 * @brief Builds a distribution to sample points on the surface of a square sphere cap.
-			 *
-			 * @param center The center of the sphere.
-			 * @param orientation The orientation of the apex of the sphere cap.
-			 * @param radius The radius of the sphere.
-			 */
-			UniformSquareSphereCapDistribution(float yawAngle, float pitchAngle, Vector3 orientation = { 0,1,0 }, Vector3 center = { 0,0,0 }, float radius = 1) :
-				yawDistribution{ -yawAngle, yawAngle }, pitchDistribution{ -pitchAngle, pitchAngle }, yawAngle{ yawAngle }, pitchAngle{ pitchAngle },
-				radius{ radius }, center{ center }, orientation{ glm::normalize(orientation) },
-				right{ this->orientation != Vector3{0,1,0} && this->orientation != Vector3(0,-1,0) ? glm::cross(this->orientation, Vector3(0,1,0)) : Vector3(1,0,0) },
-				up{ glm::cross(right, this->orientation) } {
-			}
-
-			/**
-			 * @brief Returns a uniformly random point on the surface of a square sphere cap of the specified radius and angle.
-			 */
-			Vector3 operator()(std::uniform_random_bit_generator auto& rng) {
-				//extract the 2 angles
-				float yaw = yawDistribution(rng);
-				float pitch = rollDistribution(rng);
-
-				Vector3 res = orientation;
-				const auto& yawRotation = glm::rotate(yaw, right);
-				const auto& pitchRotation = glm::rotate(pitch, up);
-				res = pitchRotation * yawRotation * res; //rotate the vector that points to the required direction
-				return center + res * radius; //compute the final point
-
-				//TODO yet to be tested
-			}
-
-		private:
-			std::uniform_real_distribution<> yawDistribution;
-			std::uniform_real_distribution<> pitchDistribution;
-			float yawAngle;
-			float pitchAngle;
-			float radius;
-			Vector3 center;
-			Vector3 orientation;
-			Vector3 right;
-			Vector3 up;
-		};
-
-		/**
-		 * @brief Represents a random uniform 3-dimensional distribution.
-		 */
-		class UniformBoxDistribution {
-		public:
-			/**
-			 * @brief Builds a uniform 3D random distribution where each component of the possibly generated vectors must be inside the specified ranges.
-			 */
-			UniformBoxDistribution(float minX, float maxX, float minY, float maxY, float minZ, float maxZ)
-				: distributionX{ minX, maxX }, distributionY{ minY, maxY }, distributionZ{ minZ, maxZ } {
-			}
-
-			/**
-			 * @brief Returns a random 3D vector with each component inside the range specified during construction.
-			 * Internally it calls @p std::uniform_real_distribution<>::(rng) 3 times.
-			 */
-			Vector3 operator()(std::uniform_random_bit_generator auto& rng) {
-				return Vector3{ distributionX(rng), distributionY(rng), distributionZ(rng) };
-			}
-
-		private:
-			std::uniform_real_distribution<> distributionX;
-			std::uniform_real_distribution<> distributionY;
-			std::uniform_real_distribution<> distributionZ;
-		};
-
-		/**
-		 * @brief Represents a random uniform 2-dimensional distribution.
-		 */
-		class UniformRectangleDistribution {
-		public:
-			/**
-			 * @brief Builds a uniform 2D random distribution where each component of the possibly generated vectors must be inside the specified ranges.
-			 */
-			UniformRectangleDistribution(float minX, float maxX, float minY, float maxY)
-				: distributionX{ minX, maxX }, distributionY{ minY, maxY } {
-			}
-
-			/**
-			 * @brief Returns a random 2D vector with each component inside the range specified during construction.
-			 * Internally it calls @p std::uniform_real_distribution<>::(rng) 2 times.
-			 */
-			Vector2 operator()(std::uniform_random_bit_generator auto& rng) {
-				return Vector2{ distributionX(rng), distributionY(rng) };
-			}
-
-		private:
-			std::uniform_real_distribution<> distributionX;
-			std::uniform_real_distribution<> distributionY;
-		};
-	}
-
+	/**
+	 * @brief Represents any polygonal convex shape.
+	 */
 	template<std::size_t N>
 	struct ConvexHull {
 	public:
@@ -429,23 +248,28 @@ namespace pah {
 	 */
 	struct Pov {
 	private:
-		Vector3 position;
 		Vector3 direction;
 		Vector3 up;
-
 	public:
-		Pov() : position{}, direction{ Vector3{1, 0, 0} }, up{ 0,1,0 } {}
-		Pov(Vector3 position, Vector3 direction, Vector3 up = Vector3{ 0.0f, 1.0f, 0.0f }) : position{ position }, direction{ direction }, up{ up } {}
-		Pov(Plane plane, Vector3 up = Vector3{ 0.0f, 1.0f, 0.0f }) : position{ plane.getPoint()}, direction{plane.getNormal()}, up{up} {}
+		Vector3 position;
+		float fovX;
+		float fovY;
 
-		const Vector3& getPosition() const { return position; }
-		void setPosition(Vector3 position) { this->position = position; }
+
+		Pov() : position{}, direction{ Vector3{1, 0, 0} }, up{ 0,1,0 }, fovX{ glm::radians(90.0f) }, fovY{ glm::radians(90.0f) } {}
+		Pov(Vector3 position, Vector3 direction, float fovXdegrees, float fovYdegrees, Vector3 up = Vector3{ 0.0f, 1.0f, 0.0f }) : 
+			position{ position }, direction{ direction }, up{ up }, fovX{ fovXdegrees }, fovY{ fovYdegrees } {
+		}
+
 		const Vector3& getDirection() const { return direction; }
 		void setDirection(Vector3 direction) { this->direction = glm::normalize(direction); }		
 		const Vector3& getUp() const { return up; }
 		void setUp(Vector3 up) { this->up = glm::normalize(up); }
 	};
 
+	/**
+	 * @brief Represents a ray in 3D.
+	 */
 	struct Ray {
 	private:
 		Vector3 origin;
@@ -493,6 +317,29 @@ namespace pah {
 			throw std::invalid_argument{ "Cannot use pah::Axis::None as argument" };
 		}
 
+		/**
+		 * @brief Returns a right-handed coordinate system where the argument points to the z direction.
+		 */
+		static std::tuple<Vector3, Vector3, Vector3> rightHandCoordinatesSystem(Vector3 forward, const Vector3& up = Vector3{ 0.0f, 1.0f, 0.0f }) {
+			using namespace glm;
+
+			forward = normalize(forward);
+			Vector3 right = normalize((forward == Vector3{ 0.0f, 1.0f, 0.0f } || forward == Vector3{ 0.0f, -1.0f, 0.0f }) ? Vector3{ 1.0f, 0.0f, 0.0f } : cross(up, forward));
+			Vector3 upDir = normalize(cross(forward, right));
+			return { right, upDir, forward };
+		}
+
+		/**
+		 * @brief Returns a left-handed coordinate system where the argument points to the z direction.
+		 */
+		static std::tuple<Vector3, Vector3, Vector3> leftHandCoordinatesSystem(Vector3 forward, const Vector3& up = Vector3{ 0.0f, 1.0f, 0.0f }) {
+			using namespace glm;
+
+			forward = normalize(forward);
+			Vector3 right = normalize((forward == Vector3{ 0.0f, 1.0f, 0.0f } || forward == Vector3{ 0.0f, -1.0f, 0.0f }) ? Vector3{ -1.0f, 0.0f, 0.0f } : cross(forward, up));
+			Vector3 upDir = normalize(glm::cross(right, forward));
+			return { right, upDir, forward };
+		}
 
 		/**
 		 * @brief Class that can be used to measure the elapsed time between 2 points in a single thread of the code.

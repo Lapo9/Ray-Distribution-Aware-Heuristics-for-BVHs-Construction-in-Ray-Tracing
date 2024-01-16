@@ -124,8 +124,11 @@ pah::Aabb& pah::operator+(Aabb lhs, const Aabb & rhs) {
 
 
 // ======| Obb |======
-pah::Obb::Obb(const Vector3 & center, const Vector3 & halfSize, const Vector3 & forward) : center{ center }, halfSize{ halfSize },
-	forward{ normalize(forward) }, right{ cross(Vector3{0,1,0}, forward) }, up{ cross(forward, right) } {
+pah::Obb::Obb(const Vector3 & center, const Vector3 & halfSize, const Vector3 & forward) : center{ center }, halfSize{ halfSize } {
+	auto [right, up, forwardDir] = utilities::rightHandCoordinatesSystem(forward);
+	this->forward = forwardDir;
+	this->up = up;
+	this->right = right;
 }
 
 bool pah::Obb::contains(const Vector3 & point) const {
@@ -212,8 +215,8 @@ pah::Frustum::Frustum(const Matrix4 & viewProjectionMatrix) : viewProjectionMatr
 	fillEnclosingAabb();
 }
 
-pah::Frustum::Frustum(const Pov & pov, float far, float near, float fovX, float fovY)
-	: Frustum{ projection::computePerspectiveMatrix(far, near, { fovX, fovY }) * projection::computeViewMatrix(pov) } {}
+pah::Frustum::Frustum(const Pov & pov, float far, float near)
+	: Frustum{ projection::computePerspectiveMatrix(far, near, { pov.fovX, pov.fovY }) * projection::computeViewMatrix(pov.position, pov.getDirection()) } {}
 
 bool pah::Frustum::contains(const Vector3 & point) const {
 	if (!enclosingAabbObj.contains(point)) return false;
@@ -278,7 +281,7 @@ Matrix4 pah::Frustum::extractViewMatrix() const {
 	Vector4 centerWorld = glm::inverse(viewProjectionMatrix) * centerView;
 	centerWorld /= centerWorld.w; //we want 1 as the w component in homogeneous coordinates
 	//we know that M = P * V ==> P = M * V^(-1)
-	return projection::computeViewMatrix(Pov{ centerWorld, getForward() });
+	return projection::computeViewMatrix(centerWorld, getForward());
 }
 
 Matrix4 pah::Frustum::extractProjectionMatrix() const {

@@ -57,8 +57,8 @@ float pah::PlaneInfluenceArea::getDensity() const {
 // ======| PointInfluenceArea |======
 
 // Look at the comment of PointInfluenceArea::planePatch to understand how we built it. The order of the point is such that it creates a counterclockwise rectangle.
-pah::PointInfluenceArea::PointInfluenceArea(Pov pov, float far, float near, float fovX, float fovY, float density)
-	: InfluenceArea{ make_unique<Frustum>(pov, far, near, fovX, fovY) },
+pah::PointInfluenceArea::PointInfluenceArea(Pov pov, float far, float near, float density)
+	: InfluenceArea{ make_unique<Frustum>(pov, far, near) },
 	planePatch{
 		dynamic_cast<Frustum&>(*bvhRegion).getEdgesDirections()[2],
 		dynamic_cast<Frustum&>(*bvhRegion).getEdgesDirections()[4],
@@ -71,7 +71,7 @@ float pah::PointInfluenceArea::getProjectedArea(const Aabb& aabb) const
 	//we want to project to a frustum that points to the AABB.
 	//indeed the projected area should approximate the number of rays that hit the AABB, but by projecting it to the near plane, objects far from the z axis tend to get distorted.
 	//basically we want the solid angle.
-	Pov centeredPov{ pov.getPosition(), aabb.center() - pov.getPosition() };
+	Pov centeredPov{ pov.position, aabb.center() - pov.position, pov.fovX, pov.fovY };
 	return projection::perspective::computeProjectedArea(aabb, centeredPov);
 }
 
@@ -80,7 +80,7 @@ float pah::PointInfluenceArea::getInfluence(const Aabb& aabb) const{
 }
 
 Vector3 pah::PointInfluenceArea::getRayDirection(const Aabb& aabb) const{
-	return aabb.center() - pov.getPosition();
+	return aabb.center() - pov.position;
 }
 
 bool pah::PointInfluenceArea::isDirectionAffine(const Vector3& direction, float tolerance) const {

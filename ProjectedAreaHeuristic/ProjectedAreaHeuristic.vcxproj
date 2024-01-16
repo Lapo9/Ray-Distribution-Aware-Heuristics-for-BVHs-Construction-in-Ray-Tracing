@@ -24,6 +24,7 @@
     <ClInclude Include="src\Bvh.h" />
     <ClInclude Include="src\BvhAnalyzer.h" />
     <ClInclude Include="src\CustomJson.h" />
+    <ClInclude Include="src\distributions.h" />
     <ClInclude Include="src\InfluenceArea.h" />
     <ClInclude Include="src\Projections.h" />
     <ClInclude Include="src\RayCaster.h" />
@@ -38,6 +39,7 @@
     <ClCompile Include="src\CustomJson.cpp" />
     <ClCompile Include="src\InfluenceArea.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\RayCaster.cpp" />
     <ClCompile Include="src\Regions.cpp" />
     <ClCompile Include="src\TopLevel.cpp" />
   </ItemGroup>

@@ -7,6 +7,7 @@
 #include "Regions.h"
 #include "TopLevel.h"
 #include "Projections.h"
+#include "RayCaster.h"
 
 
 namespace glm{
@@ -40,6 +41,7 @@ namespace pah {
 	void to_json(json& j, const TopLevelOctree::NodeTimingInfo&);
 	void to_json(json& j, const Bvh::Properties&);
 	void to_json(json& j, const TopLevelOctree::Properties&);
+	void to_json(json& j, const CumulativeRayCasterResults&);
 
 	namespace projection {
 		void to_json(json& j, const ProjectionMatrixParameters&);

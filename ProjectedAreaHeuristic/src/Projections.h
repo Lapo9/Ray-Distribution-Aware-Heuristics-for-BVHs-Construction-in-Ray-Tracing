@@ -10,17 +10,17 @@ namespace pah::projection {
 	/**
 	 * @brief Returns the view matrix, to go from world space to camera space.
 	 */
-	static Matrix4 computeViewMatrix(Pov pov) {
-		return glm::lookAt(pov.getPosition(), pov.getPosition() + pov.getDirection(), pov.getUp());
+	static Matrix4 computeViewMatrix(const Vector3& eye, const Vector3& direction, const Vector3& up = Vector3{ 0.0f,1.0f,0.0f }) {
+		return glm::lookAt(eye, eye + direction, up);
 		//  right_x     right_y     right_z     -translation_x
 		//  up_x        up_y        up_z        -translation_y
 		//  forward_x   forward_y   forward_z   -translation_z
 		//  0           0           0           1
 		// Where:
-		// forward = pov.Direction;
-		// right = pov.Up X forward
+		// forward = direction;
+		// right = up X forward
 		// up = forward X right
-		// translation = (right . pov.Origin, up . pov.Origin, forward . pov.Origin) where A . B is dot(A, B)
+		// translation = (right . eye, up . eye, forward . eye) where A . B is dot(A, B)
 	}
 
 	/**
@@ -141,7 +141,7 @@ namespace pah::projection {
 		 * @brief Given a plane, projects the point to it.
 		 */
 		static Vector2 projectPoint(Vector4 point, Plane plane) {
-			return computeViewMatrix(Pov{ plane }) * point;
+			return computeViewMatrix(plane.getPoint(), plane.getNormal()) * point;
 		}
 
 		/**
@@ -302,25 +302,25 @@ namespace pah::projection {
 		 * @brief Projects the given point based on the PoV using perspective.
 		 * @param fovs Horizontal and vertical FoVs in degrees.
 		 */
-		static Vector2 projectPoint(Vector4 point, Pov pov, std::tuple<float, float> fovs = std::tuple{ 90.0f, 90.0f }, float far = 1000.0f, float near = 0.1f) {
-			return projectPoint(point, computeViewMatrix(pov) * computePerspectiveMatrix(far, near, fovs));
+		static Vector2 projectPoint(Vector4 point, Pov pov, float far = 1000.0f, float near = 0.1f) {
+			return projectPoint(point, computeViewMatrix(pov.position, pov.getDirection()) * computePerspectiveMatrix(far, near, { pov.fovX, pov.fovY }));
 		}
 
 		/**
 		 * @brief Projects the given point based on the PoV using perspective. 1.0 is appended as w component of the point.
 		 * @param fovs Horizontal and vertical FoVs in degrees.
 		 */
-		static Vector2 projectPoint(Vector3 point, Pov pov, std::tuple<float, float> fovs = std::tuple{ 90.0f, 90.0f }, float far = 1000.0f, float near = 0.1f) {
-			return projectPoint(Vector4{ point, 1.0f }, pov, fovs, far, near);
+		static Vector2 projectPoint(Vector3 point, Pov pov, float far = 1000.0f, float near = 0.1f) {
+			return projectPoint(Vector4{ point, 1.0f }, pov, far, near);
 		}
 
 		/**
 		 * @brief Given some points it projects them based on the PoV, using perspective.
 		 * @param fovs Horizontal and vertical FoVs in degrees.
 		 */
-		static std::vector<Vector2> projectPoints(const std::vector<Vector3>& points, Pov pov, std::tuple<float, float> fovs = std::tuple{ 90.0f, 90.0f }, float far = 1000.0f, float near = 0.1f) {
+		static std::vector<Vector2> projectPoints(const std::vector<Vector3>& points, Pov pov, float far = 1000.0f, float near = 0.1f) {
 			std::vector<Vector2> projectedPoints;
-			Matrix4 viewProjectionMatrix = computeViewMatrix(Pov{ pov }) * computePerspectiveMatrix(far, near, fovs); //we compute it here to avoid recomputing it for each point
+			Matrix4 viewProjectionMatrix = computeViewMatrix(pov.position, pov.getDirection()) * computePerspectiveMatrix(far, near, { pov.fovX, pov.fovY }); //we compute it here to avoid recomputing it for each point
 			for (int i = 0; i < points.size(); ++i) {
 				projectedPoints.emplace_back(projectPoint(points[i], viewProjectionMatrix));
 			}
@@ -331,10 +331,10 @@ namespace pah::projection {
 		 * @brief Given an @p Aabb it projects all of its points based on the PoV, using perspective.
 		 * @param fovs Horizontal and vertical FoVs in degrees.
 		 */
-		static std::array<Vector2, 8> projectAabb(const Aabb& aabb, Pov pov, std::tuple<float, float> fovs = std::tuple{ 90.0f, 90.0f }, float far = 1000.0f, float near = 0.1f) {
+		static std::array<Vector2, 8> projectAabb(const Aabb& aabb, Pov pov, float far = 1000.0f, float near = 0.1f) {
 			using namespace std;
 			auto points = aabb.getPoints();
-			auto projectedPoints = projectPoints(vector(points.begin(), points.end()), pov, fovs, far, near);
+			auto projectedPoints = projectPoints(vector(points.begin(), points.end()), pov, far, near);
 			array<Vector2, 8> result{};
 			std::move(projectedPoints.begin(), projectedPoints.begin() + 8, result.begin());
 			return result;
@@ -394,8 +394,8 @@ namespace pah::projection {
 		 * @brief Given an @p Aabb and a PoV, computes the projected area of the @p Aabb.
 		 * @param fovs Horizontal and vertical FoVs in degrees.
 		 */
-		static float computeProjectedArea(const Aabb& aabb, Pov pov, std::tuple<float, float> fovs = std::tuple{ 90.0f, 90.0f }, float far = 1000.0f, float near = 0.1f) {
-			return computeProjectedArea(projectPoints(findContourPoints(aabb, pov.getPosition()), pov, fovs, far, near));
+		static float computeProjectedArea(const Aabb& aabb, Pov pov, float far = 1000.0f, float near = 0.1f) {
+			return computeProjectedArea(projectPoints(findContourPoints(aabb, pov.position), pov, far, near));
 		}
 	}
 }

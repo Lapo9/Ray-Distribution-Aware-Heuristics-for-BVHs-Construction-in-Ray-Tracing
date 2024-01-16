@@ -130,9 +130,11 @@ void pah::to_json(json& j, const Plane& plane) {
 }
 
 void pah::to_json(json& j, const Pov& pov) {
-	j["position"] = pov.getPosition();
+	j["position"] = pov.position;
 	j["direction"] = pov.getDirection();
 	j["up"] = pov.getUp();
+	j["fovX"] = pov.fovX;
+	j["fovY"] = pov.fovY;
 }
 
 void pah::to_json(json& j, const Bvh::NodeTimingInfo& nti) {
@@ -170,6 +172,35 @@ void pah::to_json(json& j, const Bvh::Properties& properties) {
 void pah::to_json(json& j, const TopLevelOctree::Properties& properties) {
 	j["conservativeApproach"] = properties.conservativeApproach;
 	j["maxLevel"] = properties.maxLevel;
+}
+
+void pah::to_json(json& j, const CumulativeRayCasterResults& crcr) {
+	j["raysAmount"] = crcr.raysAmount;
+	j["rayCastersAmount"] = crcr.rayCastersAmount;
+	j["totalBvhsTraversed"] = crcr.totalBvhsTraversed;
+	j["totalHits"] = crcr.totalHits;
+	j["totalMisses"] = crcr.totalMisses;
+	j["totalIntersectionTests"] = crcr.totalIntersectionTests;
+	j["totalIntersectionTestsWithNodes"] = crcr.totalIntersectionTestsWithNodes;
+	j["totalIntersectionTestsWithTriangles"] = crcr.totalIntersectionTestsWithTriangles;
+	j["totalIntersectionTestsWhenHit"] = crcr.totalIntersectionTestsWhenHit;
+	j["totalIntersectionTestsWithNodesWhenHit"] = crcr.totalIntersectionTestsWithNodesWhenHit;
+	j["totalIntersectionTestsWithTrianglesWhenHit"] = crcr.totalIntersectionTestsWithTrianglesWhenHit;
+	j["totalFallbackBvhSearches"] = crcr.totalFallbackBvhSearches;
+	TIME(j["totalTimeTraversing"] = crcr.totalTimeTraversing.count(););
+
+	j["averageBvhsTraversedPerRay"] = crcr.averageBvhsTraversedPerRay();
+	j["hitsPercentage"] = crcr.hitsPercentage();
+	j["missesPercentage"] = crcr.missesPercentage();
+	j["averageIntersectionTestsPerRay"] = crcr.averageIntersectionTestsPerRay();
+	j["averageIntersectionTestsWithNodesPerRay"] = crcr.averageIntersectionTestsWithNodesPerRay();
+	j["averageIntersectionTestsWithTrianglesPerRay"] = crcr.averageIntersectionTestsWithTrianglesPerRay();
+	j["averageIntersectionTestsWhenHitPerRay"] = crcr.averageIntersectionTestsWhenHitPerRay();
+	j["averageIntersectionTestsWithNodesWhenHitPerRay"] = crcr.averageIntersectionTestsWithNodesWhenHitPerRay();
+	j["averageIntersectionTestsWithTrianglesWhenHitPerRay"] = crcr.averageIntersectionTestsWithTrianglesWhenHitPerRay();
+	j["fallbackBvhSearchesPercentage"] = crcr.fallbackBvhSearchesPercentage();
+	j["successfulFallbackBvhSearchesPercentage"] = crcr.successfulFallbackBvhSearchesPercentage();
+	TIME(j["averageTimeTraversingPerRay"] = crcr.averageTimeTraversingPerRay().count(););
 }
 
 void pah::projection::to_json(json& j, const ProjectionMatrixParameters& params) {

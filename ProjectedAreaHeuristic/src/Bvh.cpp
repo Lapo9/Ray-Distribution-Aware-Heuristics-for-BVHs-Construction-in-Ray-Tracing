@@ -10,8 +10,13 @@ using namespace pah::utilities;
 
 // ======| Bvh |======
 pah::Bvh::Bvh(const Properties& properties, const InfluenceArea& influenceArea, ComputeCostType computeCost, ChooseSplittingPlanesType chooseSplittingPlanes, ShouldStopType shouldStop)
-	: properties{ properties }, influenceArea{ &influenceArea }, computeCost{ computeCost }, chooseSplittingPlanes{ chooseSplittingPlanes }, shouldStop{ shouldStop } {}
-	
+	: properties{ properties }, influenceArea{ &influenceArea }, computeCost{ computeCost }, chooseSplittingPlanes{ chooseSplittingPlanes }, shouldStop{ shouldStop } {
+}
+
+pah::Bvh::Bvh(const Properties& properties, ComputeCostType computeCost, ChooseSplittingPlanesType chooseSplittingPlanes, ShouldStopType shouldStop)
+	: properties{ properties }, influenceArea{ nullptr }, computeCost{ computeCost }, chooseSplittingPlanes{ chooseSplittingPlanes }, shouldStop{ shouldStop } {
+}
+
 void pah::Bvh::build(const vector<const Triangle*>& triangles) {
 	//the final action simply adds the measured time to the total time
 	INFO(TimeLogger timeLogger{ [this](DurationMs duration) { totalBuildTime = duration; } };);
@@ -37,22 +42,27 @@ pah::Bvh::TraversalResults pah::Bvh::traverse(const Ray& ray) const {
 
 	queue<const Node*> toVisit{};
 	toVisit.push(&root);
+	float closestHit = numeric_limits<float>::max();
 
 	while (toVisit.size() > 0) {
-		float closestHit = numeric_limits<float>::max();
 		const Node& current = *toVisit.front();
 		toVisit.pop(); //queue::front doesn't remove the element from the queue, it just accesses it
 		//we enter the if statement iff there is a hit with the box and this hit is closer than the closest hit found so far
 		if (const auto& boxHitInfo = collisionDetection::areColliding(ray, current.aabb); boxHitInfo.hit && boxHitInfo.distance < closestHit) {
-			res.intersectionsTotal++;
-			res.intersectionsWithNodes++;
+			res.intersectionTestsTotal++;
+			res.intersectionTestsWithNodes++;
 			if (current.isLeaf()) {
 				const auto& triangles = current.triangles;
 				res.traversalCost += LEAF_COST * triangles.size();
-				for (const auto& triangle : triangles) {
-					res.intersectionsWithTriangles++;
+				for (const Triangle* triangle : triangles) {
+					res.intersectionTestsTotal++;
+					res.intersectionTestsWithTriangles++;
 					const auto& hitInfo = collisionDetection::areColliding(ray, *triangle);
-					if (hitInfo.hit) closestHit = min(closestHit, hitInfo.distance);
+					if (hitInfo.hit && hitInfo.distance < closestHit) {
+						closestHit = hitInfo.distance;
+						res.closestHit = triangle;
+						res.closestHitDistance = hitInfo.distance;
+					}
 				}
 			}
 			else {

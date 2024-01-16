@@ -17,16 +17,17 @@ namespace pah {
 		struct TraversalResults {
 			int bvhsTraversed; /**< How many @p Bvh s we traversed before fnding the hit. */
 			int totalBvhs; /**< How many potential @p Bvh s we could have traversed. */
-			int intersectionsTotal;
-			int intersectionsWithNodes;
-			int intersectionsWithTriangles;
+			int intersectionTestsTotal;
+			int intersectionTestsWithNodes;
+			int intersectionTestsWithTriangles;
 			float totalCost;
-			int intersectionsWhenHit;
-			int intersectionsWithNodesWhenHit;
-			int intersectionsWithTrianglesWhenHit;
+			int intersectionTestsWhenHit;
+			int intersectionTestsWithNodesWhenHit;
+			int intersectionTestsWithTrianglesWhenHit;
 			float costWhenHit;
-			Triangle* closestHit;
+			const Triangle* closestHit;
 			float closestHitDistance;
+			bool fallbackBvhSearch;
 			TIME(DurationMs traversalTime;);
 
 			bool hit() const {
@@ -35,23 +36,23 @@ namespace pah {
 
 			TraversalResults& operator+=(const Bvh::TraversalResults& rhs) {
 				bvhsTraversed++;
-				intersectionsTotal += rhs.intersectionsTotal;
-				intersectionsWithNodes += rhs.intersectionsWithNodes;
-				intersectionsWithTriangles += rhs.intersectionsWithTriangles;
+				intersectionTestsTotal += rhs.intersectionTestsTotal;
+				intersectionTestsWithNodes += rhs.intersectionTestsWithNodes;
+				intersectionTestsWithTriangles += rhs.intersectionTestsWithTriangles;
 				totalCost += rhs.traversalCost;
 				
 				if (rhs.hit()) {
-					intersectionsWhenHit += rhs.intersectionsTotal;
-					intersectionsWithNodesWhenHit += rhs.intersectionsWithNodes;
-					intersectionsWithTrianglesWhenHit += rhs.intersectionsWithTriangles;
+					intersectionTestsWhenHit += rhs.intersectionTestsTotal;
+					intersectionTestsWithNodesWhenHit += rhs.intersectionTestsWithNodes;
+					intersectionTestsWithTrianglesWhenHit += rhs.intersectionTestsWithTriangles;
 					costWhenHit += rhs.traversalCost;
 				}
 				return *this;
 			}
 		};
 
-		template<std::same_as<Bvh>... Bvh>
-		TopLevel(const std::vector<Triangle>& triangles, Bvh&&... bvhs) : triangles{ triangles } {
+		template<std::same_as<Bvh>... Bvhs>
+		TopLevel(const std::vector<Triangle>& triangles, Bvh&& fallbackBvh, Bvhs&&... bvhs) : triangles{ triangles }, fallbackBvh{ std::move(fallbackBvh) } {
 			(this->bvhs.emplace_back(std::move(bvhs)), ...);
 		}
 
@@ -86,13 +87,14 @@ namespace pah {
 	protected:
 		const std::vector<Triangle>& triangles;
 		std::vector<Bvh> bvhs;
+		Bvh fallbackBvh; //if none of the other BVHs is hit, this one is used; it will contain every triangle in the scene
 	};
 
 
 	class TopLevelAabbs : public TopLevel {
 	public:
-		template<std::same_as<Bvh>... Bvh>
-		TopLevelAabbs(const std::vector<Triangle>& triangles, Bvh&&... bvhs) : TopLevel{ triangles, std::move(bvhs)... } {}
+		template<std::same_as<Bvh>... Bvhs>
+		TopLevelAabbs(const std::vector<Triangle>& triangles, Bvh&& fallbackBvh, Bvhs&&... bvhs) : TopLevel{ triangles, std::move(fallbackBvh), std::move(bvhs)... } {}
 
 		void build() override;
 		void update() override;
@@ -168,8 +170,9 @@ namespace pah {
 		};
 
 
-		template<std::same_as<Bvh>... Bvh>
-		TopLevelOctree(const Properties& properties, const std::vector<Triangle>& triangles, Bvh&&... bvhs) : TopLevel{ triangles, std::move(bvhs)... }, properties{ properties }, root{ std::make_unique<Node>() } {
+		template<std::same_as<Bvh>... Bvhs>
+		TopLevelOctree(const Properties& properties, const std::vector<Triangle>& triangles, Bvh&& fallbackBvh, Bvhs&&... bvhs) 
+			: TopLevel{ triangles, std::move(fallbackBvh), std::move(bvhs)... }, properties{ properties }, root{ std::make_unique<Node>() } {
 			Aabb sceneAabb = Aabb::minAabb();
 			for (const auto& bvh : this->bvhs) {
 				sceneAabb += bvh.getInfluenceArea().getBvhRegion().enclosingAabb();

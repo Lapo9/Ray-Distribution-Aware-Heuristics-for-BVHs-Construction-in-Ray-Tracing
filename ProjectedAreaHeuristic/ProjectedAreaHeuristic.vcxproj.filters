@@ -54,6 +54,9 @@
     <ClInclude Include="src\RayCaster.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\distributions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Bvh.cpp">
@@ -72,6 +75,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Regions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RayCaster.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

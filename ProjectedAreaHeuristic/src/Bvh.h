@@ -156,11 +156,11 @@ namespace pah {
 		 * @brief Info about the results of a traversal of the @p Bvh of a @p Ray.
 		 */
 		struct TraversalResults {
-			int intersectionsTotal;
-			int intersectionsWithNodes;
-			int intersectionsWithTriangles;
+			int intersectionTestsTotal;
+			int intersectionTestsWithNodes;
+			int intersectionTestsWithTriangles;
 			float traversalCost;
-			Triangle* closestHit;
+			const Triangle* closestHit;
 			float closestHitDistance;
 			TIME(DurationMs traversalTime;);
 
@@ -190,6 +190,8 @@ namespace pah {
 
 
 		Bvh(const Properties&, const InfluenceArea&, ComputeCostType computeCost, ChooseSplittingPlanesType chooseSplittingPlanes, ShouldStopType shouldStop);
+
+		Bvh(const Properties&, ComputeCostType computeCost, ChooseSplittingPlanesType chooseSplittingPlanes, ShouldStopType shouldStop);
 
 		/**
 		 * @brief Returns whether @p bvh1 is the same as @p bvh2.
@@ -315,7 +317,7 @@ namespace pah {
 				if (ratio > ratioThreshold) {
 					result.emplace_back(
 						axis,
-						[](float bestCostSoFar) { return bestCostSoFar > costThreshold + 0.1f * i * costThreshold; } //it suggest to try this axis if the found cost is > of a user-defined threshold plus a percentage (based on how many axis we've already analyzed)
+						[i](float bestCostSoFar) { return bestCostSoFar > costThreshold + 0.1f * i * costThreshold; } //it suggest to try this axis if the found cost is > of a user-defined threshold plus a percentage (based on how many axis we've already analyzed)
 					);
 					i++; //counts how many axis we analyzed
 					continue;
