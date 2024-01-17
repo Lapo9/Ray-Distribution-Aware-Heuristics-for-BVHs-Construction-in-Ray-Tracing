@@ -290,11 +290,11 @@ namespace pah::projection {
 		};
 
 
-		static Vector2 projectPoint(Vector4 point, Matrix4 viewProjectionMatrix) {
+		static Vector2 projectPoint(Vector4 point, const Matrix4& viewProjectionMatrix) {
 			return viewProjectionMatrix * point;
 		}
 
-		static Vector2 projectPoint(Vector3 point, Matrix4 viewProjectionMatrix) {
+		static Vector2 projectPoint(Vector3 point, const Matrix4& viewProjectionMatrix) {
 			return projectPoint(Vector4{ point, 1.0f }, viewProjectionMatrix);
 		}
 
@@ -314,17 +314,21 @@ namespace pah::projection {
 			return projectPoint(Vector4{ point, 1.0f }, pov, far, near);
 		}
 
+		static std::vector<Vector2> projectPoints(const std::vector<Vector3>& points, const Matrix4& viewProjectionMatrix) {
+			std::vector<Vector2> projectedPoints;
+			for (int i = 0; i < points.size(); ++i) {
+				projectedPoints.emplace_back(projectPoint(points[i], viewProjectionMatrix));
+			}
+			return projectedPoints;
+		}
+
 		/**
 		 * @brief Given some points it projects them based on the PoV, using perspective.
 		 * @param fovs Horizontal and vertical FoVs in degrees.
 		 */
 		static std::vector<Vector2> projectPoints(const std::vector<Vector3>& points, Pov pov, float far = 1000.0f, float near = 0.1f) {
-			std::vector<Vector2> projectedPoints;
 			Matrix4 viewProjectionMatrix = computeViewMatrix(pov.position, pov.getDirection()) * computePerspectiveMatrix(far, near, { pov.fovX, pov.fovY }); //we compute it here to avoid recomputing it for each point
-			for (int i = 0; i < points.size(); ++i) {
-				projectedPoints.emplace_back(projectPoint(points[i], viewProjectionMatrix));
-			}
-			return projectedPoints;
+			return projectPoints(points, viewProjectionMatrix);
 		}
 
 		/**
@@ -351,6 +355,7 @@ namespace pah::projection {
 			else if (pov.y > aabb.max.y) i |= 8;
 			if (pov.z < aabb.min.z) i |= 32;
 			else if (pov.z > aabb.max.z) i |= 16;
+
 			return i;
 		}
 
@@ -395,7 +400,8 @@ namespace pah::projection {
 		 * @param fovs Horizontal and vertical FoVs in degrees.
 		 */
 		static float computeProjectedArea(const Aabb& aabb, Pov pov, float far = 1000.0f, float near = 0.1f) {
-			return computeProjectedArea(projectPoints(findContourPoints(aabb, pov.position), pov, far, near));
+			const auto& contourPoints = findContourPoints(aabb, pov.position);
+			return contourPoints.size() == 0 ? std::numeric_limits<float>::max() : computeProjectedArea(projectPoints(contourPoints, pov, far, near));
 		}
 	}
 }

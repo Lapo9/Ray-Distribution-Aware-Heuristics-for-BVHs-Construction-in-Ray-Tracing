@@ -218,7 +218,7 @@ namespace pah {
 
 
 		const Node& getRoot() const; /**< @brief Returns the root of the @p Bvh. */
-		const InfluenceArea& getInfluenceArea() const; /**< @brief Returns the @p InfluenceArea of the @p Bvh. */
+		const InfluenceArea* getInfluenceArea() const; /**< @brief Returns the @p InfluenceArea of the @p Bvh. */
 		INFO(const DurationMs getTotalBuildTime() const;); /**< @brief Returns the time it took to build this @p Bvh. */
 		const Properties getProperties() const; /**< @brief Returns the properties of this @p Bvh. */
 

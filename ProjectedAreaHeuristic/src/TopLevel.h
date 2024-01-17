@@ -80,6 +80,11 @@ namespace pah {
 		const std::vector<Bvh>& getBvhs() const;
 
 		/**
+		 * @brief Returns the fallback @p Bvh.
+		 */
+		const Bvh& getFallbackBvh() const;
+
+		/**
 		 * @brief Returns the @p Triangle s that are part of this @p TopLevel structure.
 		 */
 		const std::vector<Triangle>& getTriangles() const;
@@ -174,8 +179,10 @@ namespace pah {
 		TopLevelOctree(const Properties& properties, const std::vector<Triangle>& triangles, Bvh&& fallbackBvh, Bvhs&&... bvhs) 
 			: TopLevel{ triangles, std::move(fallbackBvh), std::move(bvhs)... }, properties{ properties }, root{ std::make_unique<Node>() } {
 			Aabb sceneAabb = Aabb::minAabb();
+
+			//the Aabb of the root, must contain all the influence areas in the scene
 			for (const auto& bvh : this->bvhs) {
-				sceneAabb += bvh.getInfluenceArea().getBvhRegion().enclosingAabb();
+				sceneAabb += bvh.getInfluenceArea()->getBvhRegion().enclosingAabb();
 			}
 
 			root->aabb = sceneAabb;

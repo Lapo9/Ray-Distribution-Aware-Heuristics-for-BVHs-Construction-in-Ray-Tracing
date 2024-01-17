@@ -23,7 +23,7 @@ void pah::Bvh::build(const vector<const Triangle*>& triangles) {
 
 	random_device randomDevice;
 	build(triangles, randomDevice()); //the seed is random
-	timeLogger.stop();
+	INFO(timeLogger.stop(););
 	//here timeLogger will be destroyed, and it will log (by calling finalAction)
 }
 
@@ -73,7 +73,7 @@ pah::Bvh::TraversalResults pah::Bvh::traverse(const Ray& ray) const {
 		}
 	}
 
-	timeLogger.stop();
+	INFO(timeLogger.stop(););
 	return res;
 }
 
@@ -97,6 +97,7 @@ void pah::Bvh::splitNode(Node& node, Axis fatherSplittingAxis, int currentLevel)
 		for (int i = 1; i < properties.bins - 1; ++i) {
 			float splittingPlanePosition = at(node.aabb.min, axis) + (at(node.aabb.max, axis) - at(node.aabb.min, axis)) / properties.bins * i;
 			const auto& [leftTriangles, rightTriangles] = splitTriangles(node, node.triangles, axis, splittingPlanePosition);
+			if (leftTriangles.size() <= 0 || rightTriangles.size() <= 0) continue; //we must have triangles on both sides to procede
 
 			TIME(TimeLogger timeLoggerNodes{ [&timingInfo = node.nodeTimingInfo](auto duration) { timingInfo.logNodesCreation(duration); } };);
 			Node left = { leftTriangles }, right = { rightTriangles };
@@ -105,7 +106,7 @@ void pah::Bvh::splitNode(Node& node, Axis fatherSplittingAxis, int currentLevel)
 			float costLeft = computeCostWrapper(node, left, *influenceArea, rootMetric), costRight = computeCostWrapper(node, right, *influenceArea, rootMetric);
 
 			//update best split (also check that we have triangles on both sides, else we might get stuck)
-			if (costLeft + costRight < bestLeftSoFar + bestRightSoFar && leftTriangles.size() > 0 && rightTriangles.size() > 0) {
+			if (costLeft + costRight < bestLeftSoFar + bestRightSoFar) {
 				found = true;
 				usedAxis = axis;
 				bestLeftSoFar = costLeft;
@@ -135,8 +136,8 @@ const pah::Bvh::Node& pah::Bvh::getRoot() const {
 	return root;
 }
 
-const pah::InfluenceArea& pah::Bvh::getInfluenceArea() const {
-	return *influenceArea;
+const pah::InfluenceArea* pah::Bvh::getInfluenceArea() const {
+	return influenceArea;
 }
 
 INFO(const pah::DurationMs pah::Bvh::getTotalBuildTime() const {

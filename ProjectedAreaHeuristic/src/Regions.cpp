@@ -356,13 +356,13 @@ void pah::Frustum::fillEdgesDirection() {
 
 void pah::Frustum::fillVertices() {
 	//we know that the vertices of the frustum in clipping space (after the application of the view-projection matrix) are the vertices of the unit cube.
-		//therefore we "un-apply" the view-projection matrix (we apply its inverse) and then we use the vertices with w = 1 (we divide by w).
+	//therefore we "un-apply" the view-projection matrix (we apply its inverse) and then we use the vertices with w = 1 (we divide by w).
 	const auto& Mi = inverse(viewProjectionMatrix);
 
 	for (int i = -1, count = 0; i <= 1; i += 2)
 		for (int j = -1; j <= 1; j += 2)
 			for (int k = -1; k <= 1; k += 2) {
-				Vector4 clippingSpaceVertex{ k,j,i,1 };
+				Vector4 clippingSpaceVertex{ k,j,i,1.0f };
 				Vector4 homogeneousVertex = Mi * clippingSpaceVertex;
 				vertices[count] = Vector3{ homogeneousVertex } / homogeneousVertex.w;
 				count++;

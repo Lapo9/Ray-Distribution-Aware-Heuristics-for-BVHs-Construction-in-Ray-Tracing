@@ -37,6 +37,8 @@ namespace pah {
 				analyses["bvhs"] += analyzer.analyze(bvh); //perform the analyses of every BVH
 			}
 
+			analyses["bvhs"] += analyzer.analyze(topLevel.getFallbackBvh()); //analyze the fallback BVH too
+
 			for (auto& t : topLevel.getTriangles()) {
 				analyses["triangles"] += t;
 			}

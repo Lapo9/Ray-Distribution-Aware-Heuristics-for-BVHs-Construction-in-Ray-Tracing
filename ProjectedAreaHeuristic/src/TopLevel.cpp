@@ -46,7 +46,7 @@ TopLevel::TraversalResults pah::TopLevel::traverse(const Ray& ray) const {
 
 	for (const auto& bvh : relevantBvhs) {
 		//here we check that the direction of the ray is relevant to this particuar BVH
-		if (bvh->getInfluenceArea().isDirectionAffine(ray.getDirection(), TOLERANCE)) { //TODO tolerance here should be a bigger value (we have to tune it)
+		if (bvh->getInfluenceArea()->isDirectionAffine(ray.getDirection(), TOLERANCE)) { //TODO tolerance here should be a bigger value (we have to tune it)
 			const auto& results = bvh->traverse(ray);
 			res += results; //here we sum some attributes such as the number of intersections and the traversal cost
 			if (results.hit()) {
@@ -68,7 +68,7 @@ TopLevel::TraversalResults pah::TopLevel::traverse(const Ray& ray) const {
 		}
 	}
 
-	timeLogger.stop();
+	INFO(timeLogger.stop(););
 	return res;
 }
 
@@ -80,6 +80,8 @@ const vector<pah::Triangle>& pah::TopLevel::getTriangles() const {
 	return triangles;
 }
 
+
+// ======| TopLevelAabbs |======
 void pah::TopLevelAabbs::build() {
 	TopLevel::build();
 }
@@ -91,7 +93,7 @@ void pah::TopLevelAabbs::update() {
 vector<const pah::Bvh*> pah::TopLevelAabbs::containedIn(const Vector3& point) const {
 	vector<const Bvh*> containedIn;
 	for (auto& bvh : bvhs) {
-		if (bvh.getInfluenceArea().getBvhRegion().contains(point)) {
+		if (bvh.getInfluenceArea()->getBvhRegion().contains(point)) {
 			containedIn.push_back(&bvh);
 		}
 	}
@@ -116,6 +118,9 @@ void pah::TopLevelOctree::update() {
 }
 
 vector<const pah::Bvh*> pah::TopLevelOctree::containedIn(const Vector3& point) const {
+	//if the point is outside the region covered by the octree, it is useless to continue the search
+	if (!root->aabb.contains(point)) return {};
+
 	Node* current = &*root;
 	while (!current->isLeaf()) {
 		auto center = current->aabb.center();
@@ -146,8 +151,8 @@ void pah::TopLevelOctree::buildOctreeRecursive(Node& node, const vector<Bvh*>& f
 
 	//for each region that collided with the father, but didn't fully contained it, we have to check what happens with the child
 	for (const auto& bvh : fatherCollidingRegions) {
-		if (bvh->getInfluenceArea().getBvhRegion().isCollidingWith(node.aabb)) {
-			if (bvh->getInfluenceArea().getBvhRegion().fullyContains(node.aabb)) {
+		if (bvh->getInfluenceArea()->getBvhRegion().isCollidingWith(node.aabb)) {
+			if (bvh->getInfluenceArea()->getBvhRegion().fullyContains(node.aabb)) {
 				node.bvhs.push_back(bvh);
 			}
 			else {
@@ -180,6 +185,10 @@ void pah::TopLevelOctree::buildOctreeRecursive(Node& node, const vector<Bvh*>& f
 	//In this way we have slightly smaller regions than the original, since it is likely that, at the border of the region, it wouldn't be useful to look in the local BVH first.
 	//On the other hand, this can give rise to not fully connected regions.
 	if(!properties.conservativeApproach) node.bvhs.append_range(collidingRegions);
+}
+
+const Bvh& pah::TopLevel::getFallbackBvh() const {
+	return fallbackBvh;
 }
 
 int pah::TopLevelOctree::positionToIndex(bool x, bool y, bool z) {

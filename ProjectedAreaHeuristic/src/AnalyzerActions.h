@@ -43,7 +43,7 @@ namespace pah::analyzerActions {
 		 */
 		static void sah(float& totalSah, ANALYZER_ACTION_PER_NODE_ARGUMENTS) {
 			float rootSa = bvh.getRoot().aabb.surfaceArea();
-			float sah = bvhStrategies::computeCostSah(node, bvh.getInfluenceArea(), rootSa);
+			float sah = bvhStrategies::computeCostSah(node, *bvh.getInfluenceArea(), rootSa);
 			float sa = node.aabb.surfaceArea();
 
 			//add to JSON
@@ -61,17 +61,19 @@ namespace pah::analyzerActions {
 		 * where 2 is the number of children we must visit if an internal node is hit, and prob(i) = projectedArea(i) / projectedArea(root)
 		 */
 		static void pah(float& totalPah, ANALYZER_ACTION_PER_NODE_ARGUMENTS) {
+			if (bvh.getInfluenceArea() == nullptr) return; //it means it is a SAH BVH
+
 			//in order not to compute the projected area of the root each time, we keep the last projected area across calls...
 			static const Bvh* lastBvh = &bvh;
-			static float lastRootProjectedArea = bvh.getInfluenceArea().getProjectedArea(bvh.getRoot().aabb);
+			static float lastRootProjectedArea = bvh.getInfluenceArea()->getProjectedArea(bvh.getRoot().aabb);
 			//...and check whether we are calculating the PAH for a node of the same BVH as in the last call
 			if (bvh != *lastBvh) {
 				lastBvh = &bvh;
-				lastRootProjectedArea = bvh.getInfluenceArea().getProjectedArea(bvh.getRoot().aabb);
+				lastRootProjectedArea = bvh.getInfluenceArea()->getProjectedArea(bvh.getRoot().aabb);
 			}
 
-			float pah = bvhStrategies::computeCostPah(node, bvh.getInfluenceArea(), lastRootProjectedArea);
-			float pa = bvh.getInfluenceArea().getProjectedArea(node.aabb);
+			float pah = bvhStrategies::computeCostPah(node, *bvh.getInfluenceArea(), lastRootProjectedArea);
+			float pa = bvh.getInfluenceArea()->getProjectedArea(node.aabb);
 
 			//add to JSON
 			localLog["metrics"]["pah"] = pah;
@@ -168,7 +170,9 @@ namespace pah::analyzerActions {
 		 * @brief Adds the influence area to the JSON.
 		 */
 		static void influenceArea(int& unused, ANALYZER_ACTION_FINAL_ARGUMENTS) {
-			log["influenceArea"] = bvh.getInfluenceArea();
+			if (bvh.getInfluenceArea() != nullptr) {
+				log["influenceArea"] = *bvh.getInfluenceArea();
+			}
 		}
 
 		/**
