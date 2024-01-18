@@ -391,8 +391,8 @@ namespace pah::projection {
 				float meanHeight = (contourPoints[i + 1 == contourPoints.size() ? 0 : i + 1].y + contourPoints[i].y) / 2.0f; //mean height of the segment
 				area += width * meanHeight;
 			}
-			assert((-area <= 0, "Projected area <= 0"));
-			return -area;
+			assert((area <= 0, "Projected area <= 0"));
+			return area;
 		}
 
 		/**
@@ -401,7 +401,7 @@ namespace pah::projection {
 		 */
 		static float computeProjectedArea(const Aabb& aabb, Pov pov, float far = 1000.0f, float near = 0.1f) {
 			const auto& contourPoints = findContourPoints(aabb, pov.position);
-			return contourPoints.size() == 0 ? std::numeric_limits<float>::max() : computeProjectedArea(projectPoints(contourPoints, pov, far, near));
+			return contourPoints.size() == 0 ? 1000.0f : computeProjectedArea(projectPoints(contourPoints, pov, far, near));
 		}
 	}
 }

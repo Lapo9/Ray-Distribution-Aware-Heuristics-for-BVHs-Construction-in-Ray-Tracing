@@ -17,10 +17,10 @@ using namespace nlohmann;
 
 int main() {
 	//generate triangles
-	mt19937 rng{ 1 };
+	mt19937 rng{ 2 };
 	distributions::UniformBoxDistribution mainDistribution3d{ 0,10, 0,10, 0,10 };
 	distributions::UniformBoxDistribution otherDistribution3d{ -1,1, -1,1 , -1,1 };
-	auto triangles = Triangle::generateRandom(100, rng, mainDistribution3d, otherDistribution3d);
+	auto triangles = Triangle::generateRandom(1000, rng, mainDistribution3d, otherDistribution3d);
 	auto trianglesSah = triangles;
 	auto trianglesSahPtrs = trianglesSah | views::transform([](const Triangle& t) {return &t; }) | ranges::to<vector>();
 

@@ -58,7 +58,7 @@ float pah::PlaneInfluenceArea::getDensity() const {
 
 // Look at the comment of PointInfluenceArea::planePatch to understand how we built it. The order of the point is such that it creates a counterclockwise rectangle.
 pah::PointInfluenceArea::PointInfluenceArea(Pov pov, float far, float near, float density)
-	: InfluenceArea{ make_unique<Frustum>(pov, far, near) },
+	: InfluenceArea{ make_unique<Frustum>(pov, far, near) }, pov{ pov }, density{ density },
 	planePatch{
 		dynamic_cast<Frustum&>(*bvhRegion).getEdgesDirections()[2],
 		dynamic_cast<Frustum&>(*bvhRegion).getEdgesDirections()[4],
