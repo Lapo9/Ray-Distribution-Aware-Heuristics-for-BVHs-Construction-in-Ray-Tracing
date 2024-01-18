@@ -164,11 +164,16 @@ namespace pah {
 			//therefore, now, we can get a random point on the plane, get its coordinates in world space and use those to create the ray (the direction is always perpendicular to the plane itself).
 
 			distributions::UniformSphereCapDistribution directionDistribution{ directionTolerance, forward }; //distribution to give variance to the direction of the rays
-
+			//not all rays spawn on the plane, they may spawn to a certain distance from it (up to the z-length of the region)
+			std::uniform_real_distribution<> originDepthDistribution{ 0, planeInfluenceArea->getFar() };
+			
 			//eventually, create the rays
 			for (int i = 0; i < quantity; ++i) {
+				Vector3 direction = directionDistribution(rng);
+				float depth = originDepthDistribution(rng);
 				Vector3 origin = changeOfCoords * Vector4{ uniformRectangleDistribution(rng), 0.0f, 1.0f };
-				this->rays.emplace_back(origin, directionDistribution(rng));
+				origin += direction * depth;
+				this->rays.emplace_back(origin, direction);
 			}
 
 			//TODO yet to be tested
@@ -183,7 +188,7 @@ namespace pah {
 	class PointRayCaster : public RayCaster<Rng> {
 	public:
 		PointRayCaster(const PointInfluenceArea& pointInfluenceArea) : RayCaster<Rng>(pointInfluenceArea), 
-			directionDistribution{ pointInfluenceArea.getPov().fovX, pointInfluenceArea.getPov().fovY, pointInfluenceArea.getPov().getDirection() } {}
+			directionDistribution{ pointInfluenceArea.getPov().fovX/2.0f, pointInfluenceArea.getPov().fovY/2.0f, pointInfluenceArea.getPov().getDirection() } {}
 
 		void generateRays(Rng& rng, unsigned int quantity, float originTolerance = 0) override {
 			this->rays = std::vector<Ray>{}; //clear the vector
@@ -197,10 +202,15 @@ namespace pah {
 
 			//rays can start a bit off the real origin (to give variance)
 			distributions::UniformDiskDistribution originDistribution{ originTolerance };
+			//the region where rays spawns doesn't start at the origin, but between the near and far plane of the frustum
+			std::uniform_real_distribution<> originDepthDistribution{ pointInfluenceArea->getNearFar().first, pointInfluenceArea->getNearFar().second };
 
 			for (int i = 0; i < quantity; ++i) {
+				Vector3 direction = directionDistribution(rng);
+				float depth = originDepthDistribution(rng);
 				Vector3 origin = changeOfCoords * Vector4{ originDistribution(rng), 0.0f, 1.0f };
-				this->rays.emplace_back(origin, directionDistribution(rng));
+				origin += direction * depth;
+				this->rays.emplace_back(origin, direction);
 			}
 
 			//TODO yet to be tested

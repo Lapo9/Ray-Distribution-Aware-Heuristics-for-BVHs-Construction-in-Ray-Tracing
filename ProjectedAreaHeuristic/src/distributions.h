@@ -46,7 +46,7 @@ namespace pah::distributions {
 		 */
 		UniformSphereCapDistribution(float halfCapAngle, Vector3 orientation = { 0,1,0 }, Vector3 center = { 0,0,0 }, float radius = 1) :
 			rollDistribution{ 0, 2 * glm::pi<float>() },
-			yawDistribution{ [R = radius, pi = glm::pi<float>(), k = radius * 2.85f * glm::pow(halfCapAngle, 1.81f)](float x) {
+			pitchDistribution{ [R = radius, pi = glm::pi<float>(), k = radius * 2.85f * glm::pow(glm::radians(halfCapAngle), 1.81f)](float x) {
 				float a = 2.0f * pi * R / k;
 				return glm::acos((a - x) / a); //Explanation here: https://www.desmos.com/calculator/sg5bz4pft8
 			} },
@@ -64,14 +64,14 @@ namespace pah::distributions {
 			if (halfCapAngle == 0.0f) return orientation;
 
 			//extract the 2 angles
-			float yaw = yawDistribution(rng);
+			float pitch = pitchDistribution(rng);
 			float roll = rollDistribution(rng);
 
 			Vector3 res = orientation;
 			//create rotation matrices
-			const auto& yawRotation = glm::rotate(Matrix4{1.0f}, yaw, right);
-			const auto& yawRollRotation = glm::rotate(yawRotation, roll, orientation); //the first argument is post multiplied
-			res = yawRollRotation * Vector4{ res,1.0f }; //rotate the vector that points to the required direction
+			const auto& pitchRotation = glm::rotate(Matrix4{1.0f}, pitch, right);
+			const auto& pitchRollRotation = glm::rotate(pitchRotation, roll, orientation); //the first argument is post multiplied
+			res = pitchRollRotation * Vector4{ res,1.0f }; //rotate the vector that points to the required direction
 			return center + res * radius; //compute the final point
 
 			//TODO yet to be tested
@@ -79,7 +79,7 @@ namespace pah::distributions {
 
 	private:
 		std::uniform_real_distribution<> rollDistribution;
-		InvertedCdfDistribution yawDistribution;
+		InvertedCdfDistribution pitchDistribution;
 		float radius;
 		float halfCapAngle;
 		Vector3 center;
@@ -101,8 +101,8 @@ namespace pah::distributions {
 		 * @param orientation The orientation of the apex of the sphere cap.
 		 * @param radius The radius of the sphere.
 		 */
-		UniformSquareSphereCapDistribution(float yawAngle, float pitchAngle, Vector3 orientation = { 0,1,0 }, Vector3 center = { 0,0,0 }, float radius = 1) :
-			yawDistribution{ -yawAngle, yawAngle }, pitchDistribution{ -pitchAngle, pitchAngle }, yawAngle{ yawAngle }, pitchAngle{ pitchAngle },
+		UniformSquareSphereCapDistribution(float maxHalfYawAngle, float maxHalfpitchAngle, Vector3 orientation = { 0,1,0 }, Vector3 center = { 0,0,0 }, float radius = 1) :
+			yawDistribution{ -glm::radians(maxHalfYawAngle), glm::radians(maxHalfYawAngle) }, pitchDistribution{ -glm::radians(maxHalfpitchAngle), glm::radians(maxHalfpitchAngle) },
 			radius{ radius }, center{ center }, orientation{ glm::normalize(orientation) },
 			right{ std::get<0>(utilities::rightHandCoordinatesSystem(this->orientation)) },
 			up{ std::get<1>(utilities::rightHandCoordinatesSystem(this->orientation)) } {
@@ -117,8 +117,8 @@ namespace pah::distributions {
 			float pitch = pitchDistribution(rng);
 
 			Vector3 res = orientation;
-			const auto& yawRotation = glm::rotate(Matrix4{1.0f}, yaw, right);
-			const auto& yawPitchRotation = glm::rotate(yawRotation, pitch, up);
+			const auto& yawRotation = glm::rotate(Matrix4{1.0f}, yaw, up);
+			const auto& yawPitchRotation = glm::rotate(yawRotation, pitch, right);
 			res = yawPitchRotation * Vector4{ res,1.0f }; //rotate the vector that points to the required direction
 			return center + res * radius; //compute the final point
 
@@ -128,8 +128,6 @@ namespace pah::distributions {
 	private:
 		std::uniform_real_distribution<> yawDistribution;
 		std::uniform_real_distribution<> pitchDistribution;
-		float yawAngle;
-		float pitchAngle;
 		float radius;
 		Vector3 center;
 		Vector3 orientation;

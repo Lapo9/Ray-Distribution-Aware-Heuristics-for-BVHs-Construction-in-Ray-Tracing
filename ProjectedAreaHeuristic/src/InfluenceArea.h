@@ -67,12 +67,14 @@ namespace pah {
 
 		const Plane& getPlane() const;
 		const Vector2& getSize() const;
+		float getFar() const;
 		float getDensity() const;
 
 
 	private:
 		Plane plane;
 		Vector2 size;
+		float farPlane;
 		float density;
 	};
 
@@ -88,11 +90,13 @@ namespace pah {
 		std::vector<std::tuple<Axis, std::function<bool(float bestCostSoFar)>>> bestSplittingPlanes() const override;
 
 		const Pov& getPov() const;
+		const std::pair<float, float> getNearFar() const;
 		float getDensity() const;
 
 	private:
 		float density;
 		Pov pov;
+		float nearPlane, farPlane;
 
 		// The planePatch is a planar, rectangular patch that covers the entire frustum. It is as if we created a rectangle and placed it in front of the camera, such that it covers perfectly all the view.
 		// The dimension of this rectangle would vary depending on the distance to the camera: we place our rectangle at distance 1 (all its vertices have distance 1, so technically the rectangle is closer than 1 to the origin).

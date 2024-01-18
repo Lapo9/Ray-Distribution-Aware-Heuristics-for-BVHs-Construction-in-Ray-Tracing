@@ -20,7 +20,7 @@ int main() {
 	mt19937 rng{ 2 };
 	distributions::UniformBoxDistribution mainDistribution3d{ 0,10, 0,10, 0,10 };
 	distributions::UniformBoxDistribution otherDistribution3d{ -1,1, -1,1 , -1,1 };
-	auto triangles = Triangle::generateRandom(1000, rng, mainDistribution3d, otherDistribution3d);
+	auto triangles = Triangle::generateRandom(100, rng, mainDistribution3d, otherDistribution3d);
 	auto trianglesSah = triangles;
 	auto trianglesSahPtrs = trianglesSah | views::transform([](const Triangle& t) {return &t; }) | ranges::to<vector>();
 
@@ -54,8 +54,8 @@ int main() {
 	sahBvh.build(trianglesSahPtrs);
 
 	//build top level structure
-	vector<RayCaster<>*> rayCasters{ &planeRayCaster1, &pointRayCaster1 };
-	TopLevelOctree topLevelStructure{ TopLevelOctree::Properties{ 4, false }, triangles, std::move(baseBvh), std::move(bvh1), std::move(bvh3) };
+	vector<RayCaster<>*> rayCasters{ /*&planeRayCaster1,*/ &pointRayCaster1};
+	TopLevelOctree topLevelStructure{ TopLevelOctree::Properties{ 4, false }, triangles, std::move(baseBvh), /*std::move(bvh1),*/ std::move(bvh3)};
 	topLevelStructure.build();
 
 	//analyze BVH

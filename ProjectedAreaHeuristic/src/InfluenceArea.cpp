@@ -17,7 +17,7 @@ const pah::Region& pah::InfluenceArea::getBvhRegion() const {
 // ======| PlaneInfluenceArea |======
 pah::PlaneInfluenceArea::PlaneInfluenceArea(Plane plane, Vector2 size, float forwardSize, float density)
 	: InfluenceArea{ make_unique<AabbForObb>(plane.getPoint() + plane.getNormal() * (forwardSize / 2.0f), Vector3{size.x, size.y, forwardSize / 2.0f}, plane.getNormal()) },
-	plane{ plane }, size{ size }, density{ density } {
+	plane{ plane }, size{ size }, density{ density }, farPlane{ forwardSize } {
 }
 
 float pah::PlaneInfluenceArea::getProjectedArea(const Aabb& aabb) const {
@@ -49,6 +49,10 @@ const pah::Vector2& pah::PlaneInfluenceArea::getSize() const {
 	return size;
 }
 
+float pah::PlaneInfluenceArea::getFar() const {
+	return farPlane;
+}
+
 float pah::PlaneInfluenceArea::getDensity() const {
 	return density;
 }
@@ -58,13 +62,14 @@ float pah::PlaneInfluenceArea::getDensity() const {
 
 // Look at the comment of PointInfluenceArea::planePatch to understand how we built it. The order of the point is such that it creates a counterclockwise rectangle.
 pah::PointInfluenceArea::PointInfluenceArea(Pov pov, float far, float near, float density)
-	: InfluenceArea{ make_unique<Frustum>(pov, far, near) }, pov{ pov }, density{ density },
-	planePatch{
-		dynamic_cast<Frustum&>(*bvhRegion).getEdgesDirections()[2],
-		dynamic_cast<Frustum&>(*bvhRegion).getEdgesDirections()[4],
-		dynamic_cast<Frustum&>(*bvhRegion).getEdgesDirections()[5],
-		dynamic_cast<Frustum&>(*bvhRegion).getEdgesDirections()[3]
-	} { }
+	: InfluenceArea{ make_unique<Frustum>(pov, far, near) }, pov{ pov }, density{ density }, nearPlane{ near }, farPlane{ far } {
+	planePatch = {
+		dynamic_cast<Frustum&>(*bvhRegion).getPoints()[0],
+		dynamic_cast<Frustum&>(*bvhRegion).getPoints()[1],
+		dynamic_cast<Frustum&>(*bvhRegion).getPoints()[3],
+		dynamic_cast<Frustum&>(*bvhRegion).getPoints()[2]
+	};
+}
 
 float pah::PointInfluenceArea::getProjectedArea(const Aabb& aabb) const
 {
@@ -84,7 +89,7 @@ Vector3 pah::PointInfluenceArea::getRayDirection(const Aabb& aabb) const{
 }
 
 bool pah::PointInfluenceArea::isDirectionAffine(const Vector3& direction, float tolerance) const {
-	return collisionDetection::areColliding(Ray{ Vector3{0,0,0}, direction }, planePatch).hit;
+	return collisionDetection::areColliding(Ray{ pov.position, direction }, planePatch).hit;
 }
 
 std::vector<std::tuple<Axis, std::function<bool(float bestCostSoFar)>>> pah::PointInfluenceArea::bestSplittingPlanes() const{
@@ -93,6 +98,10 @@ std::vector<std::tuple<Axis, std::function<bool(float bestCostSoFar)>>> pah::Poi
 
 const pah::Pov& pah::PointInfluenceArea::getPov() const {
 	return pov;
+}
+
+const std::pair<float, float> pah::PointInfluenceArea::getNearFar() const {
+	return { nearPlane, farPlane };
 }
 
 float pah::PointInfluenceArea::getDensity() const {

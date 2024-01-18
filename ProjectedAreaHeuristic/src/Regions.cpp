@@ -343,14 +343,14 @@ void pah::Frustum::fillFacesNormals() {
 }
 
 void pah::Frustum::fillEdgesDirection() {
-	edgesDirections[0] = normalize(vertices[4] - vertices[0]); //right
+	edgesDirections[0] = normalize(vertices[1] - vertices[0]); //right
 	edgesDirections[1] = normalize(vertices[2] - vertices[0]); //top
 
 	//oblique ones
-	edgesDirections[2] = normalize(vertices[1] - vertices[0]);
-	edgesDirections[3] = normalize(vertices[3] - vertices[2]);
-	edgesDirections[4] = normalize(vertices[5] - vertices[4]);
-	edgesDirections[5] = normalize(vertices[7] - vertices[6]);
+	edgesDirections[2] = normalize(vertices[4] - vertices[0]);
+	edgesDirections[3] = normalize(vertices[5] - vertices[1]);
+	edgesDirections[4] = normalize(vertices[6] - vertices[2]);
+	edgesDirections[5] = normalize(vertices[7] - vertices[3]);
 
 }
 

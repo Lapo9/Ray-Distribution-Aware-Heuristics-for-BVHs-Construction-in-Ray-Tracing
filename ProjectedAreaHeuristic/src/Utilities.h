@@ -83,7 +83,7 @@ namespace pah {
 		 * @brief Returns the normal to this @p ConvexHull.
 		 */
 		Vector3 normal() const {
-			return glm::cross(vertices[1] - vertices[0], vertices[2] - vertices[0]);
+			return glm::normalize(glm::cross(vertices[1] - vertices[0], vertices[2] - vertices[0]));
 		}
 
 		/**
@@ -129,11 +129,13 @@ namespace pah {
 		 *
 		 */
 		void checkCoplanar() const {
+			using namespace glm;
 			if (vertices.size() == 3) return; //3 vertices are always coplanar
 
-			Vector3 normal = glm::cross(vertices[0], vertices[1]);
-			for (int i = 1; i < vertices.size() - 1; ++i) {
-				Vector3 normalsDelta = glm::abs(glm::cross(vertices[i], vertices[i + 1]) - normal);
+			Vector3 normal = normalize(cross(vertices[0] - vertices[1], vertices[1]-vertices[2]));
+			for (int i = 3; i < vertices.size(); ++i) {
+				Vector3 currentNormal = normalize(cross(vertices[i - 2] - vertices[i - 1], vertices[i - 1] - vertices[i]));
+				Vector3 normalsDelta = min(abs(currentNormal - normal), abs(currentNormal + normal)); //we are interested in the direction, not the "verse" of the direction
 				if (normalsDelta.x > TOLERANCE || normalsDelta.y > TOLERANCE || normalsDelta.z > TOLERANCE) {
 					throw std::logic_error{ "Points for this ConvexHull are not coplanar." };
 				}
