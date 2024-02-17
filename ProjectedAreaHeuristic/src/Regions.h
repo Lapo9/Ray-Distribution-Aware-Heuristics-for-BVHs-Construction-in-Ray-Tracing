@@ -92,6 +92,9 @@ namespace pah {
 				Vector3 p = P - hull[i]; //vector from the vertex of the triangle to the intersection point
 				if (dot(N, cross(edge, p)) <= 0) return { false, 0.0f };
 			}
+			Vector3 edge = hull[0] - hull[M - 1];
+			Vector3 p = P - hull[M - 1];
+			if (dot(N, cross(edge, p)) <= 0) return { false, 0.0f };
 
 			return { true, t };
 		}

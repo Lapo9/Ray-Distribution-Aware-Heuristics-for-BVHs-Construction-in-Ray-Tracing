@@ -17,7 +17,7 @@ using namespace nlohmann;
 
 int main() {
 	//generate triangles
-	mt19937 rng{ 2 };
+	mt19937 rng{ 4 };
 	distributions::UniformBoxDistribution mainDistribution3d{ 0,10, 0,10, 0,10 };
 	distributions::UniformBoxDistribution otherDistribution3d{ -1,1, -1,1 , -1,1 };
 	auto triangles = Triangle::generateRandom(100, rng, mainDistribution3d, otherDistribution3d);
@@ -25,7 +25,7 @@ int main() {
 	auto trianglesSahPtrs = trianglesSah | views::transform([](const Triangle& t) {return &t; }) | ranges::to<vector>();
 
 	//create influence areas
-	PlaneInfluenceArea planeInfluenceArea1{ Plane{{3,4,0}, {0,0,1}}, {1,4}, 10, 100 };
+	PlaneInfluenceArea planeInfluenceArea1{ Plane{{3,4,0}, {1,0,1}}, {1,4}, 10, 10000 };
 	PlaneInfluenceArea planeInfluenceArea2{ Plane{{0,2,1}, {1,0,1}}, {1,2}, 15, 100 };
 	PointInfluenceArea pointInfluenceArea1{ Pov{{1,1,2}, {1,0,0}, 90, 45}, 10, 1, 100 };
 	PointInfluenceArea pointInfluenceArea2{ Pov{{0,0,0}, {1,1,0}, 90, 60}, 8, 0.5, 100 };
@@ -41,10 +41,10 @@ int main() {
 	properties.maxLevels = 100;
 	properties.maxLeafCost = 0.1f;
 	properties.maxTrianglesPerLeaf = 2;
-	properties.bins = 20;
+	properties.bins = 40;
 
-	Bvh baseBvh{ properties, bvhStrategies::computeCostSah, bvhStrategies::chooseSplittingPlanesLongest<1.0f>, bvhStrategies::shouldStopThresholdOrLevel };
-	Bvh bvh1{ properties, planeInfluenceArea1, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing<1.0f>, bvhStrategies::shouldStopThresholdOrLevel };
+	Bvh baseBvh{ properties, bvhStrategies::computeCostSah, bvhStrategies::chooseSplittingPlanesLongest<0.0f>, bvhStrategies::shouldStopThresholdOrLevel };
+	Bvh bvh1{ properties, planeInfluenceArea1, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing<0.0f, 1.1f>, bvhStrategies::shouldStopThresholdOrLevel };
 	Bvh bvh2{ properties, planeInfluenceArea2, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing<1.0f>, bvhStrategies::shouldStopThresholdOrLevel };
 	Bvh bvh3{ properties, pointInfluenceArea1, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing<1.0f>, bvhStrategies::shouldStopThresholdOrLevel };
 	Bvh bvh4{ properties, pointInfluenceArea2, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing<1.0f>, bvhStrategies::shouldStopThresholdOrLevel };
@@ -54,8 +54,8 @@ int main() {
 	sahBvh.build(trianglesSahPtrs);
 
 	//build top level structure
-	vector<RayCaster<>*> rayCasters{ /*&planeRayCaster1,*/ &pointRayCaster1};
-	TopLevelOctree topLevelStructure{ TopLevelOctree::Properties{ 4, false }, triangles, std::move(baseBvh), /*std::move(bvh1),*/ std::move(bvh3)};
+	vector<RayCaster<>*> rayCasters{ &planeRayCaster1, /*&pointRayCaster1*/};
+	TopLevelOctree topLevelStructure{ TopLevelOctree::Properties{ 4, false }, triangles, std::move(baseBvh), /*std::move(bvh3),*/ std::move(bvh1)};
 	topLevelStructure.build();
 
 	//analyze BVH

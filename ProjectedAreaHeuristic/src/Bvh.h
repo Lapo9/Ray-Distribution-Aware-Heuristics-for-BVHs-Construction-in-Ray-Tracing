@@ -317,7 +317,7 @@ namespace pah {
 				if (ratio > ratioThreshold) {
 					result.emplace_back(
 						axis,
-						[i](float bestCostSoFar) { return bestCostSoFar > costThreshold + 0.1f * i * costThreshold; } //it suggest to try this axis if the found cost is > of a user-defined threshold plus a percentage (based on how many axis we've already analyzed)
+						[i](float bestCostSoFar) { return bestCostSoFar > costThreshold + 0.1f * i * costThreshold; } //it suggests to try this axis if the found cost is > of a user-defined threshold plus a percentage (based on how many axis we've already analyzed)
 					);
 					i++; //counts how many axis we analyzed
 					continue;
@@ -343,15 +343,18 @@ namespace pah {
 			using namespace utilities;
 
 			Vector3 dir = influenceArea.getRayDirection(node.aabb); //TODO this will not work for point influence areas, we need to think about them
-			Vector3 percs{ abs(dir.x) / (abs(dir.x) + abs(dir.y) + abs(dir.z)),  abs(dir.y) / (abs(dir.x) + abs(dir.y) + abs(dir.z)), abs(dir.z) / (abs(dir.x) + abs(dir.y) + abs(dir.z)) };
+			float xAbs = abs(dir.x), yAbs = abs(dir.y), zAbs = abs(dir.z);
+			Vector3 percs{ xAbs / (xAbs + yAbs + zAbs), yAbs / (xAbs + yAbs + zAbs), zAbs / (xAbs + yAbs + zAbs) };
 
 			//given 2 axis, returns their relative percentages (in the same order as the arguments)
 			auto remaining2AxisPercentages = [dir](Axis axis1, Axis axis2) {
 				float a1 = abs(at(dir, axis1));
 				float a2 = abs(at(dir, axis2));
 
-				float a1Perc = abs(a1) / (abs(a1) + abs(a2));
-				float a2Perc = abs(a2) / (abs(a2) + abs(a1));
+				if (a1 + a2 < TOLERANCE) return tuple{ 0.5f, 0.5f }; // avoid division by 0
+
+				float a1Perc = a1 / (a1 + a2);
+				float a2Perc = a2 / (a1 + a2);
 
 				return tuple{ a1Perc, a2Perc };
 				};
@@ -371,7 +374,7 @@ namespace pah {
 				result.emplace_back(b11, [](float bestCostSoFar) { return true; }); //always try the first plane
 
 				//if the main rays direction is "clear", but the best plane is not so "clear", we also add the other plane considering the "clear" main rays direction
-				if (pa1 - margin > pa2 && pb11 - margin <= pb12) {
+				if (pa1 - margin > pa2 && pb12 - margin <= pb11) {
 					//add the other plane with this main rays direction too
 					result.emplace_back(b12, [](float bestCostSoFar) { return bestCostSoFar > costThreshold; }); //try this plane if the results with the first plane were worse than the threshold
 				}
@@ -390,7 +393,7 @@ namespace pah {
 						result.emplace_back(b21, [](float bestCostSoFar) { return bestCostSoFar > costThreshold; }); //try this plane if the results with the first plane were worse than the threshold
 					}
 					//if the best possible plane in the second main rays direction is the same as the best plane in the main rays direction, verify if also the other plane is "good enough"
-					else if (pb21 - margin <= pb22) {
+					else if (pb22 - margin <= pb21) {
 						result.emplace_back(b22, [](float bestCostSoFar) { return bestCostSoFar > costThreshold; }); //try this plane if the results with the first plane were worse than the threshold
 					}
 				}
@@ -406,6 +409,8 @@ namespace pah {
 
 			return addPlanes(max, at(percs, max), mid, at(percs, mid), percentageMargin);
 		}
+
+
 
 		/**
 		 * @brief Returns true if the max level has been passed or if the cost of the leaf is low enough.

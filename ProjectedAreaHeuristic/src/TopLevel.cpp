@@ -19,7 +19,7 @@ void pah::TopLevel::build() {
 	fallbackBvh.build(triangles | views::transform([](const Triangle& t) {return &t; }) | ranges::to<vector>());
 
 	//understand the BVHs each triangle is contained into
-	for (auto& t : triangles) {
+	for (const auto& t : triangles) {
 		unordered_set<const pah::Bvh*> containedInto; //the BVHs the triangle is contained into
 
 		//for each vertex, get the BVHs it is contained into, and add them to the set (we directly use the containedIn function, so this is polymorphic

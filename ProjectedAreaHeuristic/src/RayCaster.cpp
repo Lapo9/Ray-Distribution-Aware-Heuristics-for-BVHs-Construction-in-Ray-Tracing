@@ -129,9 +129,9 @@ RayCasterResults& pah::RayCasterResults::operator+=(const Bvh::TraversalResults&
 	totalIntersectionTestsWithTriangles += rhs.intersectionTestsWithTriangles;
 	TIME(totalTimeTraversing += rhs.traversalTime;);
 	if (rhs.hit()) {
-		totalIntersectionTestsWhenHit = rhs.intersectionTestsTotal;
-		totalIntersectionTestsWithNodesWhenHit = rhs.intersectionTestsWithNodes;
-		totalIntersectionTestsWithTrianglesWhenHit = rhs.intersectionTestsWithTriangles;
+		totalIntersectionTestsWhenHit += rhs.intersectionTestsTotal;
+		totalIntersectionTestsWithNodesWhenHit += rhs.intersectionTestsWithNodes;
+		totalIntersectionTestsWithTrianglesWhenHit += rhs.intersectionTestsWithTriangles;
 	}
 	return *this;
 }
