@@ -175,32 +175,74 @@ void pah::to_json(json& j, const TopLevelOctree::Properties& properties) {
 }
 
 void pah::to_json(json& j, const CumulativeRayCasterResults& crcr) {
-	j["raysAmount"] = crcr.raysAmount;
-	j["rayCastersAmount"] = crcr.rayCastersAmount;
-	j["totalBvhsTraversed"] = crcr.totalBvhsTraversed;
-	j["totalHits"] = crcr.totalHits;
-	j["totalMisses"] = crcr.totalMisses;
-	j["totalIntersectionTests"] = crcr.totalIntersectionTests;
-	j["totalIntersectionTestsWithNodes"] = crcr.totalIntersectionTestsWithNodes;
-	j["totalIntersectionTestsWithTriangles"] = crcr.totalIntersectionTestsWithTriangles;
-	j["totalIntersectionTestsWhenHit"] = crcr.totalIntersectionTestsWhenHit;
-	j["totalIntersectionTestsWithNodesWhenHit"] = crcr.totalIntersectionTestsWithNodesWhenHit;
-	j["totalIntersectionTestsWithTrianglesWhenHit"] = crcr.totalIntersectionTestsWithTrianglesWhenHit;
-	j["totalFallbackBvhSearches"] = crcr.totalFallbackBvhSearches;
-	TIME(j["totalTimeTraversing"] = crcr.totalTimeTraversing.count(););
+	j["general"]["raysAmount"] = crcr.raysAmount;
+	j["general"]["rayCastersAmount"] = crcr.rayCastersAmount;
+	TIME(j["general"]["timeTraversingTotal"] = crcr.timeTraversingTotal.count(););
+	TIME(j["general"]["timeTraversingAveragePerRay"] = crcr.timeTraversingAveragePerRay().count(););
+	TIME(j["general"]["timeTraversingAveragePerBvh"] = crcr.timeTraversingAveragePerBvh().count(););
+	
+	j["total"]["bvhsTraversed"]["bvhsTraversedTotal"] = crcr.bvhsTraversedTotal;
+	j["total"]["bvhsTraversed"]["bvhsTraversedAveragePerRay"] = crcr.bvhsTraversedAveragePerRay();
+	 
+	j["total"]["hitMiss"]["hitsTotal"] = crcr.hitsTotal;
+	j["total"]["hitMiss"]["hitsPercentage"] = crcr.hitsPercentage();
+	j["total"]["hitMiss"]["missesTotal"] = crcr.missesTotal;
+	j["total"]["hitMiss"]["missesPercentage"] = crcr.missesPercentage();
+	 
+	j["total"]["intersectionTests"]["intersectionTestsTotal"] = crcr.intersectionTestsTotal;
+	j["total"]["intersectionTests"]["intersectionTestsAveragePerRay"] = crcr.intersectionTestsAveragePerRay();
+	j["total"]["intersectionTests"]["intersectionTestsAveragePerBvh"] = crcr.intersectionTestsAveragePerBvh();
+	 
+	j["total"]["intersectionTestsWithNodes"]["intersectionTestsWithNodesTotal"] = crcr.intersectionTestsWithNodesTotal;
+	j["total"]["intersectionTestsWithNodes"]["intersectionTestsWithNodesAveragePerRay"] = crcr.intersectionTestsWithNodesAveragePerRay();
+	j["total"]["intersectionTestsWithNodes"]["intersectionTestsWithNodesAveragePerBvh"] = crcr.intersectionTestsWithNodesAveragePerBvh();
+	 
+	j["total"]["intersectionTestsWithTriangles"]["intersectionTestsWithTrianglesTotal"] = crcr.intersectionTestsWithTrianglesTotal;
+	j["total"]["intersectionTestsWithTriangles"]["intersectionTestsWithTrianglesAveragePerRay"] = crcr.intersectionTestsWithTrianglesAveragePerRay();
+	j["total"]["intersectionTestsWithTriangles"]["intersectionTestsWithTrianglesAveragePerBvh"] = crcr.intersectionTestsWithTrianglesAveragePerBvh();
+	 
+	j["total"]["intersectionTestsWhenHit"]["intersectionTestsWhenHitTotal"] = crcr.intersectionTestsWhenHitTotal;
+	j["total"]["intersectionTestsWhenHit"]["intersectionTestsWhenHitAveragePerRay"] = crcr.intersectionTestsWhenHitAveragePerRay();
+	j["total"]["intersectionTestsWhenHit"]["intersectionTestsWhenHitAveragePerBvh"] = crcr.intersectionTestsWhenHitAveragePerBvh();
+	 
+	j["total"]["intersectionTestsWhenHitWithNodes"]["intersectionTestsWithNodesWhenHitTotal"] = crcr.intersectionTestsWithNodesWhenHitTotal;
+	j["total"]["intersectionTestsWhenHitWithNodes"]["intersectionTestsWithNodesWhenHitAveragePerRay"] = crcr.intersectionTestsWithNodesWhenHitAveragePerRay();
+	j["total"]["intersectionTestsWhenHitWithNodes"]["intersectionTestsWithNodesWhenHitAveragePerBvh"] = crcr.intersectionTestsWithNodesWhenHitAveragePerBvh();
+	 
+	j["total"]["intersectionTestsWhenHitWithTriangles"]["intersectionTestsWithTrianglesWhenHitTotal"] = crcr.intersectionTestsWithTrianglesWhenHitTotal;
+	j["total"]["intersectionTestsWhenHitWithTriangles"]["intersectionTestsWithTrianglesWhenHitAveragePerRay"] = crcr.intersectionTestsWithTrianglesWhenHitAveragePerRay();
+	j["total"]["intersectionTestsWhenHitWithTriangles"]["intersectionTestsWithTrianglesWhenHitAveragePerBvh"] = crcr.intersectionTestsWithTrianglesWhenHitAveragePerBvh();
 
-	j["averageBvhsTraversedPerRay"] = crcr.averageBvhsTraversedPerRay();
-	j["hitsPercentage"] = crcr.hitsPercentage();
-	j["missesPercentage"] = crcr.missesPercentage();
-	j["averageIntersectionTestsPerRay"] = crcr.averageIntersectionTestsPerRay();
-	j["averageIntersectionTestsWithNodesPerRay"] = crcr.averageIntersectionTestsWithNodesPerRay();
-	j["averageIntersectionTestsWithTrianglesPerRay"] = crcr.averageIntersectionTestsWithTrianglesPerRay();
-	j["averageIntersectionTestsWhenHitPerRay"] = crcr.averageIntersectionTestsWhenHitPerRay();
-	j["averageIntersectionTestsWithNodesWhenHitPerRay"] = crcr.averageIntersectionTestsWithNodesWhenHitPerRay();
-	j["averageIntersectionTestsWithTrianglesWhenHitPerRay"] = crcr.averageIntersectionTestsWithTrianglesWhenHitPerRay();
-	j["fallbackBvhSearchesPercentage"] = crcr.fallbackBvhSearchesPercentage();
-	j["successfulFallbackBvhSearchesPercentage"] = crcr.successfulFallbackBvhSearchesPercentage();
-	TIME(j["averageTimeTraversingPerRay"] = crcr.averageTimeTraversingPerRay().count(););
+
+	j["fallback"]["general"]["fallbackBvhSearchesTotal"] = crcr.fallbackBvhSearchesTotal;
+	j["fallback"]["general"]["fallbackBvhSearchesPercentage"] = crcr.fallbackBvhSearchesPercentage();
+	j["fallback"]["general"]["successfulFallbackBvhSearchesPercentage"] = crcr.successfulFallbackBvhSearchesPercentage();
+	j["fallback"]["general"]["nonFallbackSearchesTotal"] = crcr.nonFallbackBvhSearches();
+	j["fallback"]["general"]["nonFallbackSearchesPercentage"] = crcr.nonFallbackBvhSearchesPercentage();
+
+	j["fallback"]["intersectionTests"]["intersectionTestsNonFallbackTotal"] = crcr.intersectionTestsNonFallbackTotal;
+	j["fallback"]["intersectionTests"]["intersectionTestsNonFallbackAveragePerRay"] = crcr.intersectionTestsNonFallbackAveragePerRay();
+	j["fallback"]["intersectionTests"]["intersectionTestsNonFallbackAveragePerBvh"] = crcr.intersectionTestsNonFallbackAveragePerBvh();
+
+	j["fallback"]["intersectionTestsWithNodes"]["intersectionTestsWithNodesNonFallbackTotal"] = crcr.intersectionTestsWithNodesNonFallbackTotal;
+	j["fallback"]["intersectionTestsWithNodes"]["intersectionTestsWithNodesNonFallbackAveragePerRay"] = crcr.intersectionTestsWithNodesNonFallbackAveragePerRay();
+	j["fallback"]["intersectionTestsWithNodes"]["intersectionTestsWithNodesNonFallbackAveragePerBvh"] = crcr.intersectionTestsWithNodesNonFallbackAveragePerBvh();
+
+	j["fallback"]["intersectionTestsWithTriangles"]["intersectionTestsWithTrianglesNonFallbackTotal"] = crcr.intersectionTestsWithTrianglesNonFallbackTotal;
+	j["fallback"]["intersectionTestsWithTriangles"]["intersectionTestsWithTrianglesNonFallbackAveragePerRay"] = crcr.intersectionTestsWithTrianglesNonFallbackAveragePerRay();
+	j["fallback"]["intersectionTestsWithTriangles"]["intersectionTestsWithTrianglesNonFallbackAveragePerBvh"] = crcr.intersectionTestsWithTrianglesNonFallbackAveragePerBvh();
+
+	j["fallback"]["intersectionTestsWhenHit"]["intersectionTestsWhenHitNonFallbackTotal"] = crcr.intersectionTestsWhenHitNonFallbackTotal;
+	j["fallback"]["intersectionTestsWhenHit"]["intersectionTestsWhenHitNonFallbackAveragePerRay"] = crcr.intersectionTestsWhenHitNonFallbackAveragePerRay();
+	j["fallback"]["intersectionTestsWhenHit"]["intersectionTestsWhenHitNonFallbackAveragePerBvh"] = crcr.intersectionTestsWhenHitNonFallbackAveragePerBvh();
+
+	j["fallback"]["intersectionTestsWhenHitWithNodes"]["intersectionTestsWithNodesWhenHitNonFallbackTotal"] = crcr.intersectionTestsWithNodesWhenHitNonFallbackTotal;
+	j["fallback"]["intersectionTestsWhenHitWithNodes"]["intersectionTestsWithNodesWhenHitNonFallbackAveragePerRay"] = crcr.intersectionTestsWithNodesWhenHitNonFallbackAveragePerRay();
+	j["fallback"]["intersectionTestsWhenHitWithNodes"]["intersectionTestsWithNodesWhenHitNonFallbackAveragePerBvh"] = crcr.intersectionTestsWithNodesWhenHitNonFallbackAveragePerBvh();
+
+	j["fallback"]["intersectionTestsWhenHitWithTriangles"]["intersectionTestsWithTrianglesWhenHitNonFallbackTotal"] = crcr.intersectionTestsWithTrianglesWhenHitNonFallbackTotal;
+	j["fallback"]["intersectionTestsWhenHitWithTriangles"]["intersectionTestsWithTrianglesWhenHitNonFallbackAveragePerRay"] = crcr.intersectionTestsWithTrianglesWhenHitNonFallbackAveragePerRay();
+	j["fallback"]["intersectionTestsWhenHitWithTriangles"]["intersectionTestsWithTrianglesWhenHitNonFallbackAveragePerBvh"] = crcr.intersectionTestsWithTrianglesWhenHitNonFallbackAveragePerBvh();
 }
 
 void pah::projection::to_json(json& j, const ProjectionMatrixParameters& params) {

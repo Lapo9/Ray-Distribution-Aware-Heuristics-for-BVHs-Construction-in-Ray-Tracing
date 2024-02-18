@@ -20,18 +20,18 @@ int main() {
 	mt19937 rng{ 4 };
 	distributions::UniformBoxDistribution mainDistribution3d{ 0,10, 0,10, 0,10 };
 	distributions::UniformBoxDistribution otherDistribution3d{ -1,1, -1,1 , -1,1 };
-	auto triangles = Triangle::generateRandom(100, rng, mainDistribution3d, otherDistribution3d);
+	auto triangles = Triangle::generateRandom(10000, rng, mainDistribution3d, otherDistribution3d);
 	auto trianglesSah = triangles;
 	auto trianglesSahPtrs = trianglesSah | views::transform([](const Triangle& t) {return &t; }) | ranges::to<vector>();
 
 	//create influence areas
-	PlaneInfluenceArea planeInfluenceArea1{ Plane{{3,4,0}, {1,0,1}}, {1,4}, 10, 10000 };
+	PlaneInfluenceArea planeInfluenceArea1{ Plane{{3,4,0}, {0.0f,0,1}}, {1,4}, 10, 10000 };
 	PlaneInfluenceArea planeInfluenceArea2{ Plane{{0,2,1}, {1,0,1}}, {1,2}, 15, 100 };
 	PointInfluenceArea pointInfluenceArea1{ Pov{{1,1,2}, {1,0,0}, 90, 45}, 10, 1, 100 };
 	PointInfluenceArea pointInfluenceArea2{ Pov{{0,0,0}, {1,1,0}, 90, 60}, 8, 0.5, 100 };
 
 	//build the ray casters (will later be used to cast rays)
-	PlaneRayCaster planeRayCaster1{ planeInfluenceArea1 }; planeRayCaster1.generateRays(rng, 100);
+	PlaneRayCaster planeRayCaster1{ planeInfluenceArea1 }; planeRayCaster1.generateRays(rng, 10000);
 	PlaneRayCaster planeRayCaster2{ planeInfluenceArea2 }; planeRayCaster2.generateRays(rng, 100);
 	PointRayCaster pointRayCaster1{ pointInfluenceArea1 }; pointRayCaster1.generateRays(rng, 100);
 	PointRayCaster pointRayCaster2{ pointInfluenceArea2 }; pointRayCaster2.generateRays(rng, 100);
@@ -44,7 +44,7 @@ int main() {
 	properties.bins = 40;
 
 	Bvh baseBvh{ properties, bvhStrategies::computeCostSah, bvhStrategies::chooseSplittingPlanesLongest<0.0f>, bvhStrategies::shouldStopThresholdOrLevel };
-	Bvh bvh1{ properties, planeInfluenceArea1, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing<0.0f, 1.1f>, bvhStrategies::shouldStopThresholdOrLevel };
+	Bvh bvh1{ properties, planeInfluenceArea1, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing<0.0f>, bvhStrategies::shouldStopThresholdOrLevel };
 	Bvh bvh2{ properties, planeInfluenceArea2, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing<1.0f>, bvhStrategies::shouldStopThresholdOrLevel };
 	Bvh bvh3{ properties, pointInfluenceArea1, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing<1.0f>, bvhStrategies::shouldStopThresholdOrLevel };
 	Bvh bvh4{ properties, pointInfluenceArea2, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing<1.0f>, bvhStrategies::shouldStopThresholdOrLevel };
@@ -72,8 +72,14 @@ int main() {
 	
 	auto pahTraversalResults = ranges::fold_left(rayCasters, CumulativeRayCasterResults{}, [&topLevelStructure](auto res, auto rayCaster) { return res + rayCaster->castRays(topLevelStructure); });
 	auto sahTraversalResults = ranges::fold_left(rayCasters, CumulativeRayCasterResults{}, [&sahBvh](auto res, auto rayCaster) { return res + rayCaster->castRays(sahBvh); });
-	cout << setw(2) << json(pahTraversalResults) << endl;
-	cout << setw(2) << json(sahTraversalResults) << endl;
+	
+	std::ofstream pahFile{ "D:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/Results/pah.json" };
+	pahFile << std::setw(2) << json(pahTraversalResults);
+	pahFile.close();
+
+	std::ofstream sahFile{ "D:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/Results/sah.json" };
+	sahFile << std::setw(2) << json(sahTraversalResults);
+	sahFile.close();
 
 	return 0;
 }

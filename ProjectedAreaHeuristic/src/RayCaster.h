@@ -19,71 +19,122 @@ namespace pah {
 	 */
 	struct RayCasterResults {
 		int raysAmount;
-		int totalBvhsTraversed;
-		int totalHits;
-		int totalMisses;
-		int totalIntersectionTests;
-		int totalIntersectionTestsWithNodes;
-		int totalIntersectionTestsWithTriangles;
-		int totalIntersectionTestsWhenHit;
-		int totalIntersectionTestsWithNodesWhenHit;
-		int totalIntersectionTestsWithTrianglesWhenHit;
-		int totalFallbackBvhSearches;
-		TIME(DurationMs totalTimeTraversing;); /**< @brief The sum of the traversal times of all the rays. */
-		TIME(DurationMs totalTime;); /**< @brief The total time of casting all the rays. It can be sligthly more than @p totalTimeTraversing */
+		int hitsTotal;
+		int missesTotal;
+		int fallbackBvhSearchesTotal;
+		TIME(DurationMs timeTraversingTotal;); /**< @brief The sum of the traversal times of all the rays. */
+		TIME(DurationMs timeTotal;); /**< @brief The total time of casting all the rays. It can be sligthly more than @p timeTotalTraversing */
+
+		float hitsPercentage() const { return (float)hitsTotal / raysAmount; }
+		float missesPercentage() const { return (float)missesTotal / raysAmount; }
+		float fallbackBvhSearchesPercentage() const { return fallbackBvhSearchesTotal / (float)raysAmount; }
+		float successfulFallbackBvhSearchesPercentage() const { return 1.0f - missesTotal / fallbackBvhSearchesTotal; /*remember that all misses come from a fallback search*/ }
+		int nonFallbackBvhSearches() const { return raysAmount - fallbackBvhSearchesTotal; }
+		float nonFallbackBvhSearchesPercentage() const { return nonFallbackBvhSearches() / (float)raysAmount; }
+		TIME(DurationMs timeTraversingAveragePerRay() const { return timeTraversingTotal / (float)raysAmount; })
+		TIME(DurationMs timeTraversingAveragePerBvh() const { return timeTraversingTotal / (float)bvhsTraversedTotal; })
 
 		RayCasterResults& operator+=(const TopLevel::TraversalResults& rhs);
 		RayCasterResults& operator+=(const Bvh::TraversalResults& rhs);
 		friend CumulativeRayCasterResults operator+(const RayCasterResults& lhs, const RayCasterResults& rhs);
 
-		float averageBvhsTraversedPerRay() const;
-		float hitsPercentage() const;
-		float missesPercentage() const;
-		float averageIntersectionTestsPerRay() const;
-		float averageIntersectionTestsWithNodesPerRay() const;
-		float averageIntersectionTestsWithTrianglesPerRay() const;
-		float averageIntersectionTestsWhenHitPerRay() const;
-		float averageIntersectionTestsWithNodesWhenHitPerRay() const;
-		float averageIntersectionTestsWithTrianglesWhenHitPerRay() const;
-		float fallbackBvhSearchesPercentage() const;
-		float successfulFallbackBvhSearchesPercentage() const;
-		TIME(DurationMs averageTimeTraversingPerRay() const;)
+#define FOR_MEMBER_DO(DO) \
+		DO(bvhsTraversed) \
+		DO(intersectionTests) \
+		DO(intersectionTestsWithNodes) \
+		DO(intersectionTestsWithTriangles) \
+		DO(intersectionTestsWhenHit) \
+		DO(intersectionTestsWithNodesWhenHit) \
+		DO(intersectionTestsWithTrianglesWhenHit)
+
+#define FOR_NON_FALLBACK_MEMBER_DO(DO) \
+		DO(intersectionTestsNonFallback) \
+		DO(intersectionTestsWithNodesNonFallback) \
+		DO(intersectionTestsWithTrianglesNonFallback) \
+		DO(intersectionTestsWhenHitNonFallback) \
+		DO(intersectionTestsWithNodesWhenHitNonFallback) \
+		DO(intersectionTestsWithTrianglesWhenHitNonFallback)
+
+#define CREATE_MEMBER(member) int member ## Total;
+		FOR_MEMBER_DO(CREATE_MEMBER)
+		FOR_NON_FALLBACK_MEMBER_DO(CREATE_MEMBER)
+
+#define PER_RAY_AVERAGE(member) float member ## AveragePerRay() const { return (float) member ## Total / raysAmount; }
+		FOR_MEMBER_DO(PER_RAY_AVERAGE)
+		FOR_NON_FALLBACK_MEMBER_DO(PER_RAY_AVERAGE)
+
+#define PER_BVH_AVERAGE(member) float member ## AveragePerBvh() const { return (float) member ## Total / bvhsTraversedTotal; }
+		FOR_MEMBER_DO(PER_BVH_AVERAGE)
+
+#define PER_BVH_NON_FALLBACK_AVERAGE(member) float member ## AveragePerBvh() const { return  member ## Total / (float)(bvhsTraversedTotal - fallbackBvhSearchesTotal); }
+		FOR_NON_FALLBACK_MEMBER_DO(PER_BVH_NON_FALLBACK_AVERAGE)
+
+#undef FOR_MEMBER_DO(DO)
+#undef CREATE_MEMBER
+#undef PER_RAY_AVERAGE
+#undef PER_BVH_AVERAGE
+#undef PER_BVH_NON_FALLBACK_AVERAGE
 	};
 
 
 	struct CumulativeRayCasterResults {
 		int raysAmount;
 		int rayCastersAmount;
-		int totalBvhsTraversed;
-		int totalHits;
-		int totalMisses;
-		int totalIntersectionTests;
-		int totalIntersectionTestsWithNodes;
-		int totalIntersectionTestsWithTriangles;
-		int totalIntersectionTestsWhenHit;
-		int totalIntersectionTestsWithNodesWhenHit;
-		int totalIntersectionTestsWithTrianglesWhenHit;
-		int totalFallbackBvhSearches;
-		TIME(DurationMs totalTimeTraversing;);
+		int hitsTotal;
+		int missesTotal;
+		int fallbackBvhSearchesTotal;
+		TIME(DurationMs timeTraversingTotal;);
+
+		float hitsPercentage() const { return (float)hitsTotal / raysAmount; }
+		float missesPercentage() const { return (float)missesTotal / raysAmount; }
+		float fallbackBvhSearchesPercentage() const { return fallbackBvhSearchesTotal / (float)raysAmount; }
+		float successfulFallbackBvhSearchesPercentage() const { return 1.0f - (float)missesTotal / fallbackBvhSearchesTotal; /*remember that all misses come from a BVH search*/ }
+		int nonFallbackBvhSearches() const { return raysAmount - fallbackBvhSearchesTotal; }
+		float nonFallbackBvhSearchesPercentage() const { return nonFallbackBvhSearches() / (float)raysAmount; }
+		TIME(DurationMs timeTraversingAveragePerRay() const { return timeTraversingTotal / (float)raysAmount; });
+		TIME(DurationMs timeTraversingAveragePerBvh() const { return timeTraversingTotal / (float)bvhsTraversedTotal; });
 
 		CumulativeRayCasterResults& operator+=(const CumulativeRayCasterResults& rhs);
 		friend CumulativeRayCasterResults operator+(CumulativeRayCasterResults lhs, const CumulativeRayCasterResults& rhs);
 		CumulativeRayCasterResults& operator+=(const RayCasterResults& rhs);
 		friend CumulativeRayCasterResults operator+(CumulativeRayCasterResults lhs, const RayCasterResults& rhs);
-		
-		float averageBvhsTraversedPerRay() const;
-		float hitsPercentage() const;
-		float missesPercentage() const;
-		float averageIntersectionTestsPerRay() const;
-		float averageIntersectionTestsWithNodesPerRay() const;
-		float averageIntersectionTestsWithTrianglesPerRay() const;
-		float averageIntersectionTestsWhenHitPerRay() const;
-		float averageIntersectionTestsWithNodesWhenHitPerRay() const;
-		float averageIntersectionTestsWithTrianglesWhenHitPerRay() const;
-		float fallbackBvhSearchesPercentage() const;
-		float successfulFallbackBvhSearchesPercentage() const;
 
-		TIME(DurationMs averageTimeTraversingPerRay() const;);
+#define FOR_MEMBER_DO(DO) \
+		DO(bvhsTraversed) \
+		DO(intersectionTests) \
+		DO(intersectionTestsWithNodes) \
+		DO(intersectionTestsWithTriangles) \
+		DO(intersectionTestsWhenHit) \
+		DO(intersectionTestsWithNodesWhenHit) \
+		DO(intersectionTestsWithTrianglesWhenHit) 
+
+#define FOR_NON_FALLBACK_MEMBER_DO(DO) \
+		DO(intersectionTestsNonFallback) \
+		DO(intersectionTestsWithNodesNonFallback) \
+		DO(intersectionTestsWithTrianglesNonFallback) \
+		DO(intersectionTestsWhenHitNonFallback) \
+		DO(intersectionTestsWithNodesWhenHitNonFallback) \
+		DO(intersectionTestsWithTrianglesWhenHitNonFallback) 
+
+#define CREATE_MEMBER(member) int member ## Total;
+		FOR_MEMBER_DO(CREATE_MEMBER)
+		FOR_NON_FALLBACK_MEMBER_DO(CREATE_MEMBER)
+
+#define PER_RAY_AVERAGE(member) float member ## AveragePerRay() const { return  member ## Total / (float)raysAmount; }
+		FOR_MEMBER_DO(PER_RAY_AVERAGE)
+		FOR_NON_FALLBACK_MEMBER_DO(PER_RAY_AVERAGE)
+
+#define PER_BVH_AVERAGE(member) float member ## AveragePerBvh() const { return  member ## Total / (float)bvhsTraversedTotal; }
+		FOR_MEMBER_DO(PER_BVH_AVERAGE)
+
+#define PER_BVH_NON_FALLBACK_AVERAGE(member) float member ## AveragePerBvh() const { return  member ## Total / (float)(bvhsTraversedTotal - fallbackBvhSearchesTotal); }
+		FOR_NON_FALLBACK_MEMBER_DO(PER_BVH_NON_FALLBACK_AVERAGE)
+
+#undef FOR_MEMBER_DO(DO)
+#undef CREATE_MEMBER
+#undef PER_RAY_AVERAGE
+#undef PER_BVH_AVERAGE
+#undef PER_BVH_NON_FALLBACK_AVERAGE
 	};
 
 
@@ -108,11 +159,11 @@ namespace pah {
 		 */
 		RayCasterResults castRays(const TopLevel& topLevel) const {
 			RayCasterResults res{};
-			TIME(utilities::TimeLogger totalTime{ [&res](auto duration) {res.totalTime = duration; } };);
+			TIME(utilities::TimeLogger timeTotal{ [&res](auto duration) {res.timeTotal = duration; } };);
 			for (const auto& ray : rays) {
 				res += topLevel.traverse(ray);
 			}
-			TIME(totalTime.stop(););
+			TIME(timeTotal.stop(););
 			return res;
 		}
 
@@ -121,11 +172,11 @@ namespace pah {
 		 */
 		RayCasterResults castRays(const Bvh& bvh) const {
 			RayCasterResults res{};
-			TIME(utilities::TimeLogger totalTime{ [&res](auto duration) {res.totalTime = duration; } };);
+			TIME(utilities::TimeLogger timeTotal{ [&res](auto duration) {res.timeTotal = duration; } };);
 			for (const auto& ray : rays) {
 				res += bvh.traverse(ray);
 			}
-			TIME(totalTime.stop(););
+			TIME(timeTotal.stop(););
 			return res;
 		}
 

@@ -27,7 +27,14 @@ namespace pah {
 			float costWhenHit;
 			const Triangle* closestHit;
 			float closestHitDistance;
+
 			bool fallbackBvhSearch;
+			int intersectionTestsTotalNonFallback;
+			int intersectionTestsWithNodesNonFallback;
+			int intersectionTestsWithTrianglesNonFallback;
+			int intersectionTestsWhenHitNonFallback;
+			int intersectionTestsWithNodesWhenHitNonFallback;
+			int intersectionTestsWithTrianglesWhenHitNonFallback; 
 			TIME(DurationMs traversalTime;);
 
 			bool hit() const {
@@ -40,12 +47,23 @@ namespace pah {
 				intersectionTestsWithNodes += rhs.intersectionTestsWithNodes;
 				intersectionTestsWithTriangles += rhs.intersectionTestsWithTriangles;
 				totalCost += rhs.traversalCost;
+
+				if (!fallbackBvhSearch) {
+					intersectionTestsTotalNonFallback += rhs.intersectionTestsTotal;
+					intersectionTestsWithNodesNonFallback += rhs.intersectionTestsWithNodes;
+					intersectionTestsWithTrianglesNonFallback += rhs.intersectionTestsWithTriangles;
+				}
 				
 				if (rhs.hit()) {
 					intersectionTestsWhenHit += rhs.intersectionTestsTotal;
 					intersectionTestsWithNodesWhenHit += rhs.intersectionTestsWithNodes;
 					intersectionTestsWithTrianglesWhenHit += rhs.intersectionTestsWithTriangles;
 					costWhenHit += rhs.traversalCost;
+					if (!fallbackBvhSearch) {
+						intersectionTestsWhenHitNonFallback += rhs.intersectionTestsTotal;
+						intersectionTestsWithNodesWhenHitNonFallback += rhs.intersectionTestsWithNodes;
+						intersectionTestsWithTrianglesWhenHitNonFallback += rhs.intersectionTestsWithTriangles;
+					}
 				}
 				return *this;
 			}
