@@ -9,6 +9,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <concepts>
+#include <fstream>
 
 #include  "../libs/json.hpp"
 
@@ -217,7 +218,55 @@ namespace pah {
 				triangles.emplace_back(random(rng, firstVertexDistribution, otherVerticesDistributions));
 			}
 			return triangles;
-		}	
+		}
+
+		/**
+		 * @brief Returns an array of triangles from a .obj waveform file.
+		 * We assume that all the vertices lines are placed before the triangle lines.
+		 */
+		static std::vector<Triangle> fromObj(const std::string& filePath) {
+			using namespace std;
+
+			std::ifstream objFile{ filePath };
+			vector<Triangle> triangles;
+			vector<Vector3> vertices;
+
+			string lineStr;
+			while (getline(objFile, lineStr)) {
+				istringstream lineStream{ lineStr };
+				string lineType; //f: triangle, v: vertex (vn: normal and vt: UVs but we care only about t and v)
+				lineStream >> lineType;
+
+				// vertex
+				if (lineType == "v") {
+					float x, y, z;
+					lineStream >> x >> y >> z;
+					vertices.emplace_back(x, y, z);
+				}
+
+				// triangle (we assume all the vertices are before the first triangle line)
+				// a triangle line has this form: f 1/2/3 4/5/6 7/8/9 where vertexIndex/uvIndex/normalIndex
+				if (lineType == "f") {
+					string indicesStr;
+					Triangle triangle{ Vector3{}, Vector3{}, Vector3{} };
+
+					// here we get the first string (e.g. 1/2/3, then 4/5/6, then 7/8/9)
+					for (int i = 0; i < 3 && lineStream >> indicesStr; ++i) {
+						istringstream indicesStream{ indicesStr };
+						string vertexIndexStr;
+						getline(indicesStream, vertexIndexStr, '/'); // we don't care about uv and normal, only the vertex index
+
+						int vertexIndex = atoi(vertexIndexStr.c_str());
+						vertexIndex = (vertexIndex >= 0 ? vertexIndex : vertices.size() + vertexIndex);
+
+						triangle[i] = vertices[vertexIndex-1]; // add the vertex to the triangle
+					}
+					triangles.emplace_back(triangle);
+				}
+			}
+			return triangles;
+		}
+
 	};
 
 	/**

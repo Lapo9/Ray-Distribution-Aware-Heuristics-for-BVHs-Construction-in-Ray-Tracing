@@ -184,9 +184,9 @@ namespace pah {
 		};
 
 		//custom alias
-		using ComputeCostReturnType = float;																				using ComputeCostType = ComputeCostReturnType(const Node&, const InfluenceArea&, float rootMetric);
-		using ChooseSplittingPlanesReturnType = std::vector<std::tuple<Axis, std::function<bool(float bestCostSoFar)>>>;	using ChooseSplittingPlanesType = ChooseSplittingPlanesReturnType(const Node&, const InfluenceArea&, Axis father, std::mt19937& rng);
-		using ShouldStopReturnType = bool;																					using ShouldStopType = ShouldStopReturnType(const Node&, const Properties&, int currentLevel, float nodeCost);
+		using ComputeCostReturnType = float;																								using ComputeCostType = ComputeCostReturnType(const Node&, const InfluenceArea&, float rootMetric);
+		using ChooseSplittingPlanesReturnType = std::vector<std::tuple<Axis, std::function<bool(float bestCostSoFar, float fatherCost)>>>;	using ChooseSplittingPlanesType = ChooseSplittingPlanesReturnType(const Node&, const InfluenceArea&, Axis father, std::mt19937& rng);
+		using ShouldStopReturnType = bool;																									using ShouldStopType = ShouldStopReturnType(const Node&, const Properties&, int currentLevel, float nodeCost);
 
 
 		Bvh(const Properties&, const InfluenceArea&, ComputeCostType computeCost, ChooseSplittingPlanesType chooseSplittingPlanes, ShouldStopType shouldStop);
@@ -226,7 +226,7 @@ namespace pah {
 		/**
 		 * @brief Given a @p Node, it splits it into 2 children according to the strategies set during @p Bvh construction.
 		 */
-		void splitNode(Node& node, Axis fathersplittingAxis, int currentLevel);
+		void splitNode(Node& node, Axis fathersplittingAxis, float fatherCost, int currentLevel);
 
 		//simple wrappers for the custom functions. We use wrappers because there may be some common actions to perform before (e.g. time logging)
 		ComputeCostReturnType computeCostWrapper(const Node& parent, const Node& node, const InfluenceArea& influenceArea, float rootArea);
@@ -303,13 +303,13 @@ namespace pah {
 		 * Axis are sorted from longest to shortest. If an axis is too short, it is not incuded.
 		 * The function returns whether it is worth it to try the corresponding axis, given the results obtained with the previous axis.
 		 */
-		template<float costThreshold, float ratioThreshold = 0.5f>
+		template<float maxCostRatioWithFather, float ratioThreshold = 0.5f>
 		static Bvh::ChooseSplittingPlanesReturnType chooseSplittingPlanesLongest(const Bvh::Node& node, const InfluenceArea&, Axis, std::mt19937&) {
 			using namespace std;
 			array<tuple<float, Axis>, 3> axisLengths{ tuple{node.aabb.size().x, Axis::X}, {node.aabb.size().y, Axis::Y} , {node.aabb.size().z, Axis::Z} }; //basically a dictionary<length, Axis>
 			sort(axisLengths.begin(), axisLengths.end(), [](auto a, auto b) { return get<0>(a) < get<0>(b); }); //sort based on axis length
 
-			vector<tuple<Axis, function<bool(float)>>> result{}; //the array to fill and return
+			vector<tuple<Axis, function<bool(float,float)>>> result{}; //the array to fill and return
 			float longestAxis = get<0>(axisLengths[0]);
 			//basically, for each axis, decide whether to include it or not, and build a function that decides if it is worth it to try the next axis based on the results of the previous one(s)
 			for (int i = 0; const auto & [length, axis] : axisLengths) {
@@ -317,7 +317,7 @@ namespace pah {
 				if (ratio > ratioThreshold) {
 					result.emplace_back(
 						axis,
-						[i](float bestCostSoFar) { return bestCostSoFar > costThreshold + 0.1f * i * costThreshold; } //it suggests to try this axis if the found cost is > of a user-defined threshold plus a percentage (based on how many axis we've already analyzed)
+						[i](float bestCostSoFar, float fatherCost) { return bestCostSoFar/fatherCost > (maxCostRatioWithFather + 0.1f * i * maxCostRatioWithFather); } //it suggests to try this axis if the found cost is > of a user-defined threshold plus a percentage (based on how many axis we've already analyzed)
 					);
 					i++; //counts how many axis we analyzed
 					continue;
@@ -334,10 +334,10 @@ namespace pah {
 		 * If the main rays direction and the best plane considering this direction are "clear", it will return just one plane; else it will return the best 2 planes.
 		 * The satisfaction criteria will determine whether it is worth it to try the second plane or not, based on the results of the first split.
 		 *
-		 * @tparam costThreshold The maximum cost after the first plane split NOT to try the second plane split.
+		 * @tparam maxCostRatioWithFather If, after a plane split, the ratio between the sum of the children costs and the father node cost is bigger than this value, a new split will be tried. (e.g. children = 5, father = 10, max = 0.9 ==> not tried because 5/10 < 0.9).
 		 * @tparam percentageMargin The margin, in percent points, between axis directions to determine if a direction is "clear". e.g. If the rays have direction <-0.66, 0, 0.75> and the margin is 10%, then the main direction is not clear, because |-0.66|/(|-0.66|+|0.75|) = 47%, and |0.75|/(|-0.66|+|0.75|) = 53% and 53%-47% = 6% < 10%
 		 */
-		template<float costThreshold, float percentageMargin = 0.05f>
+		template<float maxCostRatioWithFather, float percentageMargin = 0.05f>
 		static Bvh::ChooseSplittingPlanesReturnType chooseSplittingPlanesFacing(const Bvh::Node& node, const InfluenceArea& influenceArea, Axis, std::mt19937& rng) {
 			using namespace std;
 			using namespace utilities;
@@ -361,7 +361,7 @@ namespace pah {
 
 			//adds the planes to the selectable planes list. Look at the flowchart to understand the code.
 			auto addPlanes = [&remaining2AxisPercentages](Axis a1, float pa1, Axis a2, float pa2, float margin) {
-				vector<tuple<Axis, function<bool(float)>>> result{};
+				vector<tuple<Axis, function<bool(float,float)>>> result{};
 
 				auto [b11, b12] = other2(a1); //if the main direction of the rays is X, we want to cut with planes whose perpendicular is Y or Z (so that we will have fewer intersections)
 				auto [pb11, pb12] = remaining2AxisPercentages(b11, b12); //for these 2 axis, get the percentages
@@ -371,12 +371,15 @@ namespace pah {
 					std::swap(pb11, pb12);
 				}
 				//add the best possible plane
-				result.emplace_back(b11, [](float bestCostSoFar) { return true; }); //always try the first plane
+				result.emplace_back(b11, [](float,float) { return true; }); //always try the first plane
 
+				//try the split plane if the results with the first plane were worse than the threshold (will be added as a criterium to the second plane in results
+				auto tryNextSplitCriterium = [](float bestCostSoFar, float fatherCost) { return bestCostSoFar/fatherCost > maxCostRatioWithFather; };
+				
 				//if the main rays direction is "clear", but the best plane is not so "clear", we also add the other plane considering the "clear" main rays direction
 				if (pa1 - margin > pa2 && pb12 - margin <= pb11) {
 					//add the other plane with this main rays direction too
-					result.emplace_back(b12, [](float bestCostSoFar) { return bestCostSoFar > costThreshold; }); //try this plane if the results with the first plane were worse than the threshold
+					result.emplace_back(b12, tryNextSplitCriterium);
 				}
 				//if the main rays direction is not "clear", let's get the second main direction
 				else if (pa1 - margin <= pa2) {
@@ -390,16 +393,30 @@ namespace pah {
 
 					//if the best possible plane in the second main rays direction is NOT the same as the best plane in the main rays direction, add it
 					if (b21 != b11) {
-						result.emplace_back(b21, [](float bestCostSoFar) { return bestCostSoFar > costThreshold; }); //try this plane if the results with the first plane were worse than the threshold
+						result.emplace_back(b21, tryNextSplitCriterium); //try this plane if the results with the first plane were worse than the threshold
 					}
 					//if the best possible plane in the second main rays direction is the same as the best plane in the main rays direction, verify if also the other plane is "good enough"
 					else if (pb22 - margin <= pb21) {
-						result.emplace_back(b22, [](float bestCostSoFar) { return bestCostSoFar > costThreshold; }); //try this plane if the results with the first plane were worse than the threshold
+						result.emplace_back(b22, tryNextSplitCriterium); //try this plane if the results with the first plane were worse than the threshold
 					}
+				}
+
+				//add the NON selected plane(s), but these will only be tried if the result of the split with the selected planes is really really bad
+				auto criterium = [](float bestCostSoFar, float fatherCost) { 
+					return bestCostSoFar / fatherCost > 1.5f; };
+				if (result.size() == 1) {
+					auto [otherPlane1, otherPlane2] = other2(get<0>(result[0]));
+					result.emplace_back(otherPlane1, criterium);
+					result.emplace_back(otherPlane2, criterium);
+				}
+				else {
+					Axis otherPlane = third(get<0>(result[0]), get<0>(result[1]));
+					result.emplace_back(otherPlane, criterium);
 				}
 
 				//at the end of the day, if the main rays direction and the best plane considering this direction is "clear", we will have just one plane; else we will have the best 2 planes.
 				//the satisfaction criteria will determine whether it is worth it to try the second plane or not, based on the results of the first split.
+				//moreover, if the cost after the selected planes is really bad, it is still possible to use the other (non facing) plane(s).
 				return result;
 				};
 

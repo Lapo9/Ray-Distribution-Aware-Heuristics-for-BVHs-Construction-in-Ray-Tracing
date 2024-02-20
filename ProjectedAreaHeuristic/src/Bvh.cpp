@@ -33,7 +33,7 @@ void pah::Bvh::build(const vector<const Triangle*>& triangles, unsigned int seed
 	//from an array of triangles, to an array to pointers
 	root = { triangles }; //initizalize root
 	rootMetric = computeCost(root, *influenceArea, -1); //initialize the root metric (generally its area/projected area)
-	splitNode(root, Axis::X, 1);
+	splitNode(root, Axis::X, std::numeric_limits<float>::max(), 1);
 }
 
 pah::Bvh::TraversalResults pah::Bvh::traverse(const Ray& ray) const {	
@@ -77,7 +77,7 @@ pah::Bvh::TraversalResults pah::Bvh::traverse(const Ray& ray) const {
 	return res;
 }
 
-void pah::Bvh::splitNode(Node& node, Axis fatherSplittingAxis, int currentLevel) {
+void pah::Bvh::splitNode(Node& node, Axis fatherSplittingAxis, float fatherCost, int currentLevel) {
 	//the final action simply adds the measured time to the total time
 	TIME(TimeLogger timeLoggerTotal{ [&timingInfo = node.nodeTimingInfo](DurationMs duration) { timingInfo.logTotal(duration); } };);
 
@@ -92,7 +92,7 @@ void pah::Bvh::splitNode(Node& node, Axis fatherSplittingAxis, int currentLevel)
 	TIME(TimeLogger timeLoggerSplitting{ [&timingInfo = node.nodeTimingInfo](DurationMs duration) { timingInfo.logSplittingTot(duration); } };);
 	//try to split for each axis provided by chooseSplittingPlanes
 	for (const auto& [axis, criterium] : splittingPlanes) {
-		if (found && !criterium(bestLeftSoFar + bestRightSoFar)) break; //is it worth it to try this split? (it is always worth it if we haven't found a split on the previou axis)
+		if (found && !criterium(bestLeftSoFar + bestRightSoFar, fatherCost)) break; //is it worth it to try this split? (it is always worth it if we haven't found a split on the previou axis)
 		//split for each bin
 		for (int i = 1; i < properties.bins - 1; ++i) {
 			float splittingPlanePosition = at(node.aabb.min, axis) + (at(node.aabb.max, axis) - at(node.aabb.min, axis)) / properties.bins * i;
@@ -128,8 +128,8 @@ void pah::Bvh::splitNode(Node& node, Axis fatherSplittingAxis, int currentLevel)
 
 	//recurse on children
 	currentLevel++;
-	if (!shouldStopWrapper(node, *node.leftChild, properties, currentLevel, bestLeftSoFar)) splitNode(*node.leftChild, usedAxis, currentLevel);
-	if (!shouldStopWrapper(node, *node.rightChild, properties, currentLevel, bestRightSoFar)) splitNode(*node.rightChild, usedAxis, currentLevel);
+	if (!shouldStopWrapper(node, *node.leftChild, properties, currentLevel, bestLeftSoFar)) splitNode(*node.leftChild, usedAxis, bestLeftSoFar, currentLevel);
+	if (!shouldStopWrapper(node, *node.rightChild, properties, currentLevel, bestRightSoFar)) splitNode(*node.rightChild, usedAxis, bestRightSoFar, currentLevel);
 }
 
 const pah::Bvh::Node& pah::Bvh::getRoot() const {

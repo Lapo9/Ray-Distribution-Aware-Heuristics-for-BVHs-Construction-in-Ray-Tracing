@@ -223,11 +223,9 @@ namespace pah {
 				Vector3 direction = directionDistribution(rng);
 				float depth = originDepthDistribution(rng);
 				Vector3 origin = changeOfCoords * Vector4{ uniformRectangleDistribution(rng), 0.0f, 1.0f };
-				origin += direction * depth;
+				//origin += direction * depth;
 				this->rays.emplace_back(origin, direction);
 			}
-
-			//TODO yet to be tested
 		}
 
 	private:
