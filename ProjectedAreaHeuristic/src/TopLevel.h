@@ -77,7 +77,7 @@ namespace pah {
 		/**
 		 * @brief Insert the triangles in the specific area they belong to, then builds the BVHs.
 		 */
-		virtual void build();
+		virtual void build(float splitPlaneQualityThreshold, float maxChildrenFatherHitProbabilityRatio);
 
 		/**
 		 * @brief Updates the region where each triangle belongs to.
@@ -119,10 +119,11 @@ namespace pah {
 		template<std::same_as<Bvh>... Bvhs>
 		TopLevelAabbs(const std::vector<Triangle>& triangles, Bvh&& fallbackBvh, Bvhs&&... bvhs) : TopLevel{ triangles, std::move(fallbackBvh), std::move(bvhs)... } {}
 
-		void build() override;
+		void build(float splitPlaneQualityThreshold, float maxChildrenFatherHitProbabilityRatio) override;
 		void update() override;
 		std::vector<const Bvh*> containedIn(const Vector3&) const override;
 	};
+
 
 	class TopLevelOctree : public TopLevel {
 	public:
@@ -206,7 +207,7 @@ namespace pah {
 			root->aabb = sceneAabb;
 		}
 
-		void build() override;
+		void build(float splitPlaneQualityThreshold, float maxChildrenFatherHitProbabilityRatio) override;
 		void update() override;
 		std::vector<const Bvh*> containedIn(const Vector3&) const override;
 

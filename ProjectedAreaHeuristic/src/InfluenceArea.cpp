@@ -29,12 +29,11 @@ float pah::PlaneInfluenceArea::getInfluence(const Aabb& aabb) const {
 }
 
 Vector3 pah::PlaneInfluenceArea::getRayDirection(const Aabb& aabb) const {
-	//return aabb.center() - plane.getPoint(); //TODO test and remove
 	return plane.getNormal();
 }
 
-bool pah::PlaneInfluenceArea::isDirectionAffine(const Vector3& direction, float tolerance) const {
-	return collisionDetection::almostParallel(direction, plane.getNormal(), tolerance);
+bool pah::PlaneInfluenceArea::isDirectionAffine(const Ray& ray, float tolerance) const {
+	return collisionDetection::almostParallel(ray.getDirection(), plane.getNormal(), tolerance);
 }
 
 std::vector<std::tuple<pah::Axis, std::function<bool(float bestCostSoFar)>>> pah::PlaneInfluenceArea::bestSplittingPlanes() const {
@@ -62,14 +61,7 @@ float pah::PlaneInfluenceArea::getDensity() const {
 
 // Look at the comment of PointInfluenceArea::planePatch to understand how we built it. The order of the point is such that it creates a counterclockwise rectangle.
 pah::PointInfluenceArea::PointInfluenceArea(Pov pov, float far, float near, float density)
-	: InfluenceArea{ make_unique<Frustum>(pov, far, near) }, pov{ pov }, density{ density }, nearPlane{ near }, farPlane{ far } {
-	planePatch = {
-		dynamic_cast<Frustum&>(*bvhRegion).getPoints()[0],
-		dynamic_cast<Frustum&>(*bvhRegion).getPoints()[1],
-		dynamic_cast<Frustum&>(*bvhRegion).getPoints()[3],
-		dynamic_cast<Frustum&>(*bvhRegion).getPoints()[2]
-	};
-}
+	: InfluenceArea{ make_unique<Frustum>(pov, far, near) }, pov{ pov }, density{ density }, nearPlane{ near }, farPlane{ far } {}
 
 float pah::PointInfluenceArea::getProjectedArea(const Aabb& aabb) const
 {
@@ -88,8 +80,10 @@ Vector3 pah::PointInfluenceArea::getRayDirection(const Aabb& aabb) const{
 	return aabb.center() - pov.position;
 }
 
-bool pah::PointInfluenceArea::isDirectionAffine(const Vector3& direction, float tolerance) const {
-	return collisionDetection::areColliding(Ray{ pov.position, direction }, planePatch).hit;
+bool pah::PointInfluenceArea::isDirectionAffine(const Ray& ray, float tolerance) const {
+	// get the focal point of this point influence area and connect it with the ray origin; then compare the directions of this segment and the ray
+	Vector3 povOriginDirection = ray.getOrigin() - pov.position;
+	return collisionDetection::almostParallel(ray.getDirection(), povOriginDirection, tolerance);
 }
 
 std::vector<std::tuple<Axis, std::function<bool(float bestCostSoFar)>>> pah::PointInfluenceArea::bestSplittingPlanes() const{

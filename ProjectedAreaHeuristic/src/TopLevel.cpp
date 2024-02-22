@@ -13,10 +13,10 @@ using namespace pah::utilities;
 
 
 // ======| TopLevel |======
-void pah::TopLevel::build() {
+void pah::TopLevel::build(float splitPlaneQualityThreshold, float maxChildrenFatherHitProbabilityRatio) {
 	unordered_map<const pah::Bvh*, vector<const Triangle*>> bvhsTriangles; //maps the BVH and the triangles it contains
 	//build the fallback BVH with all the triangles
-	fallbackBvh.build(triangles | views::transform([](const Triangle& t) {return &t; }) | ranges::to<vector>());
+	fallbackBvh.build(triangles | views::transform([](const Triangle& t) {return &t; }) | ranges::to<vector>(), splitPlaneQualityThreshold, maxChildrenFatherHitProbabilityRatio);
 
 	//understand the BVHs each triangle is contained into
 	for (const auto& t : triangles) {
@@ -33,7 +33,7 @@ void pah::TopLevel::build() {
 
 	//build the BVHs with the corresponding triangles
 	for (auto& bvh : bvhs) {
-		bvh.build(bvhsTriangles[&bvh]);
+		bvh.build(bvhsTriangles[&bvh], splitPlaneQualityThreshold, maxChildrenFatherHitProbabilityRatio);
 	}
 }
 
@@ -46,7 +46,7 @@ TopLevel::TraversalResults pah::TopLevel::traverse(const Ray& ray) const {
 
 	for (const auto& bvh : relevantBvhs) {
 		//here we check that the direction of the ray is relevant to this particuar BVH
-		if (bvh->getInfluenceArea()->isDirectionAffine(ray.getDirection(), TOLERANCE)) { //TODO tolerance here should be a bigger value (we have to tune it)
+		if (bvh->getInfluenceArea()->isDirectionAffine(ray, TOLERANCE)) { //TODO tolerance here should be a bigger value (we have to tune it)
 			const auto& results = bvh->traverse(ray);
 			res += results; //here we sum some attributes such as the number of intersections and the traversal cost
 			if (results.hit()) {
@@ -82,8 +82,8 @@ const vector<pah::Triangle>& pah::TopLevel::getTriangles() const {
 
 
 // ======| TopLevelAabbs |======
-void pah::TopLevelAabbs::build() {
-	TopLevel::build();
+void pah::TopLevelAabbs::build(float splitPlaneQualityThreshold, float maxChildrenFatherHitProbabilityRatio) {
+	TopLevel::build(splitPlaneQualityThreshold, maxChildrenFatherHitProbabilityRatio);
 }
 
 void pah::TopLevelAabbs::update() {
@@ -102,7 +102,7 @@ vector<const pah::Bvh*> pah::TopLevelAabbs::containedIn(const Vector3& point) co
 
 
 // ======| TopLevelOctree |======
-void pah::TopLevelOctree::build() {
+void pah::TopLevelOctree::build(float splitPlaneQualityThreshold, float maxChildrenFatherHitProbabilityRatio) {
 	INFO(TimeLogger timeLoggerTotalBuild{ [this](DurationMs duration) { totalBuildTime = duration; } });
 
 	//build the octree
@@ -110,7 +110,7 @@ void pah::TopLevelOctree::build() {
 	buildOctreeRecursive(*root, bvhsPointers, {});
 
 	//build the BVHs
-	TopLevel::build();
+	TopLevel::build(splitPlaneQualityThreshold, maxChildrenFatherHitProbabilityRatio);
 }
 
 void pah::TopLevelOctree::update() {

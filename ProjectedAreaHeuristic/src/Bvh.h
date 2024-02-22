@@ -184,8 +184,8 @@ namespace pah {
 		};
 
 		//custom alias
-		using ComputeCostReturnType = float;																								using ComputeCostType = ComputeCostReturnType(const Node&, const InfluenceArea&, float rootMetric);
-		using ChooseSplittingPlanesReturnType = std::vector<std::tuple<Axis, std::function<bool(float bestCostSoFar, float fatherCost)>>>;	using ChooseSplittingPlanesType = ChooseSplittingPlanesReturnType(const Node&, const InfluenceArea&, Axis father, std::mt19937& rng);
+		using ComputeCostReturnType = struct { float cost, hitProbability; };																using ComputeCostType = ComputeCostReturnType(const Node&, const InfluenceArea&, float rootMetric);
+		using ChooseSplittingPlanesReturnType = std::vector<std::pair<Axis, float>>;														using ChooseSplittingPlanesType = ChooseSplittingPlanesReturnType(const Node&, const InfluenceArea&, Axis father, std::mt19937& rng);
 		using ShouldStopReturnType = bool;																									using ShouldStopType = ShouldStopReturnType(const Node&, const Properties&, int currentLevel, float nodeCost);
 
 
@@ -204,12 +204,19 @@ namespace pah {
 
 		/**
 		 * @brief Constructs the @p Bvh on a set of triangles. The seed for the random operations during the construction is random.
+		 * 
+		 * @param splitPlaneQualityThreshold How low the quality of the split plane can be before falling back on the standars SAH methods to compute the cost and splits. The value can be between 0 (bad) and 1 (good).
+		 * @param maxChildrenFatherHitProbabilityRatio (rightChildHitProbability + leftChildHitProbability) / fatherHitProbability: how big this ratio can be to consider a split acceptable.
 		 */
-		void build(const std::vector<const Triangle*>& triangles);
+		void build(const std::vector<const Triangle*>& triangles, float splitPlaneQualityThreshold, float maxChildrenFatherHitProbabilityRatio);
+
 		/**
 		 * @brief Constructs the @p Bvh on a set of triangles. It is possible to specify the seed for the random operations during the construction.
+		 * 
+		 * @param splitPlaneQualityThreshold How low the quality of the split plane can be before falling back on the standars SAH methods to compute the cost and splits. The value can be between 0 (bad) and 1 (good).
+		 * @param maxChildrenFatherHitProbabilityRatio (rightChildHitProbability + leftChildHitProbability) / fatherHitProbability: how big this ratio can be to consider a split acceptable.
 		 */
-		void build(const std::vector<const Triangle*>& triangles, unsigned int seed);
+		void build(const std::vector<const Triangle*>& triangles, unsigned int seed, float splitPlaneQualityThreshold, float maxChildrenFatherHitProbabilityRatio);
 
 		/**
 		 * @brief Traverses the @p Bvh and returns some stats about the traversal.
@@ -226,12 +233,12 @@ namespace pah {
 		/**
 		 * @brief Given a @p Node, it splits it into 2 children according to the strategies set during @p Bvh construction.
 		 */
-		void splitNode(Node& node, Axis fathersplittingAxis, float fatherCost, int currentLevel);
+		void splitNode(Node& node, Axis fatherSplittingAxis, float fatherHitProbability, int currentLevel, float splitPlaneQualityThreshold, float maxChildrenFatherHitProbabilityRatio);
 
 		//simple wrappers for the custom functions. We use wrappers because there may be some common actions to perform before (e.g. time logging)
-		ComputeCostReturnType computeCostWrapper(const Node& parent, const Node& node, const InfluenceArea& influenceArea, float rootArea);
-		ChooseSplittingPlanesReturnType chooseSplittingPlanesWrapper(const Node& node, const InfluenceArea& influenceArea, Axis axis, std::mt19937& rng);
-		ShouldStopReturnType shouldStopWrapper(const Node& parent, const Node& node, const Properties& properties, int currentLevel, float nodeCost);
+		ComputeCostReturnType computeCostWrapper(const Node& parent, const Node& node, const InfluenceArea& influenceArea, float rootArea, bool forceSah = false);
+		ChooseSplittingPlanesReturnType chooseSplittingPlanesWrapper(const Node& node, const InfluenceArea& influenceArea, Axis axis, std::mt19937& rng, bool forceSah = false);
+		ShouldStopReturnType shouldStopWrapper(const Node& parent, const Node& node, const Properties& properties, int currentLevel, float nodeCost, bool forceSah = false);
 
 		/**
 		 * @brief Given a list of triangles, an axis and a position on this axis, returns 2 sets of triangles, the ones "to the left" of the plane, and the ones "to the right".
@@ -279,23 +286,25 @@ namespace pah {
 		 * @brief Computes the surface area heuristic of the specified node of a @p Bvh whose root has surface area @p rootSurfaceArea.
 		 */
 		static Bvh::ComputeCostReturnType computeCostSah(const Bvh::Node& node, const InfluenceArea&, float rootArea) {
-			if (rootArea < 0) return node.aabb.surfaceArea(); //this function is called with rootArea < 0 when we want to initialize it
+			//this function is called with rootArea < 0 when we want to initialize it
+			if (rootArea < 0) return { node.aabb.surfaceArea(), node.aabb.surfaceArea() };
 
 			float hitProbability = node.aabb.surfaceArea() / rootArea;
 			float cost = node.isLeaf() ? 1.2f : 1.0f;
-			return hitProbability * node.triangles.size() * cost;
+			return { hitProbability * node.triangles.size() * cost, hitProbability };
 		}
 
 		/**
 		 * @brief Computes the projected area heuristic of the specified node of a @p Bvh whose root has surface area @p rootSurfaceArea.
 		 */
 		static Bvh::ComputeCostReturnType computeCostPah(const Bvh::Node& node, const InfluenceArea& influenceArea, float rootProjectedArea) {
-			if (rootProjectedArea < 0) return influenceArea.getProjectedArea(node.aabb); //this function is called with rootProjectedArea < 0 when we want to initialize it
+			//this function is called with rootProjectedArea < 0 when we want to initialize it
+			if (rootProjectedArea < 0) return { influenceArea.getProjectedArea(node.aabb), influenceArea.getProjectedArea(node.aabb) };
 
 			float projectedArea = influenceArea.getProjectedArea(node.aabb);
 			float hitProbability = projectedArea / rootProjectedArea;
 			float cost = node.isLeaf() ? 1.2f : 1.0f;
-			return hitProbability * node.triangles.size() * cost;
+			return { hitProbability * node.triangles.size() * cost, hitProbability };
 		}
 
 		/**
@@ -303,28 +312,24 @@ namespace pah {
 		 * Axis are sorted from longest to shortest. If an axis is too short, it is not incuded.
 		 * The function returns whether it is worth it to try the corresponding axis, given the results obtained with the previous axis.
 		 */
-		template<float maxCostRatioWithFather, float ratioThreshold = 0.5f>
+		template<float qualityThreshold = 0.33f>
 		static Bvh::ChooseSplittingPlanesReturnType chooseSplittingPlanesLongest(const Bvh::Node& node, const InfluenceArea&, Axis, std::mt19937&) {
 			using namespace std;
-			array<tuple<float, Axis>, 3> axisLengths{ tuple{node.aabb.size().x, Axis::X}, {node.aabb.size().y, Axis::Y} , {node.aabb.size().z, Axis::Z} }; //basically a dictionary<length, Axis>
-			sort(axisLengths.begin(), axisLengths.end(), [](auto a, auto b) { return get<0>(a) < get<0>(b); }); //sort based on axis length
+			array<pair<float, Axis>, 3> axisLengths{ tuple{node.aabb.size().x, Axis::X}, {node.aabb.size().y, Axis::Y} , {node.aabb.size().z, Axis::Z} }; //basically a dictionary<length, Axis>
+			ranges::sort(axisLengths, [](auto a, auto b) { return a.first > b.first; }); //sort based on axis length
 
-			vector<tuple<Axis, function<bool(float,float)>>> result{}; //the array to fill and return
+			vector<pair<Axis, float>> result{}; //the array to fill and return
 			float longestAxis = get<0>(axisLengths[0]);
-			//basically, for each axis, decide whether to include it or not, and build a function that decides if it is worth it to try the next axis based on the results of the previous one(s)
+			//basically, for each axis, decide whether to include it or not, and add a quality metric for this split axis
 			for (int i = 0; const auto & [length, axis] : axisLengths) {
 				float ratio = length / longestAxis;
-				if (ratio > ratioThreshold) {
-					result.emplace_back(
-						axis,
-						[i](float bestCostSoFar, float fatherCost) { return bestCostSoFar/fatherCost > (maxCostRatioWithFather + 0.1f * i * maxCostRatioWithFather); } //it suggests to try this axis if the found cost is > of a user-defined threshold plus a percentage (based on how many axis we've already analyzed)
-					);
+				if (ratio > qualityThreshold) {
+					result.emplace_back(axis, ratio);
 					i++; //counts how many axis we analyzed
 					continue;
 				}
 				break; //if we haven't entered the if, it means all next axis won't enter it either
 			}
-
 			return result;
 		}
 
@@ -334,10 +339,9 @@ namespace pah {
 		 * If the main rays direction and the best plane considering this direction are "clear", it will return just one plane; else it will return the best 2 planes.
 		 * The satisfaction criteria will determine whether it is worth it to try the second plane or not, based on the results of the first split.
 		 *
-		 * @tparam maxCostRatioWithFather If, after a plane split, the ratio between the sum of the children costs and the father node cost is bigger than this value, a new split will be tried. (e.g. children = 5, father = 10, max = 0.9 ==> not tried because 5/10 < 0.9).
+		 * @tparam maxHitProbabilityRatioWithFather If, after a plane split, the ratio between the sum of the children hit probabilities and the father node hit probability is bigger than this value, a new split will be tried. (e.g. children = 5, father = 10, max = 0.9 ==> not tried because 5/10 < 0.9).
 		 * @tparam percentageMargin The margin, in percent points, between axis directions to determine if a direction is "clear". e.g. If the rays have direction <-0.66, 0, 0.75> and the margin is 10%, then the main direction is not clear, because |-0.66|/(|-0.66|+|0.75|) = 47%, and |0.75|/(|-0.66|+|0.75|) = 53% and 53%-47% = 6% < 10%
 		 */
-		template<float maxCostRatioWithFather, float percentageMargin = 0.05f>
 		static Bvh::ChooseSplittingPlanesReturnType chooseSplittingPlanesFacing(const Bvh::Node& node, const InfluenceArea& influenceArea, Axis, std::mt19937& rng) {
 			using namespace std;
 			using namespace utilities;
@@ -346,85 +350,13 @@ namespace pah {
 			float xAbs = abs(dir.x), yAbs = abs(dir.y), zAbs = abs(dir.z);
 			Vector3 percs{ xAbs / (xAbs + yAbs + zAbs), yAbs / (xAbs + yAbs + zAbs), zAbs / (xAbs + yAbs + zAbs) };
 
-			//given 2 axis, returns their relative percentages (in the same order as the arguments)
-			auto remaining2AxisPercentages = [dir](Axis axis1, Axis axis2) {
-				float a1 = abs(at(dir, axis1));
-				float a2 = abs(at(dir, axis2));
-
-				if (a1 + a2 < TOLERANCE) return tuple{ 0.5f, 0.5f }; // avoid division by 0
-
-				float a1Perc = a1 / (a1 + a2);
-				float a2Perc = a2 / (a1 + a2);
-
-				return tuple{ a1Perc, a2Perc };
-				};
-
-			//adds the planes to the selectable planes list. Look at the flowchart to understand the code.
-			auto addPlanes = [&remaining2AxisPercentages](Axis a1, float pa1, Axis a2, float pa2, float margin) {
-				vector<tuple<Axis, function<bool(float,float)>>> result{};
-
-				auto [b11, b12] = other2(a1); //if the main direction of the rays is X, we want to cut with planes whose perpendicular is Y or Z (so that we will have fewer intersections)
-				auto [pb11, pb12] = remaining2AxisPercentages(b11, b12); //for these 2 axis, get the percentages
-				//b11 is the plane whose perpendicular is facing the main rays direction the least (the best possible axis aligned division plane)
-				if (pb11 > pb12) {
-					std::swap(b11, b12);
-					std::swap(pb11, pb12);
-				}
-				//add the best possible plane
-				result.emplace_back(b11, [](float,float) { return true; }); //always try the first plane
-
-				//try the split plane if the results with the first plane were worse than the threshold (will be added as a criterium to the second plane in results
-				auto tryNextSplitCriterium = [](float bestCostSoFar, float fatherCost) { return bestCostSoFar/fatherCost > maxCostRatioWithFather; };
-				
-				//if the main rays direction is "clear", but the best plane is not so "clear", we also add the other plane considering the "clear" main rays direction
-				if (pa1 - margin > pa2 && pb12 - margin <= pb11) {
-					//add the other plane with this main rays direction too
-					result.emplace_back(b12, tryNextSplitCriterium);
-				}
-				//if the main rays direction is not "clear", let's get the second main direction
-				else if (pa1 - margin <= pa2) {
-					auto [b21, b22] = other2(a2);
-					auto [pb21, pb22] = remaining2AxisPercentages(b21, b22);
-					//b21 is the plane whose perpendicular is facing the second main rays direction the least 
-					if (pb21 > pb22) {
-						std::swap(b21, b22);
-						std::swap(pb21, pb22);
-					}
-
-					//if the best possible plane in the second main rays direction is NOT the same as the best plane in the main rays direction, add it
-					if (b21 != b11) {
-						result.emplace_back(b21, tryNextSplitCriterium); //try this plane if the results with the first plane were worse than the threshold
-					}
-					//if the best possible plane in the second main rays direction is the same as the best plane in the main rays direction, verify if also the other plane is "good enough"
-					else if (pb22 - margin <= pb21) {
-						result.emplace_back(b22, tryNextSplitCriterium); //try this plane if the results with the first plane were worse than the threshold
-					}
-				}
-
-				//add the NON selected plane(s), but these will only be tried if the result of the split with the selected planes is really really bad
-				auto criterium = [](float bestCostSoFar, float fatherCost) { 
-					return bestCostSoFar / fatherCost > 1.5f; };
-				if (result.size() == 1) {
-					auto [otherPlane1, otherPlane2] = other2(get<0>(result[0]));
-					result.emplace_back(otherPlane1, criterium);
-					result.emplace_back(otherPlane2, criterium);
-				}
-				else {
-					Axis otherPlane = third(get<0>(result[0]), get<0>(result[1]));
-					result.emplace_back(otherPlane, criterium);
-				}
-
-				//at the end of the day, if the main rays direction and the best plane considering this direction is "clear", we will have just one plane; else we will have the best 2 planes.
-				//the satisfaction criteria will determine whether it is worth it to try the second plane or not, based on the results of the first split.
-				//moreover, if the cost after the selected planes is really bad, it is still possible to use the other (non facing) plane(s).
-				return result;
-				};
-
-			Axis max = percs.x >= percs.y && percs.x >= percs.z ? Axis::X : percs.y >= percs.x && percs.y >= percs.z ? Axis::Y : Axis::Z;
-			Axis min = percs.x < percs.y && percs.x < percs.z ? Axis::X : percs.y <= percs.x && percs.y <= percs.z ? Axis::Y : Axis::Z; //the first comparison is < and not <= so that if all axis are equal, then max != min
-			Axis mid = third(max, min);
-
-			return addPlanes(max, at(percs, max), mid, at(percs, mid), percentageMargin);
+			vector<pair<Axis, float>> result {
+				{Axis::X, pow(1.f - percs[0], 2)},
+				{Axis::Y, pow(1.f - percs[1], 2)},
+				{Axis::Z, pow(1.f - percs[2], 2)}
+			};
+			ranges::sort(result, [](auto a, auto b) {return a.second > b.second; });
+			return result;
 		}
 
 

@@ -43,8 +43,7 @@ namespace pah::analyzerActions {
 		 */
 		static void sah(float& totalSah, ANALYZER_ACTION_PER_NODE_ARGUMENTS) {
 			float rootSa = bvh.getRoot().aabb.surfaceArea();
-			float sah = bvhStrategies::computeCostSah(node, *bvh.getInfluenceArea(), rootSa);
-			float sa = node.aabb.surfaceArea();
+			auto [sah, sa] = bvhStrategies::computeCostSah(node, *bvh.getInfluenceArea(), rootSa);
 
 			//add to JSON
 			localLog["metrics"]["sah"] = sah;
@@ -72,8 +71,7 @@ namespace pah::analyzerActions {
 				lastRootProjectedArea = bvh.getInfluenceArea()->getProjectedArea(bvh.getRoot().aabb);
 			}
 
-			float pah = bvhStrategies::computeCostPah(node, *bvh.getInfluenceArea(), lastRootProjectedArea);
-			float pa = bvh.getInfluenceArea()->getProjectedArea(node.aabb);
+			auto [pah, pa] = bvhStrategies::computeCostPah(node, *bvh.getInfluenceArea(), lastRootProjectedArea);
 
 			//add to JSON
 			localLog["metrics"]["pah"] = pah;

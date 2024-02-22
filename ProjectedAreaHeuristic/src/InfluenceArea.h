@@ -37,7 +37,7 @@ namespace pah {
 		/**
 		 * @brief Returns whether a direction is "affine" to this influence area.
 		 */
-		virtual bool isDirectionAffine(const Vector3& direction, float tolerance) const = 0;
+		virtual bool isDirectionAffine(const Ray& ray, float tolerance) const = 0;
 
 		// TODO probably this will be removed. It should return the best way to split the AABB
 		virtual std::vector<std::tuple<Axis, std::function<bool(float bestCostSoFar)>>> bestSplittingPlanes() const = 0;
@@ -62,7 +62,7 @@ namespace pah {
 		float getProjectedArea(const Aabb& aabb) const override;
 		float getInfluence(const Aabb& aabb) const override;
 		Vector3 getRayDirection(const Aabb& aabb) const override;
-		bool isDirectionAffine(const Vector3& direction, float tolerance) const override;
+		bool isDirectionAffine(const Ray& ray, float tolerance) const override;
 		std::vector<std::tuple<Axis, std::function<bool(float bestCostSoFar)>>> bestSplittingPlanes() const override;
 
 		const Plane& getPlane() const;
@@ -86,7 +86,7 @@ namespace pah {
 		float getProjectedArea(const Aabb& aabb) const override;
 		float getInfluence(const Aabb& aabb) const override;
 		Vector3 getRayDirection(const Aabb& aabb) const override;
-		bool isDirectionAffine(const Vector3& direction, float tolerance) const override;
+		bool isDirectionAffine(const Ray& ray, float tolerance) const override;
 		std::vector<std::tuple<Axis, std::function<bool(float bestCostSoFar)>>> bestSplittingPlanes() const override;
 
 		const Pov& getPov() const;
@@ -97,10 +97,5 @@ namespace pah {
 		float density;
 		Pov pov;
 		float nearPlane, farPlane;
-
-		// The planePatch is a planar, rectangular patch that covers the entire frustum. It is as if we created a rectangle and placed it in front of the camera, such that it covers perfectly all the view.
-		// The dimension of this rectangle would vary depending on the distance to the camera: we place our rectangle at distance 1 (all its vertices have distance 1, so technically the rectangle is closer than 1 to the origin).
-		// Thanks to this, we can detect if a ray is "affine" to this frustum, in the sense that a ray has a direction that is in the range of the directions making up the frustum.
-		ConvexHull<4> planePatch;
 	};
 }
