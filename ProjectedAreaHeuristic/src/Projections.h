@@ -391,7 +391,7 @@ namespace pah::projection {
 				float meanHeight = (contourPoints[i + 1 == contourPoints.size() ? 0 : i + 1].y + contourPoints[i].y) / 2.0f; //mean height of the segment
 				area += width * meanHeight;
 			}
-			assert((area <= 0, "Projected area <= 0"));
+			assert((area > 0, "Projected area <= 0"));
 			return area;
 		}
 

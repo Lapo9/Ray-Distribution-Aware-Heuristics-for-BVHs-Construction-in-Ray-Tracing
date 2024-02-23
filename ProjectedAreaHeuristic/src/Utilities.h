@@ -309,7 +309,7 @@ namespace pah {
 
 		Pov() : position{}, direction{ Vector3{1, 0, 0} }, up{ 0,1,0 }, fovX{ glm::radians(90.0f) }, fovY{ glm::radians(90.0f) } {}
 		Pov(Vector3 position, Vector3 direction, float fovXdegrees, float fovYdegrees, Vector3 up = Vector3{ 0.0f, 1.0f, 0.0f }) : 
-			position{ position }, direction{ direction }, up{ up }, fovX{ fovXdegrees }, fovY{ fovYdegrees } {
+			position{ position }, direction{ glm::normalize(direction) }, up{ glm::normalize(up) }, fovX{ fovXdegrees }, fovY{ fovYdegrees } {
 		}
 
 		const Vector3& getDirection() const { return direction; }
