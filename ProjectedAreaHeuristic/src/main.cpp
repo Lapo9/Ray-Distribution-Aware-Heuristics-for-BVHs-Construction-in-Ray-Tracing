@@ -40,7 +40,7 @@ int main() {
 	//create BVHs
 	Bvh::Properties properties{};
 	properties.maxLevels = 100;
-	properties.maxLeafCost = 0.1f;
+	properties.maxLeafCost = 0.01f;
 	properties.maxTrianglesPerLeaf = 2;
 	properties.bins = 40;
 

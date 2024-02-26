@@ -94,9 +94,6 @@ namespace pah::projection {
 
 	/**
 	 * @brief Given a perspective matrix, it returns its parameters (namely near, far, left, right, top and bottom planes, x and y field of views and the aspect ratio).
-	 * 
-	 * @param viewProjectionMatrix .
-	 * @return .
 	 */
 	static ProjectionMatrixParameters extractPerspectiveMatrixParameters(const Matrix4 projectionMatrix) {
 		const auto& M = projectionMatrix;
@@ -291,7 +288,8 @@ namespace pah::projection {
 
 
 		static Vector2 projectPoint(Vector4 point, const Matrix4& viewProjectionMatrix) {
-			return viewProjectionMatrix * point;
+			Vector4 projectedPoint = viewProjectionMatrix * point;
+			return projectedPoint / projectedPoint.w;
 		}
 
 		static Vector2 projectPoint(Vector3 point, const Matrix4& viewProjectionMatrix) {
@@ -327,7 +325,7 @@ namespace pah::projection {
 		 * @param fovs Horizontal and vertical FoVs in degrees.
 		 */
 		static std::vector<Vector2> projectPoints(const std::vector<Vector3>& points, Pov pov, float far = 1000.0f, float near = 0.1f) {
-			Matrix4 viewProjectionMatrix = computeViewMatrix(pov.position, pov.getDirection()) * computePerspectiveMatrix(far, near, { pov.fovX, pov.fovY }); //we compute it here to avoid recomputing it for each point
+			Matrix4 viewProjectionMatrix = computePerspectiveMatrix(far, near, { pov.fovX, pov.fovY }) * computeViewMatrix(pov.position, pov.getDirection()); //we compute it here to avoid recomputing it for each point
 			return projectPoints(points, viewProjectionMatrix);
 		}
 
