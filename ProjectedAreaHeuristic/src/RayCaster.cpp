@@ -26,6 +26,7 @@ CumulativeRayCasterResults& pah::CumulativeRayCasterResults::operator+=(const Cu
 	intersectionTestsWithNodesWhenHitNonFallbackTotal += rhs.intersectionTestsWithNodesWhenHitNonFallbackTotal;
 	intersectionTestsWithTrianglesWhenHitNonFallbackTotal += rhs.intersectionTestsWithTrianglesWhenHitNonFallbackTotal; 
 	TIME(timeTraversingTotal += rhs.timeTraversingTotal;);
+	TIME(timeTraversingOnlyBvhsTotal += rhs.timeTraversingOnlyBvhsTotal;);
 
 	return *this;
 }
@@ -55,6 +56,7 @@ CumulativeRayCasterResults& pah::CumulativeRayCasterResults::operator+=(const Ra
 	intersectionTestsWithNodesWhenHitNonFallbackTotal += rhs.intersectionTestsWithNodesWhenHitNonFallbackTotal;
 	intersectionTestsWithTrianglesWhenHitNonFallbackTotal += rhs.intersectionTestsWithTrianglesWhenHitNonFallbackTotal; 
 	TIME(timeTraversingTotal += rhs.timeTraversingTotal;);
+	TIME(timeTraversingOnlyBvhsTotal += rhs.timeTraversingOnlyBvhsTotal;);
 
 	return *this;
 }
@@ -79,6 +81,8 @@ RayCasterResults& pah::RayCasterResults::operator+=(const TopLevel::TraversalRes
 	intersectionTestsWithNodesNonFallbackTotal += rhs.intersectionTestsWithNodesNonFallback;
 	intersectionTestsWithTrianglesNonFallbackTotal += rhs.intersectionTestsWithTrianglesNonFallback;
 	TIME(timeTraversingTotal += rhs.traversalTime;);
+	TIME(timeTraversingOnlyBvhsTotal += rhs.bvhOnlyTraversalTime;);
+
 	if (rhs.hit()) {
 		intersectionTestsWhenHitTotal += rhs.intersectionTestsWhenHit;
 		intersectionTestsWithNodesWhenHitTotal += rhs.intersectionTestsWithNodesWhenHit;
@@ -103,6 +107,8 @@ RayCasterResults& pah::RayCasterResults::operator+=(const Bvh::TraversalResults&
 	intersectionTestsWithNodesNonFallbackTotal += rhs.intersectionTestsWithNodes;
 	intersectionTestsWithTrianglesNonFallbackTotal += rhs.intersectionTestsWithTriangles;
 	TIME(timeTraversingTotal += rhs.traversalTime;);
+	TIME(timeTraversingOnlyBvhsTotal += rhs.traversalTime;);
+
 	if (rhs.hit()) {
 		intersectionTestsWhenHitTotal += rhs.intersectionTestsTotal;
 		intersectionTestsWithNodesWhenHitTotal += rhs.intersectionTestsWithNodes;

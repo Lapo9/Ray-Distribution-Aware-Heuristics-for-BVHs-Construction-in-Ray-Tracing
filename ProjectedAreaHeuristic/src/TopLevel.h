@@ -36,6 +36,7 @@ namespace pah {
 			int intersectionTestsWithNodesWhenHitNonFallback;
 			int intersectionTestsWithTrianglesWhenHitNonFallback; 
 			TIME(DurationMs traversalTime;);
+			TIME(DurationMs bvhOnlyTraversalTime;);
 
 			bool hit() const {
 				return closestHit != nullptr;
@@ -47,6 +48,7 @@ namespace pah {
 				intersectionTestsWithNodes += rhs.intersectionTestsWithNodes;
 				intersectionTestsWithTriangles += rhs.intersectionTestsWithTriangles;
 				totalCost += rhs.traversalCost;
+				TIME(bvhOnlyTraversalTime += rhs.traversalTime);
 
 				if (!fallbackBvhSearch) {
 					intersectionTestsTotalNonFallback += rhs.intersectionTestsTotal;

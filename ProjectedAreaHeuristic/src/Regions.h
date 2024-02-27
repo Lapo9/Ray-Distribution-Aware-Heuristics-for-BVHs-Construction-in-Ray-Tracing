@@ -53,6 +53,11 @@ namespace pah {
 		 */
 		RayCollisionInfo areColliding(const Ray& ray, const Aabb& aabb);
 
+		/** 
+		 * @brief Returns whether a @p Ray is colliding with an @p Aabb, and the distance of the hit (if present).
+		 */
+		RayCollisionInfo areColliding(const Ray& ray, const Plane& plane);
+
 		/**
 		 * @brief Returns whether a @p Ray is colliding with a @p ConvexHull, and the distance of the hit (if present).
 		 * This is a generalization of this method for triangles: https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/ray-triangle-intersection-geometric-solution.html
@@ -64,26 +69,13 @@ namespace pah {
 			// It should help to think about this method as if the hull was always a triangle, it is then easier to generalize to any N-sided convex hull.
 			
 			const auto& R = ray.getDirection(); //direction of the ray
-			const auto& O = ray.getOrigin(); //origin
-			auto N = hull.normal(); //normal to the triangle
+			const auto& N = hull.normal(); // normal to the plane where the triangle lies
 			
-			//if the ray and the plane of the triangle are parallel, there is no intersection
-			if (abs(dot(N, R)) < TOLERANCE) return { false, 0.0f };
+			// Compute the intersection between the ray and the plane the triangle is lying on.
+			auto [isCollidingWithPlane, t] = areColliding(ray, Plane{ hull[0], N });
+			if (!isCollidingWithPlane) return { false, 0.0f };
 
-			// P = O + tR is the parametric equation of the ray.
-			// A*x + B*y + C*z + D = 0 is the equation of the plane where the triangle lies.
-			// We know that any vertex of the triangle (e.g. V0) is on the plane, and that the normal to the plane N = (A, B, C), and D is the distance from the origin (O) to the plane.
-			// Therefore D = -(A.x + B.y + C.z) = -(N.x * V0.x + N.y * V0.y + N.z * V0.z) = -dot(N, V0)
-			float D = -dot(N, hull[0]);
-
-			// To find the ray-plane intersection we can force the point of the plane to be P:
-			// A * P.x + B * P.y + C * P.z + D = 0 --> A * (O.x + t*R.x) + B * (O.y + t*R.y) + C * (O.z + t*R.z) + D = 0 --> t = -(dot(N, O) + D) / dot(N, R)
-			float t = -(dot(N, O) + D) / dot(N, R);
-
-			// If the triangle is behind the ray origin, there is no intersection
-			if (t < 0) return { false, 0.0f };
-
-			// Now we have to find out whether the point is inside the triangle .
+			// Now, since there is a hit with the plane, we have to find out whether the point is inside the triangle .
 			// The point is inside iff it is "to the left" of all sides (taken in counter clockwise order).
 			// If it is "to the left" of an edge, then the normal (N) and the cross product between the edge and the vector connecting the start of the edge and the point (P) should face the same direction (i.e. their dot product > 0).
 			const auto& P = ray.getOrigin() + R * t; //coordinates of the intersection point between the ray and the plane

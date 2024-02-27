@@ -28,14 +28,14 @@ int main() {
 	//create influence areas
 	PlaneInfluenceArea planeInfluenceArea1{ Plane{{-1.5,0,-1.5}, {1,0,1}}, {.5,.5}, 4, 10000 };
 	PlaneInfluenceArea planeInfluenceArea2{ Plane{{2,0,0}, {-1,0,0}}, {.5,.5}, 4, 10000 };
-	PointInfluenceArea pointInfluenceArea1{ Pov{{0,0,-2}, {0,0,1}, 90, 45}, 4, 0.5, 10000 };
+	PointInfluenceArea pointInfluenceArea1{ Pov{{0,.25,-2}, {0,0,1}, 30, 30}, 4, 0.5, 10000 };
 	PointInfluenceArea pointInfluenceArea2{ Pov{{0,0,0}, {1,1,0}, 90, 60}, 8, 0.5, 100 };
 
 	//build the ray casters (will later be used to cast rays)
-	PlaneRayCaster planeRayCaster1{ planeInfluenceArea1 }; planeRayCaster1.generateRays(rng, 10000);
-	PlaneRayCaster planeRayCaster2{ planeInfluenceArea2 }; planeRayCaster2.generateRays(rng, 10000);
-	PointRayCaster pointRayCaster1{ pointInfluenceArea1 }; pointRayCaster1.generateRays(rng, 10000);
-	PointRayCaster pointRayCaster2{ pointInfluenceArea2 }; pointRayCaster2.generateRays(rng, 10000);
+	PlaneRayCaster planeRayCaster1{ planeInfluenceArea1 }; planeRayCaster1.generateRays(rng, 10000, true);
+	PlaneRayCaster planeRayCaster2{ planeInfluenceArea2 }; planeRayCaster2.generateRays(rng, 10000, true);
+	PointRayCaster pointRayCaster1{ pointInfluenceArea1 }; pointRayCaster1.generateRays(rng, 10000, true);
+	PointRayCaster pointRayCaster2{ pointInfluenceArea2 }; pointRayCaster2.generateRays(rng, 10000, true);
 
 	//create BVHs
 	Bvh::Properties properties{};

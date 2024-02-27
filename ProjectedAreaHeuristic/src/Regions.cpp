@@ -532,6 +532,29 @@ collisionDetection::RayCollisionInfo pah::collisionDetection::areColliding(const
 	return { tMax > tMin && tMax >= 0, tMin >= 0 ? tMin : tMax };
 }
 
+collisionDetection::RayCollisionInfo pah::collisionDetection::areColliding(const Ray& ray, const Plane& plane) {
+	const auto& R = ray.getDirection(); //direction of the ray
+	const auto& O = ray.getOrigin(); //origin
+	auto N = plane.getNormal(); //normal to the plane
+
+	//if the ray and the plane are parallel, there is no intersection
+	if (abs(dot(N, R)) < TOLERANCE) return { false, 0.0f };
+
+	// P = O + tR is the parametric equation of the ray.
+	// A*x + B*y + C*z + D = 0 is the equation of the plane.
+	// We know a point on the plane (Q), and that the normal to the plane N = (A, B, C), and D is the distance from the origin (O) to the plane.
+	// Therefore D = -(A.x + B.y + C.z) = -(N.x * Q.x + N.y * Q.y + N.z * Q.z) = -dot(N, Q)
+	float D = -dot(N, plane.getPoint());
+
+	// To find the ray-plane intersection we can force the point of the plane to be P:
+	// A * P.x + B * P.y + C * P.z + D = 0 --> A * (O.x + t*R.x) + B * (O.y + t*R.y) + C * (O.z + t*R.z) + D = 0 --> t = -(dot(N, O) + D) / dot(N, R)
+	float t = -(dot(N, O) + D) / dot(N, R);
+
+	// If the plane is behind the ray origin, there is no intersection
+	if (t < 0) return { false, 0.0f };
+	return { true, t };
+}
+
 bool collisionDetection::almostParallel(const Vector3 & lhs, const Vector3 & rhs, float threshold) {
 	return abs(dot(lhs, rhs)) > abs(length(lhs) * length(rhs)) - threshold * abs(length(lhs) * length(rhs)); //if vectors are parallel then a . b = ||a|| * ||b||
 }

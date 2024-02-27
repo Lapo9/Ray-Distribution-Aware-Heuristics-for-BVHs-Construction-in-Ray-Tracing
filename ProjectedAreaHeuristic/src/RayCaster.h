@@ -23,6 +23,7 @@ namespace pah {
 		int missesTotal;
 		int fallbackBvhSearchesTotal;
 		TIME(DurationMs timeTraversingTotal;); /**< @brief The sum of the traversal times of all the rays. */
+		TIME(DurationMs timeTraversingOnlyBvhsTotal;); /**< @brief How much time it took to do the BVHs traversal. TopLevel structure traversal overhead is not included. */
 		TIME(DurationMs timeTotal;); /**< @brief The total time of casting all the rays. It can be sligthly more than @p timeTotalTraversing */
 
 		float hitsPercentage() const { return (float)hitsTotal / raysAmount; }
@@ -32,7 +33,9 @@ namespace pah {
 		int nonFallbackBvhSearches() const { return raysAmount - fallbackBvhSearchesTotal; }
 		float nonFallbackBvhSearchesPercentage() const { return nonFallbackBvhSearches() / (float)raysAmount; }
 		TIME(DurationMs timeTraversingAveragePerRay() const { return timeTraversingTotal / (float)raysAmount; })
+		TIME(DurationMs timeTraversingOnlyBvhsAveragePerRay() const { return timeTraversingOnlyBvhsTotal / (float)raysAmount; })
 		TIME(DurationMs timeTraversingAveragePerBvh() const { return timeTraversingTotal / (float)bvhsTraversedTotal; })
+		TIME(DurationMs timeTraversingOnlyBvhsAveragePerBvh() const { return timeTraversingOnlyBvhsTotal / (float)bvhsTraversedTotal; })
 
 		RayCasterResults& operator+=(const TopLevel::TraversalResults& rhs);
 		RayCasterResults& operator+=(const Bvh::TraversalResults& rhs);
@@ -84,6 +87,7 @@ namespace pah {
 		int missesTotal;
 		int fallbackBvhSearchesTotal;
 		TIME(DurationMs timeTraversingTotal;);
+		TIME(DurationMs timeTraversingOnlyBvhsTotal;);
 
 		float hitsPercentage() const { return (float)hitsTotal / raysAmount; }
 		float missesPercentage() const { return (float)missesTotal / raysAmount; }
@@ -92,7 +96,9 @@ namespace pah {
 		int nonFallbackBvhSearches() const { return raysAmount - fallbackBvhSearchesTotal; }
 		float nonFallbackBvhSearchesPercentage() const { return nonFallbackBvhSearches() / (float)raysAmount; }
 		TIME(DurationMs timeTraversingAveragePerRay() const { return timeTraversingTotal / (float)raysAmount; });
+		TIME(DurationMs timeTraversingOnlyBvhsAveragePerRay() const { return timeTraversingOnlyBvhsTotal / (float)raysAmount; });
 		TIME(DurationMs timeTraversingAveragePerBvh() const { return timeTraversingTotal / (float)bvhsTraversedTotal; });
+		TIME(DurationMs timeTraversingOnlyBvhsAveragePerBvh() const { return timeTraversingOnlyBvhsTotal / (float)bvhsTraversedTotal; });
 
 		CumulativeRayCasterResults& operator+=(const CumulativeRayCasterResults& rhs);
 		friend CumulativeRayCasterResults operator+(CumulativeRayCasterResults lhs, const CumulativeRayCasterResults& rhs);
@@ -152,7 +158,7 @@ namespace pah {
 		 * 
 		 * @param directionTolerance How much the rays can be off the directions of the @p InfluenceArea relative to this @p RayCaster.
 		 */
-		virtual void generateRays(Rng& rng, unsigned int quantity, float tolerance = 0) = 0;
+		virtual void generateRays(Rng& rng, unsigned int quantity, bool startRaysFromNearDepth = false, float tolerance = 0) = 0;
 		
 		/**
 		 * @brief Casts the generated rays against a @p TopLevel structure, and collects the results.
@@ -197,7 +203,7 @@ namespace pah {
 		PlaneRayCaster(const PlaneInfluenceArea& planeInfluenceArea) : RayCaster<Rng>(planeInfluenceArea), 
 			uniformRectangleDistribution{ -planeInfluenceArea.getSize().x, planeInfluenceArea.getSize().x, -planeInfluenceArea.getSize().y, planeInfluenceArea.getSize().y } {}
 		
-		void generateRays(Rng& rng, unsigned int quantity, float directionTolerance = 0) override {
+		void generateRays(Rng& rng, unsigned int quantity, bool startRaysFromNearDepth = false, float directionTolerance = 0) override {
 			this->rays = std::vector<Ray>{}; //clear the vector
 			this->rays.reserve(quantity); //reserve space for the elements (to avoid reallocations)
 
@@ -223,7 +229,7 @@ namespace pah {
 				Vector3 direction = directionDistribution(rng);
 				float depth = originDepthDistribution(rng);
 				Vector3 origin = changeOfCoords * Vector4{ uniformRectangleDistribution(rng), 0.0f, 1.0f };
-				//origin += direction * depth;
+				if(!startRaysFromNearDepth) origin += direction * depth;
 				this->rays.emplace_back(origin, direction);
 			}
 		}
@@ -239,7 +245,7 @@ namespace pah {
 		PointRayCaster(const PointInfluenceArea& pointInfluenceArea) : RayCaster<Rng>(pointInfluenceArea), 
 			directionDistribution{ pointInfluenceArea.getPov().fovX/2.0f, pointInfluenceArea.getPov().fovY/2.0f, pointInfluenceArea.getPov().getDirection() } {}
 
-		void generateRays(Rng& rng, unsigned int quantity, float originTolerance = 0) override {
+		void generateRays(Rng& rng, unsigned int quantity, bool startRaysFromNearDepth = false, float originTolerance = 0) override {
 			this->rays = std::vector<Ray>{}; //clear the vector
 			this->rays.reserve(quantity); //reserve space for the elements (to avoid reallocations)
 
@@ -251,13 +257,23 @@ namespace pah {
 
 			//rays can start a bit off the real origin (to give variance)
 			distributions::UniformDiskDistribution originDistribution{ originTolerance };
-			//the region where rays spawns doesn't start at the origin, but between the near and far plane of the frustum
-			std::uniform_real_distribution<> originDepthDistribution{ pointInfluenceArea->getNearFar().first, pointInfluenceArea->getNearFar().second };
+			//the region where rays spawns doesn't start at the origin, but between the near and far plane of the frustum. 0.f means that the ray starts at the near plane, 1.f at the far plane
+			std::uniform_real_distribution<> originDepthDistributionPercentage{ 0.f, 1.f };
 
 			for (int i = 0; i < quantity; ++i) {
 				Vector3 direction = directionDistribution(rng);
-				float depth = originDepthDistribution(rng);
 				Vector3 origin = changeOfCoords * Vector4{ originDistribution(rng), 0.0f, 1.0f };
+
+				// now we compute the distance on the ray where the ray intersects the near and far planes of the frustum, and, based on the depth percentage, we compute where the ray origin should be
+				Ray rayFromOrigin = { origin, direction };
+				Pov pov = pointInfluenceArea->getPov();
+				auto [nearPlaneDist, farPlaneDist] = pointInfluenceArea->getNearFar();
+				float distNear = collisionDetection::areColliding(rayFromOrigin, Plane{ pov.position + pov.getDirection() * nearPlaneDist, pov.getDirection() }).distance;
+				float distFar = collisionDetection::areColliding(rayFromOrigin, Plane{ pov.position + pov.getDirection() * farPlaneDist, pov.getDirection() }).distance;
+
+				float depthPercentage = startRaysFromNearDepth ? 0.f : originDepthDistributionPercentage(rng);
+				float depth = depthPercentage * (distFar - distNear) + distNear;
+
 				origin += direction * depth;
 				this->rays.emplace_back(origin, direction);
 			}
