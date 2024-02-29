@@ -160,6 +160,7 @@ namespace pah {
 			int intersectionTestsWithNodes;
 			int intersectionTestsWithTriangles;
 			float traversalCost;
+			const Bvh* bvh;
 			const Triangle* closestHit;
 			float closestHitDistance;
 			TIME(DurationMs traversalTime;);
@@ -189,9 +190,9 @@ namespace pah {
 		using ShouldStopReturnType = bool;																									using ShouldStopType = ShouldStopReturnType(const Node&, const Properties&, int currentLevel, float nodeCost);
 
 
-		Bvh(const Properties&, const InfluenceArea&, ComputeCostType computeCost, ChooseSplittingPlanesType chooseSplittingPlanes, ShouldStopType shouldStop);
+		Bvh(const Properties&, const InfluenceArea&, ComputeCostType computeCost, ChooseSplittingPlanesType chooseSplittingPlanes, ShouldStopType shouldStop, std::string name);
 
-		Bvh(const Properties&, ComputeCostType computeCost, ChooseSplittingPlanesType chooseSplittingPlanes, ShouldStopType shouldStop);
+		Bvh(const Properties&, ComputeCostType computeCost, ChooseSplittingPlanesType chooseSplittingPlanes, ShouldStopType shouldStop, std::string name);
 
 		/**
 		 * @brief Returns whether @p bvh1 is the same as @p bvh2.
@@ -229,6 +230,7 @@ namespace pah {
 		INFO(const DurationMs getTotalBuildTime() const;); /**< @brief Returns the time it took to build this @p Bvh. */
 		const Properties getProperties() const; /**< @brief Returns the properties of this @p Bvh. */
 
+		const std::string name;
 	private:
 		/**
 		 * @brief Given a @p Node, it splits it into 2 children according to the strategies set during @p Bvh construction.
@@ -257,8 +259,7 @@ namespace pah {
 
 			return { left, right };
 		}
-
-
+		
 		Node root;
 		float rootMetric; //stores the cost metric of the root (e.g. surface area if we use SAH, projected area if we use PAH, ...)
 		Properties properties;
@@ -290,7 +291,7 @@ namespace pah {
 			if (rootArea < 0) return { node.aabb.surfaceArea(), node.aabb.surfaceArea() };
 
 			float hitProbability = node.aabb.surfaceArea() / rootArea;
-			float cost = node.isLeaf() ? 1.2f : 1.0f;
+			float cost = node.isLeaf() ? LEAF_COST : NODE_COST;
 			return { hitProbability * node.triangles.size() * cost, hitProbability };
 		}
 

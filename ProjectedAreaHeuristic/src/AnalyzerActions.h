@@ -43,7 +43,8 @@ namespace pah::analyzerActions {
 		 */
 		static void sah(float& totalSah, ANALYZER_ACTION_PER_NODE_ARGUMENTS) {
 			float rootSa = bvh.getRoot().aabb.surfaceArea();
-			auto [sah, sa] = bvhStrategies::computeCostSah(node, *bvh.getInfluenceArea(), rootSa);
+			auto [sah, hitProb] = bvhStrategies::computeCostSah(node, *bvh.getInfluenceArea(), rootSa);
+			auto sa = node.aabb.surfaceArea();
 
 			//add to JSON
 			localLog["metrics"]["sah"] = sah;
@@ -51,7 +52,7 @@ namespace pah::analyzerActions {
 
 			//update global variable
 			if (node.isLeaf()) { totalSah += sah; } //if a node is a leaf, its cost is actually the SAH: hitProbability * (costTriangle * #triangles)
-			else { totalSah += (sa / rootSa) * 1.0f * 2.0f; } //if a node is internal, its cost is: hitProbability * (costNode * 2) where 2 is the number of children we now must visit
+			else { totalSah += hitProb * NODE_COST * 2.0f; } //if a node is internal, its cost is: hitProbability * (costNode * 2) where 2 is the number of children we now must visit
 		}
 
 		/**
@@ -71,7 +72,8 @@ namespace pah::analyzerActions {
 				lastRootProjectedArea = bvh.getInfluenceArea()->getProjectedArea(bvh.getRoot().aabb);
 			}
 
-			auto [pah, pa] = bvhStrategies::computeCostPah(node, *bvh.getInfluenceArea(), lastRootProjectedArea);
+			auto [pah, hitProb] = bvhStrategies::computeCostPah(node, *bvh.getInfluenceArea(), lastRootProjectedArea);
+			auto pa = bvh.getInfluenceArea()->getProjectedArea(node.aabb);
 
 			//add to JSON
 			localLog["metrics"]["pah"] = pah;
@@ -79,7 +81,7 @@ namespace pah::analyzerActions {
 
 			//update global variable
 			if (node.isLeaf()) { totalPah += pah; } //if a node is a leaf, its cost is actually the PAH: hitProbability * (costTriangle * #triangles)
-			else { totalPah += (pa / lastRootProjectedArea) * 1.0f * 2.0f; } //if a node is internal, its cost is: hitProbability * (costNode * 2) where 2 is the number of children we now must visit
+			else { totalPah += hitProb * NODE_COST * 2.0f; } //if a node is internal, its cost is: hitProbability * (costNode * 2) where 2 is the number of children we now must visit
 		}
 
 		/**
@@ -132,6 +134,7 @@ namespace pah::analyzerActions {
 			log["globalInfo"]["numberOfNodes"] = nodesAndLeaves.first;
 			log["globalInfo"]["numberOfLeaves"] = nodesAndLeaves.second;
 			log["globalInfo"]["properties"] = bvh.getProperties();
+			log["globalInfo"]["name"] = bvh.name;
 		}
 
 		/**

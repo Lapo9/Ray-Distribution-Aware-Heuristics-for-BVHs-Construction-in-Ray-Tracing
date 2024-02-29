@@ -9,12 +9,14 @@ using namespace pah::utilities;
 
 
 // ======| Bvh |======
-pah::Bvh::Bvh(const Properties& properties, const InfluenceArea& influenceArea, ComputeCostType computeCost, ChooseSplittingPlanesType chooseSplittingPlanes, ShouldStopType shouldStop)
-	: properties{ properties }, influenceArea{ &influenceArea }, computeCost{ computeCost }, chooseSplittingPlanes{ chooseSplittingPlanes }, shouldStop{ shouldStop } {
+pah::Bvh::Bvh(const Properties& properties, const InfluenceArea& influenceArea, ComputeCostType computeCost, ChooseSplittingPlanesType chooseSplittingPlanes, ShouldStopType shouldStop, std::string name)
+	: name{ name }, properties {properties}, influenceArea{ &influenceArea }, 
+	computeCost{ computeCost }, chooseSplittingPlanes{ chooseSplittingPlanes }, shouldStop{ shouldStop } {
 }
 
-pah::Bvh::Bvh(const Properties& properties, ComputeCostType computeCost, ChooseSplittingPlanesType chooseSplittingPlanes, ShouldStopType shouldStop)
-	: properties{ properties }, influenceArea{ nullptr }, computeCost{ computeCost }, chooseSplittingPlanes{ chooseSplittingPlanes }, shouldStop{ shouldStop } {
+pah::Bvh::Bvh(const Properties& properties, ComputeCostType computeCost, ChooseSplittingPlanesType chooseSplittingPlanes, ShouldStopType shouldStop, std::string name)
+	: name{ name }, properties { properties }, 
+	influenceArea{ nullptr }, computeCost{ computeCost }, chooseSplittingPlanes{ chooseSplittingPlanes }, shouldStop{ shouldStop } {
 }
 
 void pah::Bvh::build(const std::vector<const Triangle*>& triangles, float splitPlaneQualityThreshold, float maxChildrenFatherHitProbabilityRatio) {
@@ -37,7 +39,7 @@ void pah::Bvh::build(const std::vector<const Triangle*>& triangles, unsigned int
 }
 
 pah::Bvh::TraversalResults pah::Bvh::traverse(const Ray& ray) const {	
-	TraversalResults res{};
+	TraversalResults res{ .bvh = this };
 	TIME(TimeLogger timeLogger{ [&res](auto duration) {res.traversalTime = duration; } });
 
 	queue<const Node*> toVisit{};

@@ -22,6 +22,7 @@ namespace pah {
 		int hitsTotal;
 		int missesTotal;
 		int fallbackBvhSearchesTotal;
+		std::unordered_map<const Bvh*, std::pair<float, int>> traversalCostForBvh;
 		TIME(DurationMs timeTraversingTotal;); /**< @brief The sum of the traversal times of all the rays. */
 		TIME(DurationMs timeTraversingOnlyBvhsTotal;); /**< @brief How much time it took to do the BVHs traversal. TopLevel structure traversal overhead is not included. */
 		TIME(DurationMs timeTotal;); /**< @brief The total time of casting all the rays. It can be sligthly more than @p timeTotalTraversing */
@@ -32,6 +33,7 @@ namespace pah {
 		float successfulFallbackBvhSearchesPercentage() const { return 1.0f - missesTotal / fallbackBvhSearchesTotal; /*remember that all misses come from a fallback search*/ }
 		int nonFallbackBvhSearches() const { return raysAmount - fallbackBvhSearchesTotal; }
 		float nonFallbackBvhSearchesPercentage() const { return nonFallbackBvhSearches() / (float)raysAmount; }
+		std::unordered_map<const Bvh*, std::pair<float, int>> traversalCostForBvhPerRay() const { auto res = traversalCostForBvh; for (auto& e : res) e.second.first /= e.second.second; return res; }
 		TIME(DurationMs timeTraversingAveragePerRay() const { return timeTraversingTotal / (float)raysAmount; })
 		TIME(DurationMs timeTraversingOnlyBvhsAveragePerRay() const { return timeTraversingOnlyBvhsTotal / (float)raysAmount; })
 		TIME(DurationMs timeTraversingAveragePerBvh() const { return timeTraversingTotal / (float)bvhsTraversedTotal; })
@@ -42,34 +44,35 @@ namespace pah {
 		friend CumulativeRayCasterResults operator+(const RayCasterResults& lhs, const RayCasterResults& rhs);
 
 #define FOR_MEMBER_DO(DO) \
-		DO(bvhsTraversed) \
-		DO(intersectionTests) \
-		DO(intersectionTestsWithNodes) \
-		DO(intersectionTestsWithTriangles) \
-		DO(intersectionTestsWhenHit) \
-		DO(intersectionTestsWithNodesWhenHit) \
-		DO(intersectionTestsWithTrianglesWhenHit)
+		DO(int, bvhsTraversed) \
+		DO(int, intersectionTests) \
+		DO(int, intersectionTestsWithNodes) \
+		DO(int, intersectionTestsWithTriangles) \
+		DO(int, intersectionTestsWhenHit) \
+		DO(int, intersectionTestsWithNodesWhenHit) \
+		DO(int, intersectionTestsWithTrianglesWhenHit) \
+		DO(float, traversalCost)
 
 #define FOR_NON_FALLBACK_MEMBER_DO(DO) \
-		DO(intersectionTestsNonFallback) \
-		DO(intersectionTestsWithNodesNonFallback) \
-		DO(intersectionTestsWithTrianglesNonFallback) \
-		DO(intersectionTestsWhenHitNonFallback) \
-		DO(intersectionTestsWithNodesWhenHitNonFallback) \
-		DO(intersectionTestsWithTrianglesWhenHitNonFallback)
+		DO(int, intersectionTestsNonFallback) \
+		DO(int, intersectionTestsWithNodesNonFallback) \
+		DO(int, intersectionTestsWithTrianglesNonFallback) \
+		DO(int, intersectionTestsWhenHitNonFallback) \
+		DO(int, intersectionTestsWithNodesWhenHitNonFallback) \
+		DO(int, intersectionTestsWithTrianglesWhenHitNonFallback)
 
-#define CREATE_MEMBER(member) int member ## Total;
+#define CREATE_MEMBER(type, member) type member ## Total;
 		FOR_MEMBER_DO(CREATE_MEMBER)
 		FOR_NON_FALLBACK_MEMBER_DO(CREATE_MEMBER)
 
-#define PER_RAY_AVERAGE(member) float member ## AveragePerRay() const { return (float) member ## Total / raysAmount; }
+#define PER_RAY_AVERAGE(type, member) float member ## AveragePerRay() const { return (float) member ## Total / raysAmount; }
 		FOR_MEMBER_DO(PER_RAY_AVERAGE)
 		FOR_NON_FALLBACK_MEMBER_DO(PER_RAY_AVERAGE)
 
-#define PER_BVH_AVERAGE(member) float member ## AveragePerBvh() const { return (float) member ## Total / bvhsTraversedTotal; }
+#define PER_BVH_AVERAGE(type, member) float member ## AveragePerBvh() const { return (float) member ## Total / bvhsTraversedTotal; }
 		FOR_MEMBER_DO(PER_BVH_AVERAGE)
 
-#define PER_BVH_NON_FALLBACK_AVERAGE(member) float member ## AveragePerBvh() const { return  member ## Total / (float)(bvhsTraversedTotal - fallbackBvhSearchesTotal); }
+#define PER_BVH_NON_FALLBACK_AVERAGE(type, member) float member ## AveragePerBvh() const { return  member ## Total / (float)(bvhsTraversedTotal - fallbackBvhSearchesTotal); }
 		FOR_NON_FALLBACK_MEMBER_DO(PER_BVH_NON_FALLBACK_AVERAGE)
 
 #undef FOR_MEMBER_DO(DO)
@@ -86,6 +89,7 @@ namespace pah {
 		int hitsTotal;
 		int missesTotal;
 		int fallbackBvhSearchesTotal;
+		std::unordered_map<const Bvh*, std::pair<float, int>> traversalCostForBvh;
 		TIME(DurationMs timeTraversingTotal;);
 		TIME(DurationMs timeTraversingOnlyBvhsTotal;);
 
@@ -95,6 +99,7 @@ namespace pah {
 		float successfulFallbackBvhSearchesPercentage() const { return 1.0f - (float)missesTotal / fallbackBvhSearchesTotal; /*remember that all misses come from a BVH search*/ }
 		int nonFallbackBvhSearches() const { return raysAmount - fallbackBvhSearchesTotal; }
 		float nonFallbackBvhSearchesPercentage() const { return nonFallbackBvhSearches() / (float)raysAmount; }
+		std::unordered_map<const Bvh*, std::pair<float, int>> traversalCostForBvhPerRay() const { auto res = traversalCostForBvh; for (auto& e : res) e.second.first /= e.second.second; return res; }
 		TIME(DurationMs timeTraversingAveragePerRay() const { return timeTraversingTotal / (float)raysAmount; });
 		TIME(DurationMs timeTraversingOnlyBvhsAveragePerRay() const { return timeTraversingOnlyBvhsTotal / (float)raysAmount; });
 		TIME(DurationMs timeTraversingAveragePerBvh() const { return timeTraversingTotal / (float)bvhsTraversedTotal; });
@@ -106,34 +111,35 @@ namespace pah {
 		friend CumulativeRayCasterResults operator+(CumulativeRayCasterResults lhs, const RayCasterResults& rhs);
 
 #define FOR_MEMBER_DO(DO) \
-		DO(bvhsTraversed) \
-		DO(intersectionTests) \
-		DO(intersectionTestsWithNodes) \
-		DO(intersectionTestsWithTriangles) \
-		DO(intersectionTestsWhenHit) \
-		DO(intersectionTestsWithNodesWhenHit) \
-		DO(intersectionTestsWithTrianglesWhenHit) 
+		DO(int, bvhsTraversed) \
+		DO(int, intersectionTests) \
+		DO(int, intersectionTestsWithNodes) \
+		DO(int, intersectionTestsWithTriangles) \
+		DO(int, intersectionTestsWhenHit) \
+		DO(int, intersectionTestsWithNodesWhenHit) \
+		DO(int, intersectionTestsWithTrianglesWhenHit) \
+		DO(float, traversalCost)
 
 #define FOR_NON_FALLBACK_MEMBER_DO(DO) \
-		DO(intersectionTestsNonFallback) \
-		DO(intersectionTestsWithNodesNonFallback) \
-		DO(intersectionTestsWithTrianglesNonFallback) \
-		DO(intersectionTestsWhenHitNonFallback) \
-		DO(intersectionTestsWithNodesWhenHitNonFallback) \
-		DO(intersectionTestsWithTrianglesWhenHitNonFallback) 
+		DO(int, intersectionTestsNonFallback) \
+		DO(int, intersectionTestsWithNodesNonFallback) \
+		DO(int, intersectionTestsWithTrianglesNonFallback) \
+		DO(int, intersectionTestsWhenHitNonFallback) \
+		DO(int, intersectionTestsWithNodesWhenHitNonFallback) \
+		DO(int, intersectionTestsWithTrianglesWhenHitNonFallback) 
 
-#define CREATE_MEMBER(member) int member ## Total;
+#define CREATE_MEMBER(type, member) type member ## Total;
 		FOR_MEMBER_DO(CREATE_MEMBER)
 		FOR_NON_FALLBACK_MEMBER_DO(CREATE_MEMBER)
 
-#define PER_RAY_AVERAGE(member) float member ## AveragePerRay() const { return  member ## Total / (float)raysAmount; }
+#define PER_RAY_AVERAGE(type, member) float member ## AveragePerRay() const { return  member ## Total / (float)raysAmount; }
 		FOR_MEMBER_DO(PER_RAY_AVERAGE)
 		FOR_NON_FALLBACK_MEMBER_DO(PER_RAY_AVERAGE)
 
-#define PER_BVH_AVERAGE(member) float member ## AveragePerBvh() const { return  member ## Total / (float)bvhsTraversedTotal; }
+#define PER_BVH_AVERAGE(type, member) float member ## AveragePerBvh() const { return  member ## Total / (float)bvhsTraversedTotal; }
 		FOR_MEMBER_DO(PER_BVH_AVERAGE)
 
-#define PER_BVH_NON_FALLBACK_AVERAGE(member) float member ## AveragePerBvh() const { return  member ## Total / (float)(bvhsTraversedTotal - fallbackBvhSearchesTotal); }
+#define PER_BVH_NON_FALLBACK_AVERAGE(type, member) float member ## AveragePerBvh() const { return  member ## Total / (float)(bvhsTraversedTotal - fallbackBvhSearchesTotal); }
 		FOR_NON_FALLBACK_MEMBER_DO(PER_BVH_NON_FALLBACK_AVERAGE)
 
 #undef FOR_MEMBER_DO(DO)

@@ -1,6 +1,7 @@
 #include "CustomJson.h"
 
 #include "settings.h"
+#include <ranges>
 
 // ======| Bvh |======
 void pah::to_json(json& j, const Bvh::Node& node) {
@@ -175,6 +176,8 @@ void pah::to_json(json& j, const TopLevelOctree::Properties& properties) {
 }
 
 void pah::to_json(json& j, const CumulativeRayCasterResults& crcr) {
+	using namespace std;
+
 	j["general"]["raysAmount"] = crcr.raysAmount;
 	j["general"]["rayCastersAmount"] = crcr.rayCastersAmount;
 	TIME(j["general"]["timeTraversingTotal"] = crcr.timeTraversingTotal.count(););
@@ -186,6 +189,12 @@ void pah::to_json(json& j, const CumulativeRayCasterResults& crcr) {
 	
 	j["total"]["bvhsTraversed"]["bvhsTraversedTotal"] = crcr.bvhsTraversedTotal;
 	j["total"]["bvhsTraversed"]["bvhsTraversedAveragePerRay"] = crcr.bvhsTraversedAveragePerRay();
+	
+	j["cost"]["traversalCostTotal"] = crcr.traversalCostTotal;
+	j["cost"]["traversalCostAveragePerRay"] = crcr.traversalCostAveragePerRay();
+	j["cost"]["traversalCostAveragePerBvh"] = crcr.traversalCostAveragePerBvh();
+	j["cost"]["traversalCostForBvh"] = crcr.traversalCostForBvh | views::transform([](auto& e) {return tuple<string, float, int>{ e.first->name, e.second.first, e.second.second }; }) | std::ranges::to<std::vector>();
+	j["cost"]["traversalCostForBvhPerRay"] = crcr.traversalCostForBvhPerRay() | views::transform([](auto& e) {return tuple<string, float, int>{ e.first->name, e.second.first, e.second.second }; }) | std::ranges::to<std::vector>();
 	 
 	j["total"]["hitMiss"]["hitsTotal"] = crcr.hitsTotal;
 	j["total"]["hitMiss"]["hitsPercentage"] = crcr.hitsPercentage();

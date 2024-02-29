@@ -20,7 +20,8 @@ namespace pah {
 			int intersectionTestsTotal;
 			int intersectionTestsWithNodes;
 			int intersectionTestsWithTriangles;
-			float totalCost;
+			float traversalCostTotal;
+			std::unordered_map<const Bvh*, std::pair<float, int>> traversalCostForBvh; //for each BVH holds its cost and how many rays intersected it.
 			int intersectionTestsWhenHit;
 			int intersectionTestsWithNodesWhenHit;
 			int intersectionTestsWithTrianglesWhenHit;
@@ -47,7 +48,9 @@ namespace pah {
 				intersectionTestsTotal += rhs.intersectionTestsTotal;
 				intersectionTestsWithNodes += rhs.intersectionTestsWithNodes;
 				intersectionTestsWithTriangles += rhs.intersectionTestsWithTriangles;
-				totalCost += rhs.traversalCost;
+				traversalCostTotal += rhs.traversalCost;
+				traversalCostForBvh[rhs.bvh].first += rhs.traversalCost;
+				traversalCostForBvh[rhs.bvh].second++;
 				TIME(bvhOnlyTraversalTime += rhs.traversalTime);
 
 				if (!fallbackBvhSearch) {
