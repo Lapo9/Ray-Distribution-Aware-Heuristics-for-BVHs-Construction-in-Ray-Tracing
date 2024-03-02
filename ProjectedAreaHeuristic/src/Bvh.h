@@ -178,6 +178,8 @@ namespace pah {
 			int maxTrianglesPerLeaf; /**< If a @p Node has less triangles than this threshold, it is automatically a leaf. */
 			int maxLevels; /**< Max number of levels of the @p Bvh. */
 			int bins; /**< How many bins are used to create the nodes of th @p Bvh. The higher, the better the @p Bvh, but the slower the construction. */
+			float splitPlaneQualityThreshold;
+			float maxChildrenFatherHitProbabilityRatio;
 
 			Properties() = default;
 			Properties(const Properties&) = default;
@@ -185,9 +187,9 @@ namespace pah {
 		};
 
 		//custom alias
-		using ComputeCostReturnType = struct { float cost, hitProbability; };																using ComputeCostType = ComputeCostReturnType(const Node&, const InfluenceArea&, float rootMetric);
-		using ChooseSplittingPlanesReturnType = std::vector<std::pair<Axis, float>>;														using ChooseSplittingPlanesType = ChooseSplittingPlanesReturnType(const Node&, const InfluenceArea&, Axis father, std::mt19937& rng);
-		using ShouldStopReturnType = bool;																									using ShouldStopType = ShouldStopReturnType(const Node&, const Properties&, int currentLevel, float nodeCost);
+		using ComputeCostReturnType = struct { float cost, hitProbability; };			using ComputeCostType = ComputeCostReturnType(const Node&, const InfluenceArea&, float rootMetric);
+		using ChooseSplittingPlanesReturnType = std::vector<std::pair<Axis, float>>;	using ChooseSplittingPlanesType = ChooseSplittingPlanesReturnType(const Node&, const InfluenceArea&, Axis father, std::mt19937& rng);
+		using ShouldStopReturnType = bool;												using ShouldStopType = ShouldStopReturnType(const Node&, const Properties&, int currentLevel, float nodeCost);
 
 
 		Bvh(const Properties&, const InfluenceArea&, ComputeCostType computeCost, ChooseSplittingPlanesType chooseSplittingPlanes, ShouldStopType shouldStop, std::string name);
@@ -209,7 +211,7 @@ namespace pah {
 		 * @param splitPlaneQualityThreshold How low the quality of the split plane can be before falling back on the standars SAH methods to compute the cost and splits. The value can be between 0 (bad) and 1 (good).
 		 * @param maxChildrenFatherHitProbabilityRatio (rightChildHitProbability + leftChildHitProbability) / fatherHitProbability: how big this ratio can be to consider a split acceptable.
 		 */
-		void build(const std::vector<const Triangle*>& triangles, float splitPlaneQualityThreshold, float maxChildrenFatherHitProbabilityRatio);
+		void build(const std::vector<const Triangle*>& triangles);
 
 		/**
 		 * @brief Constructs the @p Bvh on a set of triangles. It is possible to specify the seed for the random operations during the construction.
@@ -217,7 +219,7 @@ namespace pah {
 		 * @param splitPlaneQualityThreshold How low the quality of the split plane can be before falling back on the standars SAH methods to compute the cost and splits. The value can be between 0 (bad) and 1 (good).
 		 * @param maxChildrenFatherHitProbabilityRatio (rightChildHitProbability + leftChildHitProbability) / fatherHitProbability: how big this ratio can be to consider a split acceptable.
 		 */
-		void build(const std::vector<const Triangle*>& triangles, unsigned int seed, float splitPlaneQualityThreshold, float maxChildrenFatherHitProbabilityRatio);
+		void build(const std::vector<const Triangle*>& triangles, unsigned int seed);
 
 		/**
 		 * @brief Traverses the @p Bvh and returns some stats about the traversal.

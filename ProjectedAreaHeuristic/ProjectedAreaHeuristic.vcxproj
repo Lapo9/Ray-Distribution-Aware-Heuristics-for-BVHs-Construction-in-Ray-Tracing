@@ -30,6 +30,7 @@
     <ClInclude Include="src\RayCaster.h" />
     <ClInclude Include="src\Regions.h" />
     <ClInclude Include="src\settings.h" />
+    <ClInclude Include="src\TestScene.h" />
     <ClInclude Include="src\TopLevel.h" />
     <ClInclude Include="src\TopLevelAnalyzer.h" />
     <ClInclude Include="src\Utilities.h" />

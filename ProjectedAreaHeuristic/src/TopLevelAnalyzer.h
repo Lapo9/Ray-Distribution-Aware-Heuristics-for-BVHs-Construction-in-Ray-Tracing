@@ -39,10 +39,6 @@ namespace pah {
 
 			analyses["bvhs"] += analyzer.analyze(topLevel.getFallbackBvh()); //analyze the fallback BVH too
 
-			for (auto& t : topLevel.getTriangles()) {
-				analyses["triangles"] += t;
-			}
-
 			return analyses;
 		}
 
@@ -84,7 +80,7 @@ namespace pah {
 		json analyze(const TopLevelOctree& topLevel) {
 			json analyses = topLevelAnalyzer.analyze(topLevel); //get the analyses of all the BVHs
 			INFO(analyses["octree"]["timing"] += topLevel.getTotalBuildTime().count();); //add info about build time
-			analyses["octree"]["properties"] = topLevel.getProperties();
+			analyses["octree"]["properties"] = topLevel.getOctreeProperties();
 
 			//now analyze the octree
 			std::queue<TopLevelOctree::Node*> toAnalyze;

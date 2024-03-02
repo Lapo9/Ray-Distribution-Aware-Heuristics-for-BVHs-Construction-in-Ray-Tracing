@@ -13,10 +13,10 @@ using namespace pah::utilities;
 
 
 // ======| TopLevel |======
-void pah::TopLevel::build(float splitPlaneQualityThreshold, float maxChildrenFatherHitProbabilityRatio) {
+void pah::TopLevel::build(const std::vector<Triangle>& triangles) {
 	unordered_map<const pah::Bvh*, vector<const Triangle*>> bvhsTriangles; //maps the BVH and the triangles it contains
 	//build the fallback BVH with all the triangles
-	fallbackBvh.build(triangles | views::transform([](const Triangle& t) {return &t; }) | ranges::to<vector>(), splitPlaneQualityThreshold, maxChildrenFatherHitProbabilityRatio);
+	fallbackBvh.build(triangles | views::transform([](const Triangle& t) {return &t; }) | ranges::to<vector>());
 
 	//understand the BVHs each triangle is contained into
 	for (const auto& t : triangles) {
@@ -33,7 +33,7 @@ void pah::TopLevel::build(float splitPlaneQualityThreshold, float maxChildrenFat
 
 	//build the BVHs with the corresponding triangles
 	for (auto& bvh : bvhs) {
-		bvh.build(bvhsTriangles[&bvh], splitPlaneQualityThreshold, maxChildrenFatherHitProbabilityRatio);
+		bvh.build(bvhsTriangles[&bvh]);
 	}
 }
 
@@ -76,14 +76,9 @@ const vector<pah::Bvh>& pah::TopLevel::getBvhs() const {
 	return bvhs;
 }
 
-const vector<pah::Triangle>& pah::TopLevel::getTriangles() const {
-	return triangles;
-}
-
-
 // ======| TopLevelAabbs |======
-void pah::TopLevelAabbs::build(float splitPlaneQualityThreshold, float maxChildrenFatherHitProbabilityRatio) {
-	TopLevel::build(splitPlaneQualityThreshold, maxChildrenFatherHitProbabilityRatio);
+void pah::TopLevelAabbs::build(const std::vector<Triangle>& triangles) {
+	TopLevel::build(triangles);
 }
 
 void pah::TopLevelAabbs::update() {
@@ -102,7 +97,7 @@ vector<const pah::Bvh*> pah::TopLevelAabbs::containedIn(const Vector3& point) co
 
 
 // ======| TopLevelOctree |======
-void pah::TopLevelOctree::build(float splitPlaneQualityThreshold, float maxChildrenFatherHitProbabilityRatio) {
+void pah::TopLevelOctree::build(const std::vector<Triangle>& triangles) {
 	INFO(TimeLogger timeLoggerTotalBuild{ [this](DurationMs duration) { totalBuildTime = duration; } });
 
 	//build the octree
@@ -110,7 +105,7 @@ void pah::TopLevelOctree::build(float splitPlaneQualityThreshold, float maxChild
 	buildOctreeRecursive(*root, bvhsPointers, {});
 
 	//build the BVHs
-	TopLevel::build(splitPlaneQualityThreshold, maxChildrenFatherHitProbabilityRatio);
+	TopLevel::build(triangles);
 }
 
 void pah::TopLevelOctree::update() {
@@ -138,8 +133,8 @@ INFO(const DurationMs pah::TopLevelOctree::getTotalBuildTime() const {
 	return totalBuildTime;
 })
 
-TopLevelOctree::Properties pah::TopLevelOctree::getProperties() const {
-	return properties;
+TopLevelOctree::OctreeProperties pah::TopLevelOctree::getOctreeProperties() const {
+	return octreeProperties;
 }
 
 void pah::TopLevelOctree::buildOctreeRecursive(Node& node, const vector<Bvh*>& fatherCollidingRegions, const vector<Bvh*>& fatherFullyContainedRegions, int currentLevel) {
@@ -163,7 +158,7 @@ void pah::TopLevelOctree::buildOctreeRecursive(Node& node, const vector<Bvh*>& f
 	}
 
 	//the node is a leaf if there are no colliding but not fully contained regions, or if we reached the max level
-	node.setLeaf(leafNode || currentLevel >= properties.maxLevel);
+	node.setLeaf(leafNode || currentLevel >= octreeProperties.maxLevel);
 	if (!node.isLeaf()) {
 		currentLevel++;
 		for (int i = 0; i < 8; ++i) {
@@ -184,7 +179,7 @@ void pah::TopLevelOctree::buildOctreeRecursive(Node& node, const vector<Bvh*>& f
 	//If conservativeApproach is true, the node only contains the regions that fully contain it.
 	//In this way we have slightly smaller regions than the original, since it is likely that, at the border of the region, it wouldn't be useful to look in the local BVH first.
 	//On the other hand, this can give rise to not fully connected regions.
-	if(!properties.conservativeApproach) node.bvhs.append_range(collidingRegions);
+	if(!octreeProperties.conservativeApproach) node.bvhs.append_range(collidingRegions);
 }
 
 const Bvh& pah::TopLevel::getFallbackBvh() const {

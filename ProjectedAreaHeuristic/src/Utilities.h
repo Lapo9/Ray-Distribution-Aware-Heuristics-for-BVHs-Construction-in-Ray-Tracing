@@ -233,8 +233,8 @@ namespace pah {
 
 			string lineStr;
 			while (getline(objFile, lineStr)) {
-				istringstream lineStream{ lineStr };
 				string lineType; //f: triangle, v: vertex (vn: normal and vt: UVs but we care only about t and v)
+				istringstream lineStream{ lineStr };
 				lineStream >> lineType;
 
 				// vertex
@@ -243,8 +243,16 @@ namespace pah {
 					lineStream >> x >> y >> z;
 					vertices.emplace_back(x, y, z);
 				}
+			}
 
-				// triangle (we assume all the vertices are before the first triangle line)
+			// go to the start of the file again
+			objFile.clear();
+			objFile.seekg(0);
+			while (getline(objFile, lineStr)) {
+				string lineType; //f: triangle, v: vertex (vn: normal and vt: UVs but we care only about t and v)
+				istringstream lineStream{ lineStr };
+				lineStream >> lineType;
+
 				// a triangle line has this form: f 1/2/3 4/5/6 7/8/9 where vertexIndex/uvIndex/normalIndex
 				if (lineType == "f") {
 					string indicesStr;

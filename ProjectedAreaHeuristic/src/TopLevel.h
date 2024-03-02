@@ -74,15 +74,20 @@ namespace pah {
 			}
 		};
 
+		struct Properties {
+			float splitPlaneQualityThreshold;
+			float maxChildrenFatherHitProbabilityRatio;
+		};
+
 		template<std::same_as<Bvh>... Bvhs>
-		TopLevel(const std::vector<Triangle>& triangles, Bvh&& fallbackBvh, Bvhs&&... bvhs) : triangles{ triangles }, fallbackBvh{ std::move(fallbackBvh) } {
+		TopLevel(const Properties& properties, Bvh&& fallbackBvh, Bvhs&&... bvhs) : properties{ properties }, fallbackBvh{ std::move(fallbackBvh) } {
 			(this->bvhs.emplace_back(std::move(bvhs)), ...);
 		}
 
 		/**
 		 * @brief Insert the triangles in the specific area they belong to, then builds the BVHs.
 		 */
-		virtual void build(float splitPlaneQualityThreshold, float maxChildrenFatherHitProbabilityRatio);
+		virtual void build(const std::vector<Triangle>& triangles);
 
 		/**
 		 * @brief Updates the region where each triangle belongs to.
@@ -107,30 +112,26 @@ namespace pah {
 		 */
 		const Bvh& getFallbackBvh() const;
 
-		/**
-		 * @brief Returns the @p Triangle s that are part of this @p TopLevel structure.
-		 */
-		const std::vector<Triangle>& getTriangles() const;
-
 	protected:
-		const std::vector<Triangle>& triangles;
 		std::vector<Bvh> bvhs;
 		Bvh fallbackBvh; //if none of the other BVHs is hit, this one is used; it will contain every triangle in the scene
+		Properties properties;
 	};
 
 
 	class TopLevelAabbs : public TopLevel {
 	public:
 		template<std::same_as<Bvh>... Bvhs>
-		TopLevelAabbs(const std::vector<Triangle>& triangles, Bvh&& fallbackBvh, Bvhs&&... bvhs) : TopLevel{ triangles, std::move(fallbackBvh), std::move(bvhs)... } {}
+		TopLevelAabbs(const Properties& properties, Bvh&& fallbackBvh, Bvhs&&... bvhs) : TopLevel { properties, std::move(fallbackBvh), std::move(bvhs)... } {}
 
-		void build(float splitPlaneQualityThreshold, float maxChildrenFatherHitProbabilityRatio) override;
+		void build(const std::vector<Triangle>& triangles) override;
 		void update() override;
 		std::vector<const Bvh*> containedIn(const Vector3&) const override;
 	};
 
 
 	class TopLevelOctree : public TopLevel {
+	public:
 	public:
 		//related classes
 		struct NodeTimingInfo {
@@ -189,7 +190,7 @@ namespace pah {
 			std::optional<bool> leaf;
 		};
 
-		struct Properties {
+		struct OctreeProperties {
 			int maxLevel;
 			/**
 			 * @brief If true, the leaves will only contain the regions that fully contain them. 
@@ -200,8 +201,8 @@ namespace pah {
 
 
 		template<std::same_as<Bvh>... Bvhs>
-		TopLevelOctree(const Properties& properties, const std::vector<Triangle>& triangles, Bvh&& fallbackBvh, Bvhs&&... bvhs) 
-			: TopLevel{ triangles, std::move(fallbackBvh), std::move(bvhs)... }, properties{ properties }, root{ std::make_unique<Node>() } {
+		TopLevelOctree(const Properties& properties, const OctreeProperties& octreeProperties, Bvh&& fallbackBvh, Bvhs&&... bvhs)
+			: TopLevel{ properties, std::move(fallbackBvh), std::move(bvhs)... }, octreeProperties{ octreeProperties }, root{ std::make_unique<Node>() } {
 			Aabb sceneAabb = Aabb::minAabb();
 
 			//the Aabb of the root, must contain all the influence areas in the scene
@@ -212,13 +213,13 @@ namespace pah {
 			root->aabb = sceneAabb;
 		}
 
-		void build(float splitPlaneQualityThreshold, float maxChildrenFatherHitProbabilityRatio) override;
+		void build(const std::vector<Triangle>& triangles) override;
 		void update() override;
 		std::vector<const Bvh*> containedIn(const Vector3&) const override;
 
 		Node& getRoot() const;
 		INFO(const DurationMs getTotalBuildTime() const;); /**< @brief Returns the time it took to build this @p TopLevelOctree. */
-		Properties getProperties() const; /**< @brief Returns the properties of this @p TopLevelOctree. */
+		OctreeProperties getOctreeProperties() const; /**< @brief Returns the properties of this @p TopLevelOctree. */
 
 	private:
 		/**
@@ -250,7 +251,7 @@ namespace pah {
 		static Vector3 indexToPosition(int i);
 
 		std::unique_ptr<Node> root;
-		Properties properties;
+		OctreeProperties octreeProperties;
 		INFO(DurationMs totalBuildTime;);
 	};
 }

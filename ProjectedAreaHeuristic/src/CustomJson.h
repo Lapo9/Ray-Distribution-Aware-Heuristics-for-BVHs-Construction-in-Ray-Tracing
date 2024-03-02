@@ -40,7 +40,7 @@ namespace pah {
 	void to_json(json& j, const Bvh::NodeTimingInfo&);
 	void to_json(json& j, const TopLevelOctree::NodeTimingInfo&);
 	void to_json(json& j, const Bvh::Properties&);
-	void to_json(json& j, const TopLevelOctree::Properties&);
+	void to_json(json& j, const TopLevelOctree::OctreeProperties&);
 	void to_json(json& j, const CumulativeRayCasterResults&);
 
 	namespace projection {

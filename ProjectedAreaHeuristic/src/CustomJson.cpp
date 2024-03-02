@@ -170,7 +170,7 @@ void pah::to_json(json& j, const Bvh::Properties& properties) {
 	j["maxTrianglesPerLeaf"] = properties.maxTrianglesPerLeaf;
 }
 
-void pah::to_json(json& j, const TopLevelOctree::Properties& properties) {
+void pah::to_json(json& j, const TopLevelOctree::OctreeProperties& properties) {
 	j["conservativeApproach"] = properties.conservativeApproach;
 	j["maxLevel"] = properties.maxLevel;
 }

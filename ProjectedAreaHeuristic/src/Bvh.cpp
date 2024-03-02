@@ -19,23 +19,23 @@ pah::Bvh::Bvh(const Properties& properties, ComputeCostType computeCost, ChooseS
 	influenceArea{ nullptr }, computeCost{ computeCost }, chooseSplittingPlanes{ chooseSplittingPlanes }, shouldStop{ shouldStop } {
 }
 
-void pah::Bvh::build(const std::vector<const Triangle*>& triangles, float splitPlaneQualityThreshold, float maxChildrenFatherHitProbabilityRatio) {
+void pah::Bvh::build(const std::vector<const Triangle*>& triangles) {
 	//the final action simply adds the measured time to the total time
 	INFO(TimeLogger timeLogger{ [this](DurationMs duration) { totalBuildTime = duration; } };);
 
 	random_device randomDevice;
-	build(triangles, randomDevice(), splitPlaneQualityThreshold, maxChildrenFatherHitProbabilityRatio); //the seed is random
+	build(triangles, randomDevice()); //the seed is random
 	INFO(timeLogger.stop(););
 	//here timeLogger will be destroyed, and it will log (by calling finalAction)
 }
 
-void pah::Bvh::build(const std::vector<const Triangle*>& triangles, unsigned int seed, float splitPlaneQualityThreshold, float maxChildrenFatherHitProbabilityRatio) {
+void pah::Bvh::build(const std::vector<const Triangle*>& triangles, unsigned int seed) {
 	id = chrono::duration_cast<std::chrono::milliseconds>(chrono::system_clock::now().time_since_epoch()).count(); //set the id based on current time: the id is just used to check for equality betweeen 2 BVHs (and this is the only non const function)
 	rng = mt19937{ seed }; //initialize random number generator
 	//from an array of triangles, to an array to pointers
 	root = { triangles }; //initizalize root
 	rootMetric = computeCost(root, *influenceArea, -1).cost; //initialize the root metric (generally its area/projected area)
-	splitNode(root, Axis::X, std::numeric_limits<float>::max(), 1, splitPlaneQualityThreshold, maxChildrenFatherHitProbabilityRatio);
+	splitNode(root, Axis::X, std::numeric_limits<float>::max(), 1, properties.splitPlaneQualityThreshold, properties.maxChildrenFatherHitProbabilityRatio);
 }
 
 pah::Bvh::TraversalResults pah::Bvh::traverse(const Ray& ray) const {	
