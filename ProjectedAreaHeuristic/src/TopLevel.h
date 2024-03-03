@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <optional>
+#include <utility>
 
 #include "Bvh.h"
 
@@ -79,9 +80,12 @@ namespace pah {
 			float maxChildrenFatherHitProbabilityRatio;
 		};
 
-		template<std::same_as<Bvh>... Bvhs>
-		TopLevel(const Properties& properties, Bvh&& fallbackBvh, Bvhs&&... bvhs) : properties{ properties }, fallbackBvh{ std::move(fallbackBvh) } {
-			(this->bvhs.emplace_back(std::move(bvhs)), ...);
+		/**
+		 * @brief The constructor can take the Bvhs both as r-value references (thus taking their ownership), or as l-value references and then copying then into the fields of this object.
+		 */
+		template<std::same_as<Bvh> BvhType, std::same_as<Bvh>... Bvhs>
+		TopLevel(const Properties& properties, BvhType&& fallbackBvh, Bvhs&&... bvhs) : properties{ properties }, fallbackBvh{ std::forward<BvhType>(fallbackBvh) } {
+			(this->bvhs.emplace_back(std::forward<Bvhs>(bvhs)), ...);
 		}
 
 		/**
@@ -121,8 +125,8 @@ namespace pah {
 
 	class TopLevelAabbs : public TopLevel {
 	public:
-		template<std::same_as<Bvh>... Bvhs>
-		TopLevelAabbs(const Properties& properties, Bvh&& fallbackBvh, Bvhs&&... bvhs) : TopLevel { properties, std::move(fallbackBvh), std::move(bvhs)... } {}
+		template<std::same_as<Bvh> BvhType, std::same_as<Bvh>... Bvhs>
+		TopLevelAabbs(const Properties& properties, BvhType&& fallbackBvh, Bvhs&&... bvhs) : TopLevel { properties, std::forward<BvhType>(fallbackBvh), std::forward<Bvhs>(bvhs)... } {}
 
 		void build(const std::vector<Triangle>& triangles) override;
 		void update() override;
@@ -200,9 +204,9 @@ namespace pah {
 		};
 
 
-		template<std::same_as<Bvh>... Bvhs>
-		TopLevelOctree(const Properties& properties, const OctreeProperties& octreeProperties, Bvh&& fallbackBvh, Bvhs&&... bvhs)
-			: TopLevel{ properties, std::move(fallbackBvh), std::move(bvhs)... }, octreeProperties{ octreeProperties }, root{ std::make_unique<Node>() } {
+		template<std::same_as<Bvh> BvhType, std::same_as<Bvh>... Bvhs>
+		TopLevelOctree(const Properties& properties, const OctreeProperties& octreeProperties, BvhType&& fallbackBvh, Bvhs&&... bvhs)
+			: TopLevel{ properties, std::forward<BvhType>(fallbackBvh), std::forward<Bvhs>(bvhs)... }, octreeProperties{ octreeProperties }, root{} {
 			Aabb sceneAabb = Aabb::minAabb();
 
 			//the Aabb of the root, must contain all the influence areas in the scene
@@ -210,14 +214,14 @@ namespace pah {
 				sceneAabb += bvh.getInfluenceArea()->getBvhRegion().enclosingAabb();
 			}
 
-			root->aabb = sceneAabb;
+			root.aabb = sceneAabb;
 		}
 
 		void build(const std::vector<Triangle>& triangles) override;
 		void update() override;
 		std::vector<const Bvh*> containedIn(const Vector3&) const override;
 
-		Node& getRoot() const;
+		const Node& getRoot() const;
 		INFO(const DurationMs getTotalBuildTime() const;); /**< @brief Returns the time it took to build this @p TopLevelOctree. */
 		OctreeProperties getOctreeProperties() const; /**< @brief Returns the properties of this @p TopLevelOctree. */
 
@@ -250,7 +254,7 @@ namespace pah {
 		 */
 		static Vector3 indexToPosition(int i);
 
-		std::unique_ptr<Node> root;
+		Node root;
 		OctreeProperties octreeProperties;
 		INFO(DurationMs totalBuildTime;);
 	};

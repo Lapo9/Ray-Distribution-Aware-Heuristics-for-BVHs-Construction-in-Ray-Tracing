@@ -16,7 +16,7 @@ using namespace pah::utilities;
 void pah::TopLevel::build(const std::vector<Triangle>& triangles) {
 	unordered_map<const pah::Bvh*, vector<const Triangle*>> bvhsTriangles; //maps the BVH and the triangles it contains
 	//build the fallback BVH with all the triangles
-	fallbackBvh.build(triangles | views::transform([](const Triangle& t) {return &t; }) | ranges::to<vector>());
+	fallbackBvh.build(triangles);
 
 	//understand the BVHs each triangle is contained into
 	for (const auto& t : triangles) {
@@ -102,7 +102,7 @@ void pah::TopLevelOctree::build(const std::vector<Triangle>& triangles) {
 
 	//build the octree
 	auto bvhsPointers = bvhs | std::views::transform([](Bvh& bvh) { return &bvh; }) | std::ranges::to<vector>(); //make vector of pointers
-	buildOctreeRecursive(*root, bvhsPointers, {});
+	buildOctreeRecursive(root, bvhsPointers, {});
 
 	//build the BVHs
 	TopLevel::build(triangles);
@@ -114,9 +114,9 @@ void pah::TopLevelOctree::update() {
 
 vector<const pah::Bvh*> pah::TopLevelOctree::containedIn(const Vector3& point) const {
 	//if the point is outside the region covered by the octree, it is useless to continue the search
-	if (!root->aabb.contains(point)) return {};
+	if (!root.aabb.contains(point)) return {};
 
-	Node* current = &*root;
+	const Node* current = &root;
 	while (!current->isLeaf()) {
 		auto center = current->aabb.center();
 		int index = positionToIndex(point.x > center.x, point.y > center.y, point.z > center.z); //get the index based on the position of the point (point is assumed to be inside the current node AABB)
@@ -125,8 +125,8 @@ vector<const pah::Bvh*> pah::TopLevelOctree::containedIn(const Vector3& point) c
 	return vector<const Bvh*>{ current->bvhs.begin(), current->bvhs.end() };
 }
 
-TopLevelOctree::Node& pah::TopLevelOctree::getRoot() const {
-	return *root;
+const TopLevelOctree::Node& pah::TopLevelOctree::getRoot() const {
+	return root;
 }
 
 INFO(const DurationMs pah::TopLevelOctree::getTotalBuildTime() const {

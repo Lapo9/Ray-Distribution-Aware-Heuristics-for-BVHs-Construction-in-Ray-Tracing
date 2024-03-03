@@ -83,7 +83,7 @@ namespace pah {
 			analyses["octree"]["properties"] = topLevel.getOctreeProperties();
 
 			//now analyze the octree
-			std::queue<TopLevelOctree::Node*> toAnalyze;
+			std::queue<const TopLevelOctree::Node*> toAnalyze;
 			toAnalyze.push(&topLevel.getRoot());
 			while (!toAnalyze.empty()) {
 				auto& currentNode = toAnalyze.front();

@@ -19,6 +19,10 @@ pah::Bvh::Bvh(const Properties& properties, ComputeCostType computeCost, ChooseS
 	influenceArea{ nullptr }, computeCost{ computeCost }, chooseSplittingPlanes{ chooseSplittingPlanes }, shouldStop{ shouldStop } {
 }
 
+void pah::Bvh::build(const std::vector<Triangle>& triangles) {
+	build(triangles | std::views::transform([](const auto& t) {return &t; }) | std::ranges::to<std::vector>());
+}
+
 void pah::Bvh::build(const std::vector<const Triangle*>& triangles) {
 	//the final action simply adds the measured time to the total time
 	INFO(TimeLogger timeLogger{ [this](DurationMs duration) { totalBuildTime = duration; } };);
@@ -27,6 +31,10 @@ void pah::Bvh::build(const std::vector<const Triangle*>& triangles) {
 	build(triangles, randomDevice()); //the seed is random
 	INFO(timeLogger.stop(););
 	//here timeLogger will be destroyed, and it will log (by calling finalAction)
+}
+
+void pah::Bvh::build(const std::vector<Triangle>& triangles, unsigned int seed) {
+	build(triangles | std::views::transform([](const auto& t) {return &t; }) | std::ranges::to<std::vector>(), seed);
 }
 
 void pah::Bvh::build(const std::vector<const Triangle*>& triangles, unsigned int seed) {

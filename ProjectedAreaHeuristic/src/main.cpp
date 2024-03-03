@@ -6,6 +6,7 @@
 #include "TopLevelAnalyzer.h"
 #include "AnalyzerActions.h"
 #include "RayCaster.h"
+#include "TestScene.h"
 #include "distributions.h"
 
 #include <iostream>
@@ -22,8 +23,6 @@ int main() {
 	distributions::UniformBoxDistribution otherDistribution3d{ -1,1, -1,1 , -1,1 };
 	//auto triangles = Triangle::generateRandom(1000, rng, mainDistribution3d, otherDistribution3d);
 	auto triangles = Triangle::fromObj("D:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/ProjectedAreaHeuristic/exampleData/WoodScene.obj");
-	auto trianglesSah = triangles;
-	auto trianglesSahPtrs = trianglesSah | views::transform([](const Triangle& t) {return &t; }) | ranges::to<vector>();
 
 	//create influence areas
 	PlaneInfluenceArea planeInfluenceArea1{ Plane{{-1.5,0,-1.5}, {1,0,1}}, {.5,.5}, 4, 10000 };
@@ -54,14 +53,14 @@ int main() {
 	
 	//this is the BVH we use with SAH, to compare results
 	Bvh sahBvh{ bvhProperties, bvhStrategies::computeCostSah, bvhStrategies::chooseSplittingPlanesLongest<0.5f>, bvhStrategies::shouldStopThresholdOrLevel, "base SAH"};
-	sahBvh.build(trianglesSahPtrs);
+	sahBvh.build(triangles);
 
 	//build top level structure
 	TopLevel::Properties topLevelProperties{};
 	topLevelProperties.maxChildrenFatherHitProbabilityRatio = 1.3;
 	topLevelProperties.splitPlaneQualityThreshold = 0.1f;
 
-	vector<RayCaster<>*> rayCasters{ &planeRayCaster2/*, &planeRayCaster2 */ };
+	vector rayCasters{ &planeRayCaster2/*, &planeRayCaster2 */ };
 	TopLevelOctree topLevelStructure{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, std::move(baseBvh), std::move(bvh2)/*, std::move(bvh2)*/ };
 	topLevelStructure.build(triangles);
 
@@ -75,17 +74,24 @@ int main() {
 		MAKE_ACTIONS_PAIR(influenceArea),
 		//MAKE_ACTIONS_PAIR(timeMeasurement)
 	};
+
+	auto testScene = TestScene{ "D:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/Results", 
+		triangles, &planeRayCaster1, topLevelStructure, analyzer };
+
+
+
+	return 0;
 	json analysis = analyzer.analyze(topLevelStructure, "D:/Users/lapof/Documents/Development/ProjectedAreaHeuristicVisualizer/Assets/Data/bvh.json");
 	
 	auto pahTraversalResults = ranges::fold_left(rayCasters, CumulativeRayCasterResults{}, [&topLevelStructure](auto res, auto rayCaster) { return res + rayCaster->castRays(topLevelStructure); });
 	auto sahTraversalResults = ranges::fold_left(rayCasters, CumulativeRayCasterResults{}, [&sahBvh](auto res, auto rayCaster) { return res + rayCaster->castRays(sahBvh); });
 	
-	std::ofstream pahFile{ "D:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/Results/pah.json" };
-	pahFile << std::setw(2) << json(pahTraversalResults);
+	ofstream pahFile{ "D:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/Results/pah.json" };
+	pahFile << setw(2) << json(pahTraversalResults);
 	pahFile.close();
 
-	std::ofstream sahFile{ "D:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/Results/sah.json" };
-	sahFile << std::setw(2) << json(sahTraversalResults);
+	ofstream sahFile{ "D:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/Results/sah.json" };
+	sahFile << setw(2) << json(sahTraversalResults);
 	sahFile.close();
 
 	return 0;

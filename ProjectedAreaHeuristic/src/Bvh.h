@@ -144,6 +144,23 @@ namespace pah {
 				TIME(nodeTimingInfo = NodeTimingInfo{};);
 			};
 
+			Node(const Node& orig) :
+				aabb{ orig.aabb },
+				triangles{ orig.triangles },
+				TIME(nodeTimingInfo{ orig.nodeTimingInfo }, ),
+				leftChild{ orig.leftChild != nullptr ? new Node(*orig.leftChild) : nullptr },
+				rightChild{ orig.rightChild != nullptr ? new Node(*orig.rightChild) : nullptr } {
+			}
+
+			Node& operator=(const Node& orig) {
+				aabb = orig.aabb;
+				triangles = orig.triangles;
+				TIME(nodeTimingInfo = orig.nodeTimingInfo);
+				leftChild = orig.leftChild != nullptr ? std::make_unique<Node>(*orig.leftChild) : nullptr;
+				rightChild = orig.rightChild != nullptr ? std::make_unique<Node>(*orig.rightChild) : nullptr;
+				return *this;
+			}
+
 			/**
 			 * @brief A @p Node is a leaf if both children are empty.
 			 */
@@ -211,6 +228,7 @@ namespace pah {
 		 * @param splitPlaneQualityThreshold How low the quality of the split plane can be before falling back on the standars SAH methods to compute the cost and splits. The value can be between 0 (bad) and 1 (good).
 		 * @param maxChildrenFatherHitProbabilityRatio (rightChildHitProbability + leftChildHitProbability) / fatherHitProbability: how big this ratio can be to consider a split acceptable.
 		 */
+		void build(const std::vector<Triangle>& triangles);
 		void build(const std::vector<const Triangle*>& triangles);
 
 		/**
@@ -219,6 +237,7 @@ namespace pah {
 		 * @param splitPlaneQualityThreshold How low the quality of the split plane can be before falling back on the standars SAH methods to compute the cost and splits. The value can be between 0 (bad) and 1 (good).
 		 * @param maxChildrenFatherHitProbabilityRatio (rightChildHitProbability + leftChildHitProbability) / fatherHitProbability: how big this ratio can be to consider a split acceptable.
 		 */
+		void build(const std::vector<Triangle>& triangles, unsigned int seed);
 		void build(const std::vector<const Triangle*>& triangles, unsigned int seed);
 
 		/**
