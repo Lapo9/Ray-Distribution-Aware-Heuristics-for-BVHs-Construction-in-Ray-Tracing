@@ -197,10 +197,6 @@ namespace pah {
 			int bins; /**< How many bins are used to create the nodes of th @p Bvh. The higher, the better the @p Bvh, but the slower the construction. */
 			float splitPlaneQualityThreshold;
 			float maxChildrenFatherHitProbabilityRatio;
-
-			Properties() = default;
-			Properties(const Properties&) = default;
-			Properties& operator=(const Properties&) = default;
 		};
 
 		//custom alias

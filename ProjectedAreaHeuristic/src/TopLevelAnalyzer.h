@@ -77,7 +77,8 @@ namespace pah {
 		/**
 		 * @brief Given a @p TopLevelOctree structure, it analyzes it and returns a JSON.
 		 */
-		json analyze(const TopLevelOctree& topLevel) {
+		json analyze(const TopLevel& topLevelBase) {
+			const TopLevelOctree& topLevel = dynamic_cast<const TopLevelOctree&>(topLevelBase); // we do it like this because we want this function to be able to take base class polymorphic objects
 			json analyses = topLevelAnalyzer.analyze(topLevel); //get the analyses of all the BVHs
 			INFO(analyses["octree"]["timing"] += topLevel.getTotalBuildTime().count();); //add info about build time
 			analyses["octree"]["properties"] = topLevel.getOctreeProperties();
@@ -99,8 +100,8 @@ namespace pah {
 		/**
 		 * @brief Given a @p TopLevelOctree structure, it analyzes it and returns a JSON. Moreover it saves the JSON to a file.
 		 */
-		json analyze(const TopLevelOctree& topLevel, std::string filePath) {
-			json json = analyze(topLevel);
+		json analyze(const TopLevel& topLevelBase, std::string filePath) {
+			json json = analyze(topLevelBase);
 
 			std::ofstream file;
 			file.open(filePath);
