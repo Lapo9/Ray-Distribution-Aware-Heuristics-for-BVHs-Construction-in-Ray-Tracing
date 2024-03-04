@@ -14,10 +14,10 @@ using namespace pah::utilities;
 
 // ======| TopLevel |======
 void pah::TopLevel::build(const std::vector<Triangle>& triangles) {
-	unordered_map<const pah::Bvh*, vector<const Triangle*>> bvhsTriangles; //maps the BVH and the triangles it contains
-	//build the fallback BVH with all the triangles
-	fallbackBvh.build(triangles);
+	lastBuilTriangles = &triangles; //save a pointer to the triangles for this build
+	fallbackBvh.build(triangles); //build the fallback BVH with all the triangles
 
+	unordered_map<const pah::Bvh*, vector<const Triangle*>> bvhsTriangles; //maps the BVH and the triangles it contains
 	//understand the BVHs each triangle is contained into
 	for (const auto& t : triangles) {
 		unordered_set<const pah::Bvh*> containedInto; //the BVHs the triangle is contained into
@@ -74,6 +74,10 @@ TopLevel::TraversalResults pah::TopLevel::traverse(const Ray& ray) const {
 
 const vector<pah::Bvh>& pah::TopLevel::getBvhs() const {
 	return bvhs;
+}
+
+const std::vector<Triangle>& pah::TopLevel::getLastBuildTriangles() const {
+	return *lastBuilTriangles;
 }
 
 // ======| TopLevelAabbs |======

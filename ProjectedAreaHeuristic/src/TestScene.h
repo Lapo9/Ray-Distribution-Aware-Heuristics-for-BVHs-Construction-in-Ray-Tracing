@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <ranges>
+#include <filesystem>
 #include "Utilities.h"
 #include "Bvh.h"
 #include "TopLevel.h"
@@ -25,9 +26,11 @@ namespace pah {
 		 */
 		template<typename VectorOfRayCastersType, typename TopLevelAnalyzerType, typename TopLevelType>
 		TestScene(const std::string& outputFolderPath, const std::vector<Triangle>& triangles, VectorOfRayCastersType&& rayCasters, TopLevelType&& topLevel, TopLevelAnalyzerType&& topLevelAnalyzer) :
-			triangles{ triangles }, rayCasters{ std::forward<VectorOfRayCasters>(rayCasters) }, outputFolderPath{ outputFolderPath } {
-			this->topLevel = std::make_unique<std::remove_reference_t<TopLevelType>>(std::forward<std::remove_reference_t<TopLevelType>>(topLevel));
-			this->topLevelAnalyzer = std::make_unique<TopLevelAnalyzer>(std::forward<TopLevelAnalyzer>(topLevelAnalyzer));
+			triangles{ triangles }, rayCasters{ std::forward<VectorOfRayCastersType>(rayCasters) }, outputFolderPath{ outputFolderPath } {
+			this->topLevel = std::make_unique<std::remove_reference_t<TopLevelType>>(std::forward<TopLevelType>(topLevel));
+			this->topLevelAnalyzer = std::make_unique<TopLevelAnalyzer>(std::forward<TopLevelAnalyzerType>(topLevelAnalyzer));
+
+			std::filesystem::create_directory(outputFolderPath);
 		}
 
 		/**
@@ -51,17 +54,17 @@ namespace pah {
 
 			auto fallbackSahResults = std::ranges::fold_left(rayCasters, CumulativeRayCasterResults{}, [this](auto res, auto rayCaster) { return res + rayCaster->castRays(topLevel->getFallbackBvh()); });
 			std::ofstream fallbackSahResultsFile{ outputFolderPath + "/FallbackSahTraversalResults.json" };
-			fallbackSahResultsFile << std::setw(2) << json(topLevelResults);
+			fallbackSahResultsFile << std::setw(2) << json(fallbackSahResults);
 			fallbackSahResultsFile.close();
 
-			return std::tuple{ topLevelResults, fallbackSahResults };
+			return { topLevelResults, fallbackSahResults };
 		}
 
 		/**
 		 * @brief Basizally calls build and then analyze, and returns the combined results.
 		 */
 		std::tuple<json, CumulativeRayCasterResults, CumulativeRayCasterResults> buildAndTraverse(bool analyzeTopLevel = true) {
-			json analysis = build();
+			json analysis = build(analyzeTopLevel);
 			auto traversal = traverse();
 			return { analysis, traversal.first, traversal.second };
 		}

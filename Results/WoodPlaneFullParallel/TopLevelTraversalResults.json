@@ -1,0 +1,122 @@
+{
+  "cost": {
+    "traversalCostAveragePerBvh": 76.20516967773438,
+    "traversalCostAveragePerRay": 101.35287475585938,
+    "traversalCostForBvh": [
+      [
+        "plane",
+        73966.1015625,
+        1000
+      ],
+      [
+        "fallback",
+        27386.818359375,
+        330
+      ]
+    ],
+    "traversalCostForBvhPerRay": [
+      [
+        "plane",
+        73.96610260009766,
+        1000
+      ],
+      [
+        "fallback",
+        82.9903564453125,
+        330
+      ]
+    ],
+    "traversalCostTotal": 101352.875
+  },
+  "fallback": {
+    "general": {
+      "fallbackBvhSearchesPercentage": 0.33000001311302185,
+      "fallbackBvhSearchesTotal": 330,
+      "nonFallbackSearchesPercentage": 0.6700000166893005,
+      "nonFallbackSearchesTotal": 670,
+      "successfulFallbackBvhSearchesPercentage": 0.19999998807907104
+    },
+    "intersectionTests": {
+      "intersectionTestsNonFallbackAveragePerBvh": 48.2239990234375,
+      "intersectionTestsNonFallbackAveragePerRay": 48.2239990234375,
+      "intersectionTestsNonFallbackTotal": 48224
+    },
+    "intersectionTestsWhenHit": {
+      "intersectionTestsWhenHitNonFallbackAveragePerBvh": 38.89400100708008,
+      "intersectionTestsWhenHitNonFallbackAveragePerRay": 38.89400100708008,
+      "intersectionTestsWhenHitNonFallbackTotal": 38894
+    },
+    "intersectionTestsWhenHitWithNodes": {
+      "intersectionTestsWithNodesWhenHitNonFallbackAveragePerBvh": 29.48900032043457,
+      "intersectionTestsWithNodesWhenHitNonFallbackAveragePerRay": 29.48900032043457,
+      "intersectionTestsWithNodesWhenHitNonFallbackTotal": 29489
+    },
+    "intersectionTestsWhenHitWithTriangles": {
+      "intersectionTestsWithTrianglesWhenHitNonFallbackAveragePerBvh": 9.404999732971191,
+      "intersectionTestsWithTrianglesWhenHitNonFallbackAveragePerRay": 9.404999732971191,
+      "intersectionTestsWithTrianglesWhenHitNonFallbackTotal": 9405
+    },
+    "intersectionTestsWithNodes": {
+      "intersectionTestsWithNodesNonFallbackAveragePerBvh": 36.683998107910156,
+      "intersectionTestsWithNodesNonFallbackAveragePerRay": 36.683998107910156,
+      "intersectionTestsWithNodesNonFallbackTotal": 36684
+    },
+    "intersectionTestsWithTriangles": {
+      "intersectionTestsWithTrianglesNonFallbackAveragePerBvh": 11.539999961853027,
+      "intersectionTestsWithTrianglesNonFallbackAveragePerRay": 11.539999961853027,
+      "intersectionTestsWithTrianglesNonFallbackTotal": 11540
+    }
+  },
+  "general": {
+    "rayCastersAmount": 1,
+    "raysAmount": 1000,
+    "timeTraversingAveragePerBvh": 0.0027728541754186153,
+    "timeTraversingAveragePerRay": 0.003687896067276597,
+    "timeTraversingOnlyBvhsAveragePerBvh": 0.002323984168469906,
+    "timeTraversingOnlyBvhsAveragePerRay": 0.003090898972004652,
+    "timeTraversingOnlyBvhsTotal": 3.0908989906311035,
+    "timeTraversingTotal": 3.6878960132598877
+  },
+  "total": {
+    "bvhsTraversed": {
+      "bvhsTraversedAveragePerRay": 1.3300000429153442,
+      "bvhsTraversedTotal": 1330
+    },
+    "hitMiss": {
+      "hitsPercentage": 0.7360000014305115,
+      "hitsTotal": 736,
+      "missesPercentage": 0.2639999985694885,
+      "missesTotal": 264
+    },
+    "intersectionTests": {
+      "intersectionTestsAveragePerBvh": 50.2646598815918,
+      "intersectionTestsAveragePerRay": 66.85199737548828,
+      "intersectionTestsTotal": 66852
+    },
+    "intersectionTestsWhenHit": {
+      "intersectionTestsWhenHitAveragePerBvh": 35.46165466308594,
+      "intersectionTestsWhenHitAveragePerRay": 47.16400146484375,
+      "intersectionTestsWhenHitTotal": 47164
+    },
+    "intersectionTestsWhenHitWithNodes": {
+      "intersectionTestsWithNodesWhenHitAveragePerBvh": 23.313533782958984,
+      "intersectionTestsWithNodesWhenHitAveragePerRay": 31.006999969482422,
+      "intersectionTestsWithNodesWhenHitTotal": 31007
+    },
+    "intersectionTestsWhenHitWithTriangles": {
+      "intersectionTestsWithTrianglesWhenHitAveragePerBvh": 12.148119926452637,
+      "intersectionTestsWithTrianglesWhenHitAveragePerRay": 16.156999588012695,
+      "intersectionTestsWithTrianglesWhenHitTotal": 16157
+    },
+    "intersectionTestsWithNodes": {
+      "intersectionTestsWithNodesAveragePerBvh": 34.205265045166016,
+      "intersectionTestsWithNodesAveragePerRay": 45.49300003051758,
+      "intersectionTestsWithNodesTotal": 45493
+    },
+    "intersectionTestsWithTriangles": {
+      "intersectionTestsWithTrianglesAveragePerBvh": 16.059398651123047,
+      "intersectionTestsWithTrianglesAveragePerRay": 21.358999252319336,
+      "intersectionTestsWithTrianglesTotal": 21359
+    }
+  }
+}
