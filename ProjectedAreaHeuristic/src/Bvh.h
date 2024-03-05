@@ -161,6 +161,23 @@ namespace pah {
 				return *this;
 			}
 
+			Node(Node&& orig) :
+				aabb{ std::move(orig.aabb) },
+				triangles{ std::move(orig.triangles) },
+				TIME(nodeTimingInfo{ std::move(orig.nodeTimingInfo) }, ),
+				leftChild{ std::move(orig.leftChild) },
+				rightChild{ std::move(orig.rightChild) } {
+			}
+
+			Node& operator=(Node&& orig) {
+				aabb = std::move(orig.aabb);
+				triangles = std::move(orig.triangles);
+				TIME(nodeTimingInfo = std::move(orig.nodeTimingInfo));
+				leftChild = std::move(orig.leftChild);
+				rightChild = std::move(orig.rightChild);
+				return *this;
+			}
+
 			/**
 			 * @brief A @p Node is a leaf if both children are empty.
 			 */

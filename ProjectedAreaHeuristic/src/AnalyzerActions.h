@@ -62,16 +62,8 @@ namespace pah::analyzerActions {
 		 */
 		static void pah(float& totalPah, ANALYZER_ACTION_PER_NODE_ARGUMENTS) {
 			if (bvh.getInfluenceArea() == nullptr) return; //it means it is a SAH BVH
-
-			//in order not to compute the projected area of the root each time, we keep the last projected area across calls...
-			static const Bvh* lastBvh = &bvh;
-			static float lastRootProjectedArea = bvh.getInfluenceArea()->getProjectedArea(bvh.getRoot().aabb);
-			//...and check whether we are calculating the PAH for a node of the same BVH as in the last call
-			if (bvh != *lastBvh) {
-				lastBvh = &bvh;
-				lastRootProjectedArea = bvh.getInfluenceArea()->getProjectedArea(bvh.getRoot().aabb);
-			}
-
+			float lastRootProjectedArea = bvh.getInfluenceArea()->getProjectedArea(bvh.getRoot().aabb);
+			
 			auto [pah, hitProb] = bvhStrategies::computeCostPah(node, *bvh.getInfluenceArea(), lastRootProjectedArea);
 			auto pa = bvh.getInfluenceArea()->getProjectedArea(node.aabb);
 
