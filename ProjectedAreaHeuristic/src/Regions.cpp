@@ -528,8 +528,8 @@ collisionDetection::RayCollisionInfo pah::collisionDetection::areColliding(const
 	tMin = glm::max(tMin, glm::min(tz1, tz2));
 	tMax = glm::min(tMax, glm::max(tz1, tz2));
 
-	// Now, if tMax is > tMin, we have an intersection (the closest one at ray.origin + tMin * ray.dir). This intersection must be at a positive distance (if not it is "behind" the ray.
-	return { tMax > tMin && tMax >= 0, tMin >= 0 ? tMin : tMax };
+	// Now, if tMax is >= tMin, we have an intersection (the closest one at ray.origin + tMin * ray.dir). This intersection must be at a positive distance (if not it is "behind" the ray).
+	return { tMax >= tMin && tMax >= 0, tMin >= 0 ? tMin : tMax };
 }
 
 collisionDetection::RayCollisionInfo pah::collisionDetection::areColliding(const Ray& ray, const Plane& plane) {
