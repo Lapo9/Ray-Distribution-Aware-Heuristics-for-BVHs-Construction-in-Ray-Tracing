@@ -147,7 +147,7 @@ namespace pah {
 			Node(const Node& orig) :
 				aabb{ orig.aabb },
 				triangles{ orig.triangles },
-				TIME(nodeTimingInfo{ orig.nodeTimingInfo }, ),
+				TIME(nodeTimingInfo{ orig.nodeTimingInfo }),
 				leftChild{ orig.leftChild != nullptr ? new Node(*orig.leftChild) : nullptr },
 				rightChild{ orig.rightChild != nullptr ? new Node(*orig.rightChild) : nullptr } {
 			}
@@ -164,7 +164,7 @@ namespace pah {
 			Node(Node&& orig) :
 				aabb{ std::move(orig.aabb) },
 				triangles{ std::move(orig.triangles) },
-				TIME(nodeTimingInfo{ std::move(orig.nodeTimingInfo) }, ),
+				TIME(nodeTimingInfo{ std::move(orig.nodeTimingInfo) }),
 				leftChild{ std::move(orig.leftChild) },
 				rightChild{ std::move(orig.rightChild) } {
 			}
@@ -209,17 +209,20 @@ namespace pah {
 		 */
 		struct Properties {
 			float maxLeafCost; /**< If a @p Node cost is less than this threshold, it is automatically a leaf. */
+			float maxLeafArea; /**< If a @p Node area is less than this threshold, it is automatically a leaf. */
+			float maxLeafHitProbability; /**< If a @p Node hit probability is less than this threshold, it is automatically a leaf. */
 			int maxTrianglesPerLeaf; /**< If a @p Node has less triangles than this threshold, it is automatically a leaf. */
 			int maxLevels; /**< Max number of levels of the @p Bvh. */
 			int bins; /**< How many bins are used to create the nodes of th @p Bvh. The higher, the better the @p Bvh, but the slower the construction. */
+			int maxNonFallbackLevels; /**< Nodes after this level will use the fallback (SAH) method. */
 			float splitPlaneQualityThreshold;
 			float maxChildrenFatherHitProbabilityRatio;
 		};
 
 		//custom alias
-		using ComputeCostReturnType = struct { float cost, hitProbability; };			using ComputeCostType = ComputeCostReturnType(const Node&, const InfluenceArea&, float rootMetric);
+		using ComputeCostReturnType = struct { float cost, hitProbability, area; };		using ComputeCostType = ComputeCostReturnType(const Node&, const InfluenceArea&, float rootMetric);
 		using ChooseSplittingPlanesReturnType = std::vector<std::pair<Axis, float>>;	using ChooseSplittingPlanesType = ChooseSplittingPlanesReturnType(const Node&, const InfluenceArea&, Axis father, std::mt19937& rng);
-		using ShouldStopReturnType = bool;												using ShouldStopType = ShouldStopReturnType(const Node&, const Properties&, int currentLevel, float nodeCost);
+		using ShouldStopReturnType = bool;												using ShouldStopType = ShouldStopReturnType(const Node&, const Properties&, int currentLevel, const ComputeCostReturnType& nodeCost);
 
 
 		Bvh(const Properties&, const InfluenceArea&, ComputeCostType computeCost, ChooseSplittingPlanesType chooseSplittingPlanes, ShouldStopType shouldStop, std::string name);
@@ -272,9 +275,9 @@ namespace pah {
 		void splitNode(Node& node, Axis fatherSplittingAxis, float fatherHitProbability, int currentLevel, float splitPlaneQualityThreshold, float maxChildrenFatherHitProbabilityRatio);
 
 		//simple wrappers for the custom functions. We use wrappers because there may be some common actions to perform before (e.g. time logging)
-		ComputeCostReturnType computeCostWrapper(const Node& parent, const Node& node, const InfluenceArea& influenceArea, float rootArea, bool forceSah = false);
-		ChooseSplittingPlanesReturnType chooseSplittingPlanesWrapper(const Node& node, const InfluenceArea& influenceArea, Axis axis, std::mt19937& rng, bool forceSah = false);
-		ShouldStopReturnType shouldStopWrapper(const Node& parent, const Node& node, const Properties& properties, int currentLevel, float nodeCost, bool forceSah = false);
+		ComputeCostReturnType computeCostWrapper(const Node& parent, const Node& node, const InfluenceArea& influenceArea, float rootArea, int level, bool forceSah = false);
+		ChooseSplittingPlanesReturnType chooseSplittingPlanesWrapper(const Node& node, const InfluenceArea& influenceArea, Axis axis, std::mt19937& rng, int level, bool forceSah = false);
+		ShouldStopReturnType shouldStopWrapper(const Node& parent, const Node& node, const Properties& properties, int currentLevel, const ComputeCostReturnType& nodeCost, int level, bool forceSah = false);
 
 		/**
 		 * @brief Given a list of triangles, an axis and a position on this axis, returns 2 sets of triangles, the ones "to the left" of the plane, and the ones "to the right".
@@ -324,9 +327,10 @@ namespace pah {
 			//this function is called with rootArea < 0 when we want to initialize it
 			if (rootArea < 0) return { node.aabb.surfaceArea(), node.aabb.surfaceArea() };
 
-			float hitProbability = node.aabb.surfaceArea() / rootArea;
+			float surfaceArea = node.aabb.surfaceArea();
+			float hitProbability = surfaceArea / rootArea;
 			float cost = node.isLeaf() ? LEAF_COST : NODE_COST;
-			return { hitProbability * node.triangles.size() * cost, hitProbability };
+			return { hitProbability * node.triangles.size() * cost, hitProbability, surfaceArea };
 		}
 
 		/**
@@ -339,7 +343,7 @@ namespace pah {
 			float projectedArea = influenceArea.getProjectedArea(node.aabb);
 			float hitProbability = projectedArea / rootProjectedArea;
 			float cost = node.isLeaf() ? 1.2f : 1.0f;
-			return { hitProbability * node.triangles.size() * cost, hitProbability };
+			return { hitProbability * node.triangles.size() * cost, hitProbability, projectedArea };
 		}
 
 		/**
@@ -399,8 +403,12 @@ namespace pah {
 		/**
 		 * @brief Returns true if the max level has been passed or if the cost of the leaf is low enough.
 		 */
-		static Bvh::ShouldStopReturnType shouldStopThresholdOrLevel(const Bvh::Node& node, const Bvh::Properties& properties, int currentLevel, float nodeCost) {
-			return currentLevel > properties.maxLevels || nodeCost < properties.maxLeafCost || node.triangles.size() < properties.maxTrianglesPerLeaf;
+		static Bvh::ShouldStopReturnType shouldStopThresholdOrLevel(const Bvh::Node& node, const Bvh::Properties& properties, int currentLevel, const Bvh::ComputeCostReturnType& nodeCost) {
+			return currentLevel > properties.maxLevels || 
+				nodeCost.cost < properties.maxLeafCost  || 
+				nodeCost.hitProbability < properties.maxLeafHitProbability ||
+				nodeCost.area < properties.maxLeafArea ||
+				node.triangles.size() < properties.maxTrianglesPerLeaf;
 		}
 	}
 }

@@ -46,15 +46,17 @@ namespace pah {
 		/**
 		 * @brief Traverses the TopLevel structure and the fallback Bvh alone, and returns the traversal results.
 		 */
-		std::pair<CumulativeRayCasterResults, CumulativeRayCasterResults> traverse() {
+		std::pair<json, json> traverse() {
 			auto topLevelResults = std::ranges::fold_left(rayCasters, CumulativeRayCasterResults{}, [this](auto res, auto rayCaster) { return res + rayCaster->castRays(*topLevel); });
+			auto topLevelResultsJson = json(topLevelResults);
 			std::ofstream topLevelResultsFile{ outputFolderPath + "/TopLevelTraversalResults.json" };
-			topLevelResultsFile << std::setw(2) << json(topLevelResults);
+			topLevelResultsFile << std::setw(2) << topLevelResultsJson;
 			topLevelResultsFile.close();
 
 			auto fallbackSahResults = std::ranges::fold_left(rayCasters, CumulativeRayCasterResults{}, [this](auto res, auto rayCaster) { return res + rayCaster->castRays(topLevel->getFallbackBvh()); });
+			auto fallbackSahResultsJson = json(fallbackSahResults);
 			std::ofstream fallbackSahResultsFile{ outputFolderPath + "/FallbackSahTraversalResults.json" };
-			fallbackSahResultsFile << std::setw(2) << json(fallbackSahResults);
+			fallbackSahResultsFile << std::setw(2) << fallbackSahResultsJson;
 			fallbackSahResultsFile.close();
 
 			return { topLevelResults, fallbackSahResults };
@@ -63,7 +65,7 @@ namespace pah {
 		/**
 		 * @brief Basizally calls build and then analyze, and returns the combined results.
 		 */
-		std::tuple<json, CumulativeRayCasterResults, CumulativeRayCasterResults> buildAndTraverse(bool analyzeTopLevel = true) {
+		std::tuple<json, json, json> buildAndTraverse(bool analyzeTopLevel = true) {
 			json analysis = build(analyzeTopLevel);
 			auto traversal = traverse();
 			return { analysis, traversal.first, traversal.second };

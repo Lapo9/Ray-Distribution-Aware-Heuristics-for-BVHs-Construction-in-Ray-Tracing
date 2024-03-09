@@ -166,8 +166,13 @@ void pah::to_json(json& j, const TopLevelOctree::NodeTimingInfo& nti) {
 void pah::to_json(json& j, const Bvh::Properties& properties) {
 	j["bins"] = properties.bins;
 	j["maxLeafCost"] = properties.maxLeafCost;
-	j["maxLevels"] = properties.maxLevels;
+	j["maxLeafArea"] = properties.maxLeafArea;
+	j["maxLeafHitProbability"] = properties.maxLeafHitProbability;
 	j["maxTrianglesPerLeaf"] = properties.maxTrianglesPerLeaf;
+	j["maxLevels"] = properties.maxLevels;
+	j["maxNonFallbackLevels"] = properties.maxNonFallbackLevels;
+	j["splitPlaneQualityThreshold"] = properties.splitPlaneQualityThreshold;
+	j["maxChildrenFatherHitProbabilityRatio"] = properties.maxChildrenFatherHitProbabilityRatio;
 }
 
 void pah::to_json(json& j, const TopLevelOctree::OctreeProperties& properties) {

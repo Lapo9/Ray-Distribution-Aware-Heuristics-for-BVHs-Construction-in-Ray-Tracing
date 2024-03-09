@@ -43,8 +43,7 @@ namespace pah::analyzerActions {
 		 */
 		static void sah(float& totalSah, ANALYZER_ACTION_PER_NODE_ARGUMENTS) {
 			float rootSa = bvh.getRoot().aabb.surfaceArea();
-			auto [sah, hitProb] = bvhStrategies::computeCostSah(node, *bvh.getInfluenceArea(), rootSa);
-			auto sa = node.aabb.surfaceArea();
+			auto [sah, hitProb, sa] = bvhStrategies::computeCostSah(node, *bvh.getInfluenceArea(), rootSa);
 
 			//add to JSON
 			localLog["metrics"]["sah"] = sah;
@@ -64,8 +63,7 @@ namespace pah::analyzerActions {
 			if (bvh.getInfluenceArea() == nullptr) return; //it means it is a SAH BVH
 			float lastRootProjectedArea = bvh.getInfluenceArea()->getProjectedArea(bvh.getRoot().aabb);
 			
-			auto [pah, hitProb] = bvhStrategies::computeCostPah(node, *bvh.getInfluenceArea(), lastRootProjectedArea);
-			auto pa = bvh.getInfluenceArea()->getProjectedArea(node.aabb);
+			auto [pah, hitProb, pa] = bvhStrategies::computeCostPah(node, *bvh.getInfluenceArea(), lastRootProjectedArea);
 
 			//add to JSON
 			localLog["metrics"]["pah"] = pah;

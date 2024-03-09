@@ -91,11 +91,11 @@ void pah::Bvh::splitNode(Node& node, Axis fatherSplittingAxis, float fatherHitPr
 	//the final action simply adds the measured time to the total time
 	TIME(TimeLogger timeLoggerTotal{ [&timingInfo = node.nodeTimingInfo](DurationMs duration) { timingInfo.logTotal(duration); } };);
 
-	float bestLeftCostSoFar = numeric_limits<float>::max(), bestRightCostSoFar = numeric_limits<float>::max();
-	float bestLeftHitProbabilitySoFar = numeric_limits<float>::max(), bestRightHitProbabilitySoFar = numeric_limits<float>::max();
+	constexpr float MAX = numeric_limits<float>::max();
+	ComputeCostReturnType bestLeftCostSoFar = { MAX,MAX,MAX }, bestRightCostSoFar = { MAX,MAX,MAX };
 	Node bestLeft{ Aabb::maxAabb() }, bestRight{ Aabb::maxAabb() };
 	Axis usedAxis; //we save what axis we actually used
-	auto splittingPlanes = chooseSplittingPlanesWrapper(node, *influenceArea, fatherSplittingAxis, rng);
+	auto splittingPlanes = chooseSplittingPlanesWrapper(node, *influenceArea, fatherSplittingAxis, rng, currentLevel);
 
 	bool found = false; //flag to check if we found at least one split (maybe all the splits place the triangles on one side, leaving the other one empty)
 
@@ -107,12 +107,12 @@ void pah::Bvh::splitNode(Node& node, Axis fatherSplittingAxis, float fatherHitPr
 		//if the quality of this split plane is too low... and we haven't already found a satisfactory split, fallback to longest + SAH strategy
 		if (quality < splitPlaneQualityThreshold) {
 			// ...and we haven't already found a satisfactory split, fallback to longest + SAH strategy (only use the best split plane)
-			if ((bestLeftHitProbabilitySoFar + bestRightHitProbabilitySoFar) / fatherHitProbability <= maxChildrenFatherHitProbabilityRatio) break;
+			if ((bestLeftCostSoFar.hitProbability + bestRightCostSoFar.hitProbability) / fatherHitProbability <= maxChildrenFatherHitProbabilityRatio) break;
 
 			forceSah = true;
 			Axis sahAxis = chooseSplittingPlanesWrapper(node, *influenceArea, fatherSplittingAxis, rng, forceSah)[0].first;
 			axis = sahAxis;
-			bestLeftCostSoFar = numeric_limits<float>::max(); bestRightCostSoFar = numeric_limits<float>::max();
+			bestLeftCostSoFar = { MAX,MAX,MAX }; bestRightCostSoFar = { MAX,MAX,MAX };
 		}
 
 		//split for each bin
@@ -125,17 +125,15 @@ void pah::Bvh::splitNode(Node& node, Axis fatherSplittingAxis, float fatherHitPr
 			Node left = { leftTriangles }, right = { rightTriangles };
 			TIME(timeLoggerNodes.stop(););
 
-			auto [costLeft, hitProbabilityLeft] = computeCostWrapper(node, left, *influenceArea, rootMetric, forceSah);
-			auto [costRight, hitProbabilityRight] = computeCostWrapper(node, right, *influenceArea, rootMetric, forceSah);
+			auto costLeft = computeCostWrapper(node, left, *influenceArea, rootMetric, currentLevel, forceSah);
+			auto costRight = computeCostWrapper(node, right, *influenceArea, rootMetric, currentLevel, forceSah);
 
 			//update best split (also check that we have triangles on both sides, else we might get stuck)
-			if (costLeft + costRight < bestLeftCostSoFar + bestRightCostSoFar) {
+			if (costLeft.cost + costRight.cost < bestLeftCostSoFar.cost + bestRightCostSoFar.cost) {
 				found = true;
 				usedAxis = axis;
 				bestLeftCostSoFar = costLeft;
-				bestLeftHitProbabilitySoFar = hitProbabilityLeft;
 				bestRightCostSoFar = costRight;
-				bestRightHitProbabilitySoFar = hitProbabilityRight;
 				bestLeft = std::move(left);
 				bestRight = std::move(right);
 			}
@@ -154,10 +152,10 @@ void pah::Bvh::splitNode(Node& node, Axis fatherSplittingAxis, float fatherHitPr
 
 	//recurse on children
 	currentLevel++;
-	if (!shouldStopWrapper(node, *node.leftChild, properties, currentLevel, bestLeftCostSoFar))
-		splitNode(*node.leftChild, usedAxis, bestLeftHitProbabilitySoFar, currentLevel, splitPlaneQualityThreshold, maxChildrenFatherHitProbabilityRatio);
-	if (!shouldStopWrapper(node, *node.rightChild, properties, currentLevel, bestRightCostSoFar))
-		splitNode(*node.rightChild, usedAxis, bestRightHitProbabilitySoFar, currentLevel, splitPlaneQualityThreshold, maxChildrenFatherHitProbabilityRatio);
+	if (!shouldStopWrapper(node, *node.leftChild, properties, currentLevel, bestLeftCostSoFar, currentLevel))
+		splitNode(*node.leftChild, usedAxis, bestLeftCostSoFar.hitProbability, currentLevel, splitPlaneQualityThreshold, maxChildrenFatherHitProbabilityRatio);
+	if (!shouldStopWrapper(node, *node.rightChild, properties, currentLevel, bestRightCostSoFar, currentLevel))
+		splitNode(*node.rightChild, usedAxis, bestRightCostSoFar.hitProbability, currentLevel, splitPlaneQualityThreshold, maxChildrenFatherHitProbabilityRatio);
 }
 
 const pah::Bvh::Node& pah::Bvh::getRoot() const {
@@ -176,26 +174,26 @@ const pah::Bvh::Properties pah::Bvh::getProperties() const {
 	return properties;
 }
 
-pah::Bvh::ComputeCostReturnType pah::Bvh::computeCostWrapper(const Node& parent, const Node& node, const InfluenceArea& influenceArea, float rootArea, bool forceSah) {
+pah::Bvh::ComputeCostReturnType pah::Bvh::computeCostWrapper(const Node& parent, const Node& node, const InfluenceArea& influenceArea, float rootArea, int level, bool forceSah) {
 	//the final action simply adds the measured time to the total compute cost time, and increases the compute cost counter
 	TIME(TimeLogger timeLogger{ [&timingInfo = parent.nodeTimingInfo](auto duration) { timingInfo.logComputeCost(duration); } };);
-	if (forceSah) return bvhStrategies::computeCostSah(node, influenceArea, rootArea);
+	if (forceSah || level > properties.maxNonFallbackLevels) return bvhStrategies::computeCostSah(node, influenceArea, rootArea);
 	return computeCost(node, influenceArea, rootArea);
 	//here timeLogger will be destroyed, and it will log (by calling finalAction)
 }
 
-pah::Bvh::ChooseSplittingPlanesReturnType pah::Bvh::chooseSplittingPlanesWrapper(const Node& node, const InfluenceArea& influenceArea, Axis axis, mt19937& rng, bool forceSah) {
+pah::Bvh::ChooseSplittingPlanesReturnType pah::Bvh::chooseSplittingPlanesWrapper(const Node& node, const InfluenceArea& influenceArea, Axis axis, mt19937& rng, int level, bool forceSah) {
 	//the final action simply adds the measured time to the total choose splitting plane time, and increases the choose splitting plane counter
 	TIME(TimeLogger timeLogger{ [&timingInfo = node.nodeTimingInfo](auto duration) { timingInfo.logChooseSplittingPlanes(duration); } };);
-	if (forceSah) return bvhStrategies::chooseSplittingPlanesLongest(node, influenceArea, axis, rng);
+	if (forceSah || level > properties.maxNonFallbackLevels) return bvhStrategies::chooseSplittingPlanesLongest(node, influenceArea, axis, rng);
 	return chooseSplittingPlanes(node, influenceArea, axis, rng);
 	//here timeLogger will be destroyed, and it will log (by calling finalAction)
 }
 
-pah::Bvh::ShouldStopReturnType pah::Bvh::shouldStopWrapper(const Node& parent, const Node& node, const Properties& properties, int currentLevel, float nodeCost, bool forceSah) {
+pah::Bvh::ShouldStopReturnType pah::Bvh::shouldStopWrapper(const Node& parent, const Node& node, const Properties& properties, int currentLevel, const ComputeCostReturnType& nodeCost, int level, bool forceSah) {
 	//the final action simply adds the measured time to the total should stop time, and increases the should stop counter
 	TIME(TimeLogger timeLogger{ [&timingInfo = parent.nodeTimingInfo](auto duration) { timingInfo.logShouldStop(duration); } };);
-	if (forceSah) return bvhStrategies::shouldStopThresholdOrLevel(node, properties, currentLevel, nodeCost);
+	if (forceSah || level > properties.maxNonFallbackLevels) return bvhStrategies::shouldStopThresholdOrLevel(node, properties, currentLevel, nodeCost);
 	return shouldStop(node, properties, currentLevel, nodeCost);
 	//here timeLogger will be destroyed, and it will log (by calling finalAction)
 }
