@@ -30,10 +30,10 @@ int main() {
 		ACCESSOR("PAH cost with fallback",				AT::PAH, ["cost"]["traversalCostAveragePerRay"]),
 		ACCESSOR("PAH intersections with fallback",		AT::PAH, ["total"]["intersectionTests"]["intersectionTestsAveragePerRay"]),
 		ACCESSOR("PAH hit percentage",					AT::PAH, ["total"]["hitMiss"]["hitsPercentage"]),
-		ACCESSOR("PAH cost without fallback",			AT::PAH, ["cost"]["traversalCostForBvhPerRay"].at(0)),
-		ACCESSOR("PAH intersections without fallback",	AT::PAH, ["fallback"]["intersectionTests"]["intersectionTestsAveragePerRay"]),
-		ACCESSOR("SAH cost without fallback",			AT::PAH, ["cost"]["traversalCostAveragePerRay"]),
-		ACCESSOR("SAH intersections without fallback",	AT::PAH, ["fallback"]["intersectionTests"]["intersectionTestsAveragePerRay"]),
+		ACCESSOR("PAH cost without fallback",			AT::PAH, ["cost"]["traversalCostForBvhPerRay"].at(0).at(1)),
+		ACCESSOR("PAH intersections without fallback",	AT::PAH, ["fallback"]["intersectionTests"]["intersectionTestsNonFallbackAveragePerRay"]),
+		ACCESSOR("SAH cost without fallback",			AT::FALLBACK, ["cost"]["traversalCostAveragePerRay"]),
+		ACCESSOR("SAH intersections without fallback",	AT::FALLBACK, ["fallback"]["intersectionTests"]["intersectionTestsNonFallbackAveragePerRay"]),
 		ACCESSOR("Max level PAH",						AT::TOP_LEVEL, ["bvhs"].at(0)["globalInfo"]["maxLevel"]),
 		ACCESSOR("Max leaf cost",						AT::TOP_LEVEL, ["bvhs"].at(0)["globalInfo"]["properties"]["maxLeafCost"]),
 		ACCESSOR("Max leaf area",						AT::TOP_LEVEL, ["bvhs"].at(0)["globalInfo"]["properties"]["maxLeafArea"]),
@@ -41,7 +41,7 @@ int main() {
 		ACCESSOR("Max triangles per leaf",				AT::TOP_LEVEL, ["bvhs"].at(0)["globalInfo"]["properties"]["maxTrianglesPerLeaf"]),
 		ACCESSOR("Max non fallback levels",				AT::TOP_LEVEL, ["bvhs"].at(0)["globalInfo"]["properties"]["maxNonFallbackLevels"]),
 		ACCESSOR("Split plane quality threshold",		AT::TOP_LEVEL, ["bvhs"].at(0)["globalInfo"]["properties"]["splitPlaneQualityThreshold"]),
-		ACCESSOR("Max children/father hit probability",	AT::TOP_LEVEL, ["bvhs"].at(0)["globalInfo"]["properties"]["maxChildrenFatherHitProbabilityRatio"]),
+		ACCESSOR("Max children/father hit probability",	AT::TOP_LEVEL, ["bvhs"].at(0)["globalInfo"]["properties"]["maxChildrenFatherHitProbabilityRatio"])
 	};
 
 	//generate triangles for different scenes
@@ -89,7 +89,7 @@ int main() {
 
 
 	// Filter test scenes to run
-	constexpr bool ALL = false;
+	constexpr bool ALL = true;
 	constexpr bool PLANE_FULL_PARALLEL = ALL || false;
 	constexpr bool PLANE_FULL_PARALLEL_LONGEST = ALL || false;
 	constexpr bool WOOD_SCENE = ALL || false;

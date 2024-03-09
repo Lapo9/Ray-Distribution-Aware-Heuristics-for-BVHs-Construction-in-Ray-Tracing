@@ -1,122 +1,122 @@
 {
   "cost": {
-    "traversalCostAveragePerBvh": 73.36551666259766,
-    "traversalCostAveragePerRay": 82.97639465332031,
+    "traversalCostAveragePerBvh": 75.04505157470703,
+    "traversalCostAveragePerRay": 84.27559661865234,
     "traversalCostForBvh": [
       [
         "plane",
-        73191.1796875,
+        75360.34375,
         1000
       ],
       [
         "fallback",
-        9785.201171875,
-        131
+        8915.19921875,
+        123
       ]
     ],
     "traversalCostForBvhPerRay": [
       [
         "plane",
-        73.19117736816406,
+        75.36034393310547,
         1000
       ],
       [
         "fallback",
-        74.6961898803711,
-        131
+        72.48129272460938,
+        123
       ]
     ],
-    "traversalCostTotal": 82976.3984375
+    "traversalCostTotal": 84275.59375
   },
   "fallback": {
     "general": {
-      "fallbackBvhSearchesPercentage": 0.13099999725818634,
-      "fallbackBvhSearchesTotal": 131,
-      "nonFallbackSearchesPercentage": 0.8690000176429749,
-      "nonFallbackSearchesTotal": 869,
+      "fallbackBvhSearchesPercentage": 0.12300000339746475,
+      "fallbackBvhSearchesTotal": 123,
+      "nonFallbackSearchesPercentage": 0.8769999742507935,
+      "nonFallbackSearchesTotal": 877,
       "successfulFallbackBvhSearchesPercentage": 0.0
     },
     "intersectionTests": {
-      "intersectionTestsNonFallbackAveragePerBvh": 44.775001525878906,
-      "intersectionTestsNonFallbackAveragePerRay": 44.775001525878906,
-      "intersectionTestsNonFallbackTotal": 44775
+      "intersectionTestsNonFallbackAveragePerBvh": 45.72999954223633,
+      "intersectionTestsNonFallbackAveragePerRay": 45.72999954223633,
+      "intersectionTestsNonFallbackTotal": 45730
     },
     "intersectionTestsWhenHit": {
-      "intersectionTestsWhenHitNonFallbackAveragePerBvh": 40.81999969482422,
-      "intersectionTestsWhenHitNonFallbackAveragePerRay": 40.81999969482422,
-      "intersectionTestsWhenHitNonFallbackTotal": 40820
+      "intersectionTestsWhenHitNonFallbackAveragePerBvh": 42.00600051879883,
+      "intersectionTestsWhenHitNonFallbackAveragePerRay": 42.00600051879883,
+      "intersectionTestsWhenHitNonFallbackTotal": 42006
     },
     "intersectionTestsWhenHitWithNodes": {
-      "intersectionTestsWithNodesWhenHitNonFallbackAveragePerBvh": 34.8849983215332,
-      "intersectionTestsWithNodesWhenHitNonFallbackAveragePerRay": 34.8849983215332,
-      "intersectionTestsWithNodesWhenHitNonFallbackTotal": 34885
+      "intersectionTestsWithNodesWhenHitNonFallbackAveragePerBvh": 36.62300109863281,
+      "intersectionTestsWithNodesWhenHitNonFallbackAveragePerRay": 36.62300109863281,
+      "intersectionTestsWithNodesWhenHitNonFallbackTotal": 36623
     },
     "intersectionTestsWhenHitWithTriangles": {
-      "intersectionTestsWithTrianglesWhenHitNonFallbackAveragePerBvh": 5.934999942779541,
-      "intersectionTestsWithTrianglesWhenHitNonFallbackAveragePerRay": 5.934999942779541,
-      "intersectionTestsWithTrianglesWhenHitNonFallbackTotal": 5935
+      "intersectionTestsWithTrianglesWhenHitNonFallbackAveragePerBvh": 5.382999897003174,
+      "intersectionTestsWithTrianglesWhenHitNonFallbackAveragePerRay": 5.382999897003174,
+      "intersectionTestsWithTrianglesWhenHitNonFallbackTotal": 5383
     },
     "intersectionTestsWithNodes": {
-      "intersectionTestsWithNodesNonFallbackAveragePerBvh": 38.11399841308594,
-      "intersectionTestsWithNodesNonFallbackAveragePerRay": 38.11399841308594,
-      "intersectionTestsWithNodesNonFallbackTotal": 38114
+      "intersectionTestsWithNodesNonFallbackAveragePerBvh": 39.612998962402344,
+      "intersectionTestsWithNodesNonFallbackAveragePerRay": 39.612998962402344,
+      "intersectionTestsWithNodesNonFallbackTotal": 39613
     },
     "intersectionTestsWithTriangles": {
-      "intersectionTestsWithTrianglesNonFallbackAveragePerBvh": 6.660999774932861,
-      "intersectionTestsWithTrianglesNonFallbackAveragePerRay": 6.660999774932861,
-      "intersectionTestsWithTrianglesNonFallbackTotal": 6661
+      "intersectionTestsWithTrianglesNonFallbackAveragePerBvh": 6.117000102996826,
+      "intersectionTestsWithTrianglesNonFallbackAveragePerRay": 6.117000102996826,
+      "intersectionTestsWithTrianglesNonFallbackTotal": 6117
     }
   },
   "general": {
     "rayCastersAmount": 1,
     "raysAmount": 1000,
-    "timeTraversingAveragePerBvh": 0.0024613591376692057,
-    "timeTraversingAveragePerRay": 0.002783797215670347,
-    "timeTraversingOnlyBvhsAveragePerBvh": 0.00196613441221416,
-    "timeTraversingOnlyBvhsAveragePerRay": 0.002223698189482093,
-    "timeTraversingOnlyBvhsTotal": 2.223698139190674,
-    "timeTraversingTotal": 2.783797264099121
+    "timeTraversingAveragePerBvh": 0.002461617812514305,
+    "timeTraversingAveragePerRay": 0.002764396835118532,
+    "timeTraversingOnlyBvhsAveragePerBvh": 0.001980229513719678,
+    "timeTraversingOnlyBvhsAveragePerRay": 0.0022237978409975767,
+    "timeTraversingOnlyBvhsTotal": 2.2237977981567383,
+    "timeTraversingTotal": 2.764396905899048
   },
   "total": {
     "bvhsTraversed": {
-      "bvhsTraversedAveragePerRay": 1.13100004196167,
-      "bvhsTraversedTotal": 1131
+      "bvhsTraversedAveragePerRay": 1.1230000257492065,
+      "bvhsTraversedTotal": 1123
     },
     "hitMiss": {
-      "hitsPercentage": 0.8690000176429749,
-      "hitsTotal": 869,
-      "missesPercentage": 0.13099999725818634,
-      "missesTotal": 131
+      "hitsPercentage": 0.8769999742507935,
+      "hitsTotal": 877,
+      "missesPercentage": 0.12300000339746475,
+      "missesTotal": 123
     },
     "intersectionTests": {
-      "intersectionTestsAveragePerBvh": 45.900089263916016,
-      "intersectionTestsAveragePerRay": 51.91299819946289,
-      "intersectionTestsTotal": 51913
+      "intersectionTestsAveragePerBvh": 46.5592155456543,
+      "intersectionTestsAveragePerRay": 52.2859992980957,
+      "intersectionTestsTotal": 52286
     },
     "intersectionTestsWhenHit": {
-      "intersectionTestsWhenHitAveragePerBvh": 36.09195327758789,
-      "intersectionTestsWhenHitAveragePerRay": 40.81999969482422,
-      "intersectionTestsWhenHitTotal": 40820
+      "intersectionTestsWhenHitAveragePerBvh": 37.40516662597656,
+      "intersectionTestsWhenHitAveragePerRay": 42.00600051879883,
+      "intersectionTestsWhenHitTotal": 42006
     },
     "intersectionTestsWhenHitWithNodes": {
-      "intersectionTestsWithNodesWhenHitAveragePerBvh": 30.844385147094727,
-      "intersectionTestsWithNodesWhenHitAveragePerRay": 34.8849983215332,
-      "intersectionTestsWithNodesWhenHitTotal": 34885
+      "intersectionTestsWithNodesWhenHitAveragePerBvh": 32.61175537109375,
+      "intersectionTestsWithNodesWhenHitAveragePerRay": 36.62300109863281,
+      "intersectionTestsWithNodesWhenHitTotal": 36623
     },
     "intersectionTestsWhenHitWithTriangles": {
-      "intersectionTestsWithTrianglesWhenHitAveragePerBvh": 5.247568607330322,
-      "intersectionTestsWithTrianglesWhenHitAveragePerRay": 5.934999942779541,
-      "intersectionTestsWithTrianglesWhenHitTotal": 5935
+      "intersectionTestsWithTrianglesWhenHitAveragePerBvh": 4.793410301208496,
+      "intersectionTestsWithTrianglesWhenHitAveragePerRay": 5.382999897003174,
+      "intersectionTestsWithTrianglesWhenHitTotal": 5383
     },
     "intersectionTestsWithNodes": {
-      "intersectionTestsWithNodesAveragePerBvh": 36.358089447021484,
-      "intersectionTestsWithNodesAveragePerRay": 41.12099838256836,
-      "intersectionTestsWithNodesTotal": 41121
+      "intersectionTestsWithNodesAveragePerBvh": 37.68299102783203,
+      "intersectionTestsWithNodesAveragePerRay": 42.31800079345703,
+      "intersectionTestsWithNodesTotal": 42318
     },
     "intersectionTestsWithTriangles": {
-      "intersectionTestsWithTrianglesAveragePerBvh": 9.541997909545898,
-      "intersectionTestsWithTrianglesAveragePerRay": 10.791999816894531,
-      "intersectionTestsWithTrianglesTotal": 10792
+      "intersectionTestsWithTrianglesAveragePerBvh": 8.876224517822266,
+      "intersectionTestsWithTrianglesAveragePerRay": 9.968000411987305,
+      "intersectionTestsWithTrianglesTotal": 9968
     }
   }
 }
