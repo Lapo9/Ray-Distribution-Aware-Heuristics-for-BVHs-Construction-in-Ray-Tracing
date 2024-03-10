@@ -272,7 +272,7 @@ namespace pah {
 		/**
 		 * @brief Given a @p Node, it splits it into 2 children according to the strategies set during @p Bvh construction.
 		 */
-		void splitNode(Node& node, Axis fatherSplittingAxis, float fatherHitProbability, int currentLevel, float splitPlaneQualityThreshold, float maxChildrenFatherHitProbabilityRatio);
+		void splitNode(Node& node, Axis fatherSplittingAxis, float fatherHitProbability, int currentLevel);
 
 		//simple wrappers for the custom functions. We use wrappers because there may be some common actions to perform before (e.g. time logging)
 		ComputeCostReturnType computeCostWrapper(const Node& parent, const Node& node, const InfluenceArea& influenceArea, float rootArea, int level, bool forceSah = false);

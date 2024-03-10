@@ -16,14 +16,14 @@
     ],
     "traversalCostForBvhPerRay": [
       [
-        "fallback",
-        21.22332191467285,
-        910
-      ],
-      [
         "plane",
         21.503999710083008,
         1000
+      ],
+      [
+        "fallback",
+        21.22332191467285,
+        910
       ]
     ],
     "traversalCostTotal": 40817.21875
@@ -70,12 +70,12 @@
   "general": {
     "rayCastersAmount": 1,
     "raysAmount": 1000,
-    "timeTraversingAveragePerBvh": 0.000958062126301229,
-    "timeTraversingAveragePerRay": 0.0018298986833542585,
-    "timeTraversingOnlyBvhsAveragePerBvh": 0.0006300516542978585,
-    "timeTraversingOnlyBvhsAveragePerRay": 0.001203398685902357,
-    "timeTraversingOnlyBvhsTotal": 1.2033987045288086,
-    "timeTraversingTotal": 1.829898715019226
+    "timeTraversingAveragePerBvh": 0.0009558106539770961,
+    "timeTraversingAveragePerRay": 0.0018255983013659716,
+    "timeTraversingOnlyBvhsAveragePerBvh": 0.0006289003067649901,
+    "timeTraversingOnlyBvhsAveragePerRay": 0.0012011994840577245,
+    "timeTraversingOnlyBvhsTotal": 1.2011995315551758,
+    "timeTraversingTotal": 1.8255983591079712
   },
   "total": {
     "bvhsTraversed": {

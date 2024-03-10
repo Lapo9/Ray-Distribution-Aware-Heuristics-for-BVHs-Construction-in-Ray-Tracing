@@ -53,6 +53,7 @@ int main() {
 	const vector suzanneTriangles = Triangle::fromObj("D:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/ProjectedAreaHeuristic/exampleData/MonkeyModel.obj");
 	const vector cottageTriangles = Triangle::fromObj("D:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/ProjectedAreaHeuristic/exampleData/Cottage.obj");
 	const vector cottageWallsTriangles = Triangle::fromObj("D:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/ProjectedAreaHeuristic/exampleData/CottageWalls.obj");
+	const vector crowdTriangles = Triangle::fromObj("D:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/ProjectedAreaHeuristic/exampleData/Crowd.obj");
 
 	//Top level analyzer used by most scenes
 	TopLevelOctreeAnalyzer topLevelAnalyzer{
@@ -69,19 +70,19 @@ int main() {
 	Bvh::Properties bvhProperties{
 	.maxLeafCost = 0.0f,
 	.maxLeafArea = 0.0f,
-	.maxLeafHitProbability = 0.0005f,
+	.maxLeafHitProbability = 0.0f,
 	.maxTrianglesPerLeaf = 2,
 	.maxLevels = 100,
 	.bins = 40,
 	.maxNonFallbackLevels = 100,
-	.splitPlaneQualityThreshold = 0.1f,
+	.splitPlaneQualityThreshold = 0.0f,
 	.maxChildrenFatherHitProbabilityRatio = 1.3f
 	};
 
 	//top level structure properties used in most scenes
 	TopLevel::Properties topLevelProperties{
-	.splitPlaneQualityThreshold = 0.1f,
-	.maxChildrenFatherHitProbabilityRatio = 1.3
+	.splitPlaneQualityThreshold = 0.0f,
+	.maxChildrenFatherHitProbabilityRatio = 1.3f
 	};
 
 	//fallback BVH used by most top level structures
@@ -93,10 +94,10 @@ int main() {
 	constexpr bool PLANE_FULL_PARALLEL = ALL || false;
 	constexpr bool PLANE_FULL_PARALLEL_LONGEST = ALL || false;
 	constexpr bool WOOD_SCENE = ALL || false;
-	constexpr bool SUZANNE_SCENE = ALL || false;
+	constexpr bool SUZANNE_SCENE = ALL || true;
 	constexpr bool COTTAGE_SCENE = ALL || false;
 	constexpr bool COTTAGE_WALLS_SCENE = ALL || false;
-	constexpr bool RANDOM100_SCENE = ALL || true;
+	constexpr bool RANDOM100_SCENE = ALL || false;
 	constexpr bool RANDOM1000_SCENE = ALL || false;
 	constexpr string_view RESULTS_DIRECTORY = "D:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/Results/";
 

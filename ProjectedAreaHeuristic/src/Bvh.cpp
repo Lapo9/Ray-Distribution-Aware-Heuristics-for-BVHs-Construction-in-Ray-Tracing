@@ -43,7 +43,7 @@ void pah::Bvh::build(const std::vector<const Triangle*>& triangles, unsigned int
 	//from an array of triangles, to an array to pointers
 	root = { triangles }; //initizalize root
 	rootMetric = computeCost(root, *influenceArea, -1).cost; //initialize the root metric (generally its area/projected area)
-	splitNode(root, Axis::X, std::numeric_limits<float>::max(), 1, properties.splitPlaneQualityThreshold, properties.maxChildrenFatherHitProbabilityRatio);
+	splitNode(root, Axis::X, std::numeric_limits<float>::max(), 1);
 }
 
 pah::Bvh::TraversalResults pah::Bvh::traverse(const Ray& ray) const {	
@@ -87,7 +87,7 @@ pah::Bvh::TraversalResults pah::Bvh::traverse(const Ray& ray) const {
 	return res;
 }
 
-void pah::Bvh::splitNode(Node& node, Axis fatherSplittingAxis, float fatherHitProbability, int currentLevel, float splitPlaneQualityThreshold, float maxChildrenFatherHitProbabilityRatio) {
+void pah::Bvh::splitNode(Node& node, Axis fatherSplittingAxis, float fatherHitProbability, int currentLevel) {
 	//the final action simply adds the measured time to the total time
 	TIME(TimeLogger timeLoggerTotal{ [&timingInfo = node.nodeTimingInfo](DurationMs duration) { timingInfo.logTotal(duration); } };);
 
@@ -104,13 +104,13 @@ void pah::Bvh::splitNode(Node& node, Axis fatherSplittingAxis, float fatherHitPr
 	//try to split for each axis provided by chooseSplittingPlanes
 	for (auto [axis, quality] : splittingPlanes) {
 		bool forceSah = false; // whether to use the standard SAH strategies in place of the user selected ones
-		//if the quality of this split plane is too low... and we haven't already found a satisfactory split, fallback to longest + SAH strategy
-		if (quality < splitPlaneQualityThreshold) {
-			// ...and we haven't already found a satisfactory split, fallback to longest + SAH strategy (only use the best split plane)
-			if ((bestLeftCostSoFar.hitProbability + bestRightCostSoFar.hitProbability) / fatherHitProbability <= maxChildrenFatherHitProbabilityRatio) break;
+		//if the quality of this split plane is too low...
+		if (quality < properties.splitPlaneQualityThreshold) {
+			// ...and we haven't already found a satisfactory split, then fallback to longest + SAH strategy (only use the best SAH split plane)
+			if ((bestLeftCostSoFar.hitProbability + bestRightCostSoFar.hitProbability) / fatherHitProbability <= properties.maxChildrenFatherHitProbabilityRatio) break;
 
 			forceSah = true;
-			Axis sahAxis = chooseSplittingPlanesWrapper(node, *influenceArea, fatherSplittingAxis, rng, forceSah)[0].first;
+			Axis sahAxis = chooseSplittingPlanesWrapper(node, *influenceArea, fatherSplittingAxis, rng, currentLevel, forceSah)[0].first;
 			axis = sahAxis;
 			bestLeftCostSoFar = { MAX,MAX,MAX }; bestRightCostSoFar = { MAX,MAX,MAX };
 		}
@@ -153,9 +153,9 @@ void pah::Bvh::splitNode(Node& node, Axis fatherSplittingAxis, float fatherHitPr
 	//recurse on children
 	currentLevel++;
 	if (!shouldStopWrapper(node, *node.leftChild, properties, currentLevel, bestLeftCostSoFar, currentLevel))
-		splitNode(*node.leftChild, usedAxis, bestLeftCostSoFar.hitProbability, currentLevel, splitPlaneQualityThreshold, maxChildrenFatherHitProbabilityRatio);
+		splitNode(*node.leftChild, usedAxis, bestLeftCostSoFar.hitProbability, currentLevel);
 	if (!shouldStopWrapper(node, *node.rightChild, properties, currentLevel, bestRightCostSoFar, currentLevel))
-		splitNode(*node.rightChild, usedAxis, bestRightCostSoFar.hitProbability, currentLevel, splitPlaneQualityThreshold, maxChildrenFatherHitProbabilityRatio);
+		splitNode(*node.rightChild, usedAxis, bestRightCostSoFar.hitProbability, currentLevel);
 }
 
 const pah::Bvh::Node& pah::Bvh::getRoot() const {

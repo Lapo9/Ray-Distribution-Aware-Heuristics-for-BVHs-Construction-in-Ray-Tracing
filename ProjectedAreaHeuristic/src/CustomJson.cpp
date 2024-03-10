@@ -198,8 +198,12 @@ void pah::to_json(json& j, const CumulativeRayCasterResults& crcr) {
 	j["cost"]["traversalCostTotal"] = crcr.traversalCostTotal;
 	j["cost"]["traversalCostAveragePerRay"] = crcr.traversalCostAveragePerRay();
 	j["cost"]["traversalCostAveragePerBvh"] = crcr.traversalCostAveragePerBvh();
-	j["cost"]["traversalCostForBvh"] = crcr.traversalCostForBvh | views::transform([](auto& e) {return tuple<string, float, int>{ e.first->name, e.second.first, e.second.second }; }) | std::ranges::to<std::vector>();
-	j["cost"]["traversalCostForBvhPerRay"] = crcr.traversalCostForBvhPerRay() | views::transform([](auto& e) {return tuple<string, float, int>{ e.first->name, e.second.first, e.second.second }; }) | std::ranges::to<std::vector>();
+	auto traversalCostForBvh = crcr.traversalCostForBvh | views::transform([](auto& e) {return tuple<string, float, int>{ e.first->name, e.second.first, e.second.second }; }) | std::ranges::to<std::vector>();
+	ranges::sort(traversalCostForBvh, [](auto a, auto b) { return get<0>(a) > get<0>(b); });
+	j["cost"]["traversalCostForBvh"] = traversalCostForBvh;
+	auto traversalCostForBvhPerRay = crcr.traversalCostForBvhPerRay() | views::transform([](auto& e) {return tuple<string, float, int>{ e.first->name, e.second.first, e.second.second }; }) | std::ranges::to<std::vector>();
+	ranges::sort(traversalCostForBvhPerRay, [](auto a, auto b) { return get<0>(a) > get<0>(b); });
+	j["cost"]["traversalCostForBvhPerRay"] = traversalCostForBvhPerRay;
 	 
 	j["total"]["hitMiss"]["hitsTotal"] = crcr.hitsTotal;
 	j["total"]["hitMiss"]["hitsPercentage"] = crcr.hitsPercentage();
