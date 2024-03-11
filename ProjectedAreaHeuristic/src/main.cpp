@@ -31,9 +31,10 @@ int main() {
 		ACCESSOR("PAH intersections with fallback",		AT::PAH, ["total"]["intersectionTests"]["intersectionTestsAveragePerRay"]),
 		ACCESSOR("PAH hit percentage",					AT::PAH, ["total"]["hitMiss"]["hitsPercentage"]),
 		ACCESSOR("PAH cost without fallback",			AT::PAH, ["cost"]["traversalCostForBvhPerRay"].at(0).at(1)),
+		ACCESSOR("SAH cost without fallback",			AT::PAH, ["cost"]["traversalCostForBvhPerRay"].back().at(1)),
 		ACCESSOR("PAH intersections without fallback",	AT::PAH, ["fallback"]["intersectionTests"]["intersectionTestsNonFallbackAveragePerRay"]),
-		ACCESSOR("SAH cost without fallback",			AT::FALLBACK, ["cost"]["traversalCostAveragePerRay"]),
-		ACCESSOR("SAH intersections without fallback",	AT::FALLBACK, ["fallback"]["intersectionTests"]["intersectionTestsNonFallbackAveragePerRay"]),
+		ACCESSOR("SAH cost",							AT::FALLBACK, ["cost"]["traversalCostAveragePerRay"]),
+		ACCESSOR("SAH intersections",					AT::FALLBACK, ["fallback"]["intersectionTests"]["intersectionTestsNonFallbackAveragePerRay"]),
 		ACCESSOR("Max level PAH",						AT::TOP_LEVEL, ["bvhs"].at(0)["globalInfo"]["maxLevel"]),
 		ACCESSOR("Max leaf cost",						AT::TOP_LEVEL, ["bvhs"].at(0)["globalInfo"]["properties"]["maxLeafCost"]),
 		ACCESSOR("Max leaf area",						AT::TOP_LEVEL, ["bvhs"].at(0)["globalInfo"]["properties"]["maxLeafArea"]),
@@ -70,7 +71,7 @@ int main() {
 	Bvh::Properties bvhProperties{
 	.maxLeafCost = 0.0f,
 	.maxLeafArea = 0.0f,
-	.maxLeafHitProbability = 0.0f,
+	.maxLeafHitProbability = 0.001f,
 	.maxTrianglesPerLeaf = 2,
 	.maxLevels = 100,
 	.bins = 40,
@@ -94,9 +95,10 @@ int main() {
 	constexpr bool PLANE_FULL_PARALLEL = ALL || false;
 	constexpr bool PLANE_FULL_PARALLEL_LONGEST = ALL || false;
 	constexpr bool WOOD_SCENE = ALL || false;
-	constexpr bool SUZANNE_SCENE = ALL || true;
+	constexpr bool SUZANNE_SCENE = ALL || false;
 	constexpr bool COTTAGE_SCENE = ALL || false;
 	constexpr bool COTTAGE_WALLS_SCENE = ALL || false;
+	constexpr bool CROWD_SCENE = ALL || true;
 	constexpr bool RANDOM100_SCENE = ALL || false;
 	constexpr bool RANDOM1000_SCENE = ALL || false;
 	constexpr string_view RESULTS_DIRECTORY = "D:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/Results/";
@@ -274,6 +276,49 @@ int main() {
 		}
 	}
 
+	// === Crowd scene: 1 plane full influence area ===
+	if constexpr (PLANE_FULL_PARALLEL || CROWD_SCENE) {
+		// === Crowd scene: 1 plane influence area parallel to x covering all the scene. 1 ray caster relative to the influence area. ===
+		{
+			PlaneInfluenceArea influenceAreaPlaneFullParallel{ Plane{{2,2.2,-8}, {0,0,1}}, {7,1.8}, 30, 10000 };
+			PlaneRayCaster rayCasterPlaneFullParallel{ influenceAreaPlaneFullParallel }; rayCasterPlaneFullParallel.generateRays(rng, 1000, true);
+			Bvh bvhPlaneFullParallel{ bvhProperties, influenceAreaPlaneFullParallel, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
+			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFullParallel) };
+			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "CrowdPlaneFullParallel", crowdTriangles, vector{&rayCasterPlaneFullParallel}, std::move(topLevel), topLevelAnalyzer };
+			csvExporter.addAnalysis("CrowdPlaneFullParallel", scene.buildAndTraverse());
+		}
+
+		// === Crowd scene: 1 plane influence area 15 degrees covering all the scene. 1 ray caster relative to the influence area. ===
+		{
+			PlaneInfluenceArea influenceAreaPlaneFull15{ Plane{{-2.5,2.2,-8}, {.259,0,.966}}, {7.5,1.8}, 30, 10000 };
+			PlaneRayCaster rayCasterPlaneFull15{ influenceAreaPlaneFull15 }; rayCasterPlaneFull15.generateRays(rng, 1000, true);
+			Bvh bvhPlaneFull15{ bvhProperties, influenceAreaPlaneFull15, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
+			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFull15) };
+			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "CrowdPlaneFull15", crowdTriangles, vector{&rayCasterPlaneFull15}, std::move(topLevel), topLevelAnalyzer };
+			csvExporter.addAnalysis("CrowdPlaneFull15", scene.buildAndTraverse());
+		}
+
+		// === Crowd scene: 1 plane influence area 45 degrees covering all the scene. 1 ray caster relative to the influence area. ===
+		{
+			PlaneInfluenceArea influenceAreaPlaneFull45{ Plane{{-8,2.2,-8}, {1,0,1}}, {9,1.8}, 30, 10000 };
+			PlaneRayCaster rayCasterPlaneFull45{ influenceAreaPlaneFull45 }; rayCasterPlaneFull45.generateRays(rng, 1000, true);
+			Bvh bvhPlaneFull45{ bvhProperties, influenceAreaPlaneFull45, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
+			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFull45) };
+			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "CrowdPlaneFull45", crowdTriangles, vector{&rayCasterPlaneFull45}, std::move(topLevel), topLevelAnalyzer };
+			csvExporter.addAnalysis("CrowdPlaneFull45", scene.buildAndTraverse());
+		}
+
+		// === Crowd scene: 1 plane influence area oblique covering all the scene. 1 ray caster relative to the influence area. ===
+		{
+			PlaneInfluenceArea influenceAreaPlaneFullOblique{ Plane{{-6,7,-8}, {.6,-.4,1}}, {7.5,3.4}, 35, 10000 };
+			PlaneRayCaster rayCasterPlaneFullOblique{ influenceAreaPlaneFullOblique }; rayCasterPlaneFullOblique.generateRays(rng, 1000, true);
+			Bvh bvhPlaneFullOblique{ bvhProperties, influenceAreaPlaneFullOblique, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
+			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFullOblique) };
+			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "CrowdPlaneFullOblique", crowdTriangles, vector{&rayCasterPlaneFullOblique}, std::move(topLevel), topLevelAnalyzer };
+			csvExporter.addAnalysis("CrowdPlaneFullOblique", scene.buildAndTraverse());
+		}
+	}
+
 	// === Random100 scene: 1 plane full influence area ===
 	if constexpr (PLANE_FULL_PARALLEL || RANDOM100_SCENE) {
 		// === Random100 scene: 1 plane influence area parallel to x covering all the scene. 1 ray caster relative to the influence area. ===
@@ -447,8 +492,8 @@ int main() {
 		}
 	}
 
-	// === Cottage scene: 1 plane full influence area ===
-	if constexpr (PLANE_FULL_PARALLEL || COTTAGE_SCENE) {
+	// === Cottage scene: 1 plane full influence area longest split ===
+	if constexpr (PLANE_FULL_PARALLEL_LONGEST || COTTAGE_SCENE) {
 		// === Cottage scene: 1 plane influence area parallel to x covering all the scene. 1 ray caster relative to the influence area. ===
 		{
 			PlaneInfluenceArea influenceAreaPlaneFullParallel{ Plane{{10,2.8,0}, {-1,0,0}}, {6,2.6}, 35, 10000 };
@@ -490,8 +535,8 @@ int main() {
 		}
 	}
 
-	// === CottageWalls scene: 1 plane full influence area ===
-	if constexpr (PLANE_FULL_PARALLEL || COTTAGE_WALLS_SCENE) {
+	// === CottageWalls scene: 1 plane full influence area longest split ===
+	if constexpr (PLANE_FULL_PARALLEL_LONGEST || COTTAGE_WALLS_SCENE) {
 		// === CottageWalls scene: 1 plane influence area parallel to x covering all the scene. 1 ray caster relative to the influence area. ===
 		{
 			PlaneInfluenceArea influenceAreaPlaneFullParallel{ Plane{{10,2.8,0}, {-1,0,0}}, {6,2.6}, 35, 10000 };
@@ -530,6 +575,49 @@ int main() {
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFullOblique) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "CottageWallsPlaneFullObliqueLongest", cottageWallsTriangles, vector{&rayCasterPlaneFullOblique}, std::move(topLevel), topLevelAnalyzer };
 			csvExporter.addAnalysis("CottageWallsPlaneFullObliqueLongest", scene.buildAndTraverse());
+		}
+	}
+
+	// === Crowd scene: 1 plane full influence area longest split ===
+	if constexpr (PLANE_FULL_PARALLEL_LONGEST || CROWD_SCENE) {
+		// === Crowd scene: 1 plane influence area parallel to x covering all the scene. 1 ray caster relative to the influence area. ===
+		{
+			PlaneInfluenceArea influenceAreaPlaneFullParallel{ Plane{{2,2.2,-8}, {0,0,1}}, {7,1.8}, 30, 10000 };
+			PlaneRayCaster rayCasterPlaneFullParallel{ influenceAreaPlaneFullParallel }; rayCasterPlaneFullParallel.generateRays(rng, 1000, true);
+			Bvh bvhPlaneFullParallel{ bvhProperties, influenceAreaPlaneFullParallel, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesLongest, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
+			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFullParallel) };
+			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "CrowdPlaneFullParallelLongest", crowdTriangles, vector{&rayCasterPlaneFullParallel}, std::move(topLevel), topLevelAnalyzer };
+			csvExporter.addAnalysis("CrowdPlaneFullParallelLongest", scene.buildAndTraverse());
+		}
+
+		// === Crowd scene: 1 plane influence area 15 degrees covering all the scene. 1 ray caster relative to the influence area. ===
+		{
+			PlaneInfluenceArea influenceAreaPlaneFull15{ Plane{{-2.5,2.2,-8}, {.259,0,.966}}, {7.5,1.8}, 30, 10000 };
+			PlaneRayCaster rayCasterPlaneFull15{ influenceAreaPlaneFull15 }; rayCasterPlaneFull15.generateRays(rng, 1000, true);
+			Bvh bvhPlaneFull15{ bvhProperties, influenceAreaPlaneFull15, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesLongest, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
+			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFull15) };
+			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "CrowdPlaneFull15Longest", crowdTriangles, vector{&rayCasterPlaneFull15}, std::move(topLevel), topLevelAnalyzer };
+			csvExporter.addAnalysis("CrowdPlaneFull15Longest", scene.buildAndTraverse());
+		}
+
+		// === Crowd scene: 1 plane influence area 45 degrees covering all the scene. 1 ray caster relative to the influence area. ===
+		{
+			PlaneInfluenceArea influenceAreaPlaneFull45{ Plane{{-8,2.2,-8}, {1,0,1}}, {9,1.8}, 30, 10000 };
+			PlaneRayCaster rayCasterPlaneFull45{ influenceAreaPlaneFull45 }; rayCasterPlaneFull45.generateRays(rng, 1000, true);
+			Bvh bvhPlaneFull45{ bvhProperties, influenceAreaPlaneFull45, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesLongest, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
+			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFull45) };
+			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "CrowdPlaneFull45Longest", crowdTriangles, vector{&rayCasterPlaneFull45}, std::move(topLevel), topLevelAnalyzer };
+			csvExporter.addAnalysis("CrowdPlaneFull45Longest", scene.buildAndTraverse());
+		}
+
+		// === Crowd scene: 1 plane influence area oblique covering all the scene. 1 ray caster relative to the influence area. ===
+		{
+			PlaneInfluenceArea influenceAreaPlaneFullOblique{ Plane{{-6,7,-8}, {.6,-.4,1}}, {7.5,3.4}, 35, 10000 };
+			PlaneRayCaster rayCasterPlaneFullOblique{ influenceAreaPlaneFullOblique }; rayCasterPlaneFullOblique.generateRays(rng, 1000, true);
+			Bvh bvhPlaneFullOblique{ bvhProperties, influenceAreaPlaneFullOblique, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesLongest, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
+			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFullOblique) };
+			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "CrowdPlaneFullObliqueLongest", crowdTriangles, vector{&rayCasterPlaneFullOblique}, std::move(topLevel), topLevelAnalyzer };
+			csvExporter.addAnalysis("CrowdPlaneFullObliqueLongest", scene.buildAndTraverse());
 		}
 	}
 
@@ -618,7 +706,7 @@ int main() {
 			csvExporter.addAnalysis("Random1000PlaneFullObliqueLongest", scene.buildAndTraverse());
 		}
 	}
-
+	
 
 	csvExporter.generateCsv("D:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/Results/ExportedCsv.csv");
 	return 0;
