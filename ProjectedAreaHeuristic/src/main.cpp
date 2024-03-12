@@ -24,7 +24,7 @@ int main() {
 
 	// select data to export to the csv file
 	using AT = AnalysisType;
-	CsvExporter csvExporter{ 
+	CsvExporter csvTraversal{ 
 		ACCESSOR("Estimated PAH cost",					AT::TOP_LEVEL, ["bvhs"].at(0)["globalInfo"]["pahCost"]),
 		ACCESSOR("Estimated SAH cost",					AT::TOP_LEVEL, ["bvhs"].back()["globalInfo"]["sahCost"]),
 		ACCESSOR("PAH cost with fallback",				AT::PAH, ["cost"]["traversalCostAveragePerRay"]),
@@ -42,7 +42,11 @@ int main() {
 		ACCESSOR("Max triangles per leaf",				AT::TOP_LEVEL, ["bvhs"].at(0)["globalInfo"]["properties"]["maxTrianglesPerLeaf"]),
 		ACCESSOR("Max non fallback levels",				AT::TOP_LEVEL, ["bvhs"].at(0)["globalInfo"]["properties"]["maxNonFallbackLevels"]),
 		ACCESSOR("Split plane quality threshold",		AT::TOP_LEVEL, ["bvhs"].at(0)["globalInfo"]["properties"]["splitPlaneQualityThreshold"]),
-		ACCESSOR("Max children/father hit probability",	AT::TOP_LEVEL, ["bvhs"].at(0)["globalInfo"]["properties"]["maxChildrenFatherHitProbabilityRatio"])
+		ACCESSOR("Max children/father hit probability",	AT::TOP_LEVEL, ["bvhs"].at(0)["globalInfo"]["properties"]["maxChildrenFatherHitProbabilityRatio"]),
+		ACCESSOR("Choose split plane PAH average",		AT::TOP_LEVEL, ["bvhs"].at(0)["totalTiming"]["chooseSplittingPlanesAverage"]),
+		ACCESSOR("Choose split plane SAH average",		AT::TOP_LEVEL, ["bvhs"].back()["totalTiming"]["chooseSplittingPlanesAverage"]),
+		ACCESSOR("Compute cost PAH average",			AT::TOP_LEVEL, ["bvhs"].at(0)["totalTiming"]["computeCostAverage"]),
+		ACCESSOR("Compute cost SAH average",			AT::TOP_LEVEL, ["bvhs"].back()["totalTiming"]["computeCostAverage"])
 	};
 
 	//generate triangles for different scenes
@@ -75,7 +79,7 @@ int main() {
 	.maxTrianglesPerLeaf = 2,
 	.maxLevels = 100,
 	.bins = 40,
-	.maxNonFallbackLevels = 100,
+	.maxNonFallbackLevels = 5,
 	.splitPlaneQualityThreshold = 0.0f,
 	.maxChildrenFatherHitProbabilityRatio = 1.3f
 	};
@@ -91,7 +95,7 @@ int main() {
 
 
 	// Filter test scenes to run
-	constexpr bool ALL = false;
+	constexpr bool ALL = true;
 	constexpr bool PLANE_FULL_PARALLEL = ALL || false;
 	constexpr bool PLANE_FULL_PARALLEL_LONGEST = ALL || false;
 	constexpr bool WOOD_SCENE = ALL || false;
@@ -113,7 +117,7 @@ int main() {
 			Bvh bvhPlaneFullParallel{ bvhProperties, influenceAreaPlaneFullParallel, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFullParallel) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "WoodPlaneFullParallel", woodTriangles, vector{&rayCasterPlaneFullParallel}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("WoodPlaneFullParallel", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("WoodPlaneFullParallel", scene.buildAndTraverse());
 		}
 
 		// === Wood scene: 1 plane influence area 15 degrees covering all the scene. 1 ray caster relative to the influence area. ===
@@ -123,7 +127,7 @@ int main() {
 			Bvh bvhPlaneFull15{ bvhProperties, influenceAreaPlaneFull15, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFull15) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "WoodPlaneFull15", woodTriangles, vector{&rayCasterPlaneFull15}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("WoodPlaneFull15", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("WoodPlaneFull15", scene.buildAndTraverse());
 		}
 
 		// === Wood scene: 1 plane influence area 45 degrees covering all the scene. 1 ray caster relative to the influence area. ===
@@ -133,7 +137,7 @@ int main() {
 			Bvh bvhPlaneFull45{ bvhProperties, influenceAreaPlaneFull45, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFull45) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "WoodPlaneFull45", woodTriangles, vector{&rayCasterPlaneFull45}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("WoodPlaneFull45", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("WoodPlaneFull45", scene.buildAndTraverse());
 		}
 
 		// === Wood scene: 1 plane influence area oblique covering all the scene. 1 ray caster relative to the influence area. ===
@@ -143,7 +147,7 @@ int main() {
 			Bvh bvhPlaneFullOblique{ bvhProperties, influenceAreaPlaneFullOblique, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFullOblique) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "WoodPlaneFullOblique", woodTriangles, vector{&rayCasterPlaneFullOblique}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("WoodPlaneFullOblique", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("WoodPlaneFullOblique", scene.buildAndTraverse());
 		}
 	}
 
@@ -156,7 +160,7 @@ int main() {
 			Bvh bvhPlaneFullParallel{ bvhProperties, influenceAreaPlaneFullParallel, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFullParallel) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "SuzannePlaneFullParallel", suzanneTriangles, vector{&rayCasterPlaneFullParallel}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("SuzannePlaneFullParallel", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("SuzannePlaneFullParallel", scene.buildAndTraverse());
 		}
 
 		// === Suzanne scene: 1 plane influence area 15 degrees covering all the scene. 1 ray caster relative to the influence area. ===
@@ -166,7 +170,7 @@ int main() {
 			Bvh bvhPlaneFull15{ bvhProperties, influenceAreaPlaneFull15, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFull15) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "SuzannePlaneFull15", suzanneTriangles, vector{&rayCasterPlaneFull15}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("SuzannePlaneFull15", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("SuzannePlaneFull15", scene.buildAndTraverse());
 		}
 
 		// === Suzanne scene: 1 plane influence area 45 degrees covering all the scene. 1 ray caster relative to the influence area. ===
@@ -176,7 +180,7 @@ int main() {
 			Bvh bvhPlaneFull45{ bvhProperties, influenceAreaPlaneFull45, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFull45) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "SuzannePlaneFull45", suzanneTriangles, vector{&rayCasterPlaneFull45}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("SuzannePlaneFull45", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("SuzannePlaneFull45", scene.buildAndTraverse());
 		}
 
 		// === Suzanne scene: 1 plane influence area oblique covering all the scene. 1 ray caster relative to the influence area. ===
@@ -186,7 +190,7 @@ int main() {
 			Bvh bvhPlaneFullOblique{ bvhProperties, influenceAreaPlaneFullOblique, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFullOblique) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "SuzannePlaneFullOblique", suzanneTriangles, vector{&rayCasterPlaneFullOblique}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("SuzannePlaneFullOblique", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("SuzannePlaneFullOblique", scene.buildAndTraverse());
 		}
 	}
 
@@ -199,7 +203,7 @@ int main() {
 			Bvh bvhPlaneFullParallel{ bvhProperties, influenceAreaPlaneFullParallel, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFullParallel) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "CottagePlaneFullParallel", cottageTriangles, vector{&rayCasterPlaneFullParallel}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("CottagePlaneFullParallel", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("CottagePlaneFullParallel", scene.buildAndTraverse());
 		}
 
 		// === Cottage scene: 1 plane influence area 15 degrees covering all the scene. 1 ray caster relative to the influence area. ===
@@ -209,7 +213,7 @@ int main() {
 			Bvh bvhPlaneFull15{ bvhProperties, influenceAreaPlaneFull15, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFull15) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "CottagePlaneFull15", cottageTriangles, vector{&rayCasterPlaneFull15}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("CottagePlaneFull15", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("CottagePlaneFull15", scene.buildAndTraverse());
 		}
 
 		// === Cottage scene: 1 plane influence area 45 degrees covering all the scene. 1 ray caster relative to the influence area. ===
@@ -219,7 +223,7 @@ int main() {
 			Bvh bvhPlaneFull45{ bvhProperties, influenceAreaPlaneFull45, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFull45) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "CottagePlaneFull45", cottageTriangles, vector{&rayCasterPlaneFull45}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("CottagePlaneFull45", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("CottagePlaneFull45", scene.buildAndTraverse());
 		}
 
 		// === Cottage scene: 1 plane influence area oblique covering all the scene. 1 ray caster relative to the influence area. ===
@@ -229,7 +233,7 @@ int main() {
 			Bvh bvhPlaneFullOblique{ bvhProperties, influenceAreaPlaneFullOblique, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFullOblique) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "CottagePlaneFullOblique", cottageTriangles, vector{&rayCasterPlaneFullOblique}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("CottagePlaneFullOblique", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("CottagePlaneFullOblique", scene.buildAndTraverse());
 		}
 	}
 	
@@ -242,7 +246,7 @@ int main() {
 			Bvh bvhPlaneFullParallel{ bvhProperties, influenceAreaPlaneFullParallel, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFullParallel) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "CottageWallsPlaneFullParallel", cottageWallsTriangles, vector{&rayCasterPlaneFullParallel}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("CottageWallsPlaneFullParallel", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("CottageWallsPlaneFullParallel", scene.buildAndTraverse());
 		}
 
 		// === CottageWalls scene: 1 plane influence area 15 degrees covering all the scene. 1 ray caster relative to the influence area. ===
@@ -252,7 +256,7 @@ int main() {
 			Bvh bvhPlaneFull15{ bvhProperties, influenceAreaPlaneFull15, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFull15) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "CottageWallsPlaneFull15", cottageWallsTriangles, vector{&rayCasterPlaneFull15}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("CottageWallsPlaneFull15", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("CottageWallsPlaneFull15", scene.buildAndTraverse());
 		}
 
 		// === CottageWalls scene: 1 plane influence area 45 degrees covering all the scene. 1 ray caster relative to the influence area. ===
@@ -262,7 +266,7 @@ int main() {
 			Bvh bvhPlaneFull45{ bvhProperties, influenceAreaPlaneFull45, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFull45) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "CottageWallsPlaneFull45", cottageWallsTriangles, vector{&rayCasterPlaneFull45}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("CottageWallsPlaneFull45", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("CottageWallsPlaneFull45", scene.buildAndTraverse());
 		}
 
 		// === CottageWalls scene: 1 plane influence area oblique covering all the scene. 1 ray caster relative to the influence area. ===
@@ -272,7 +276,7 @@ int main() {
 			Bvh bvhPlaneFullOblique{ bvhProperties, influenceAreaPlaneFullOblique, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFullOblique) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "CottageWallsPlaneFullOblique", cottageWallsTriangles, vector{&rayCasterPlaneFullOblique}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("CottageWallsPlaneFullOblique", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("CottageWallsPlaneFullOblique", scene.buildAndTraverse());
 		}
 	}
 
@@ -285,7 +289,7 @@ int main() {
 			Bvh bvhPlaneFullParallel{ bvhProperties, influenceAreaPlaneFullParallel, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFullParallel) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "CrowdPlaneFullParallel", crowdTriangles, vector{&rayCasterPlaneFullParallel}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("CrowdPlaneFullParallel", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("CrowdPlaneFullParallel", scene.buildAndTraverse());
 		}
 
 		// === Crowd scene: 1 plane influence area 15 degrees covering all the scene. 1 ray caster relative to the influence area. ===
@@ -295,7 +299,7 @@ int main() {
 			Bvh bvhPlaneFull15{ bvhProperties, influenceAreaPlaneFull15, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFull15) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "CrowdPlaneFull15", crowdTriangles, vector{&rayCasterPlaneFull15}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("CrowdPlaneFull15", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("CrowdPlaneFull15", scene.buildAndTraverse());
 		}
 
 		// === Crowd scene: 1 plane influence area 45 degrees covering all the scene. 1 ray caster relative to the influence area. ===
@@ -305,7 +309,7 @@ int main() {
 			Bvh bvhPlaneFull45{ bvhProperties, influenceAreaPlaneFull45, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFull45) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "CrowdPlaneFull45", crowdTriangles, vector{&rayCasterPlaneFull45}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("CrowdPlaneFull45", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("CrowdPlaneFull45", scene.buildAndTraverse());
 		}
 
 		// === Crowd scene: 1 plane influence area oblique covering all the scene. 1 ray caster relative to the influence area. ===
@@ -315,7 +319,7 @@ int main() {
 			Bvh bvhPlaneFullOblique{ bvhProperties, influenceAreaPlaneFullOblique, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFullOblique) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "CrowdPlaneFullOblique", crowdTriangles, vector{&rayCasterPlaneFullOblique}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("CrowdPlaneFullOblique", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("CrowdPlaneFullOblique", scene.buildAndTraverse());
 		}
 	}
 
@@ -328,7 +332,7 @@ int main() {
 			Bvh bvhPlaneFullParallel{ bvhProperties, influenceAreaPlaneFullParallel, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFullParallel) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "Random100PlaneFullParallel", random100Triangles, vector{&rayCasterPlaneFullParallel}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("Random100PlaneFullParallel", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("Random100PlaneFullParallel", scene.buildAndTraverse());
 		}
 
 		// === Random100 scene: 1 plane influence area 15 degrees covering all the scene. 1 ray caster relative to the influence area. ===
@@ -338,7 +342,7 @@ int main() {
 			Bvh bvhPlaneFull15{ bvhProperties, influenceAreaPlaneFull15, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFull15) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "Random100PlaneFull15", random100Triangles, vector{&rayCasterPlaneFull15}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("Random100PlaneFull15", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("Random100PlaneFull15", scene.buildAndTraverse());
 		}
 
 		// === Random100 scene: 1 plane influence area 45 degrees covering all the scene. 1 ray caster relative to the influence area. ===
@@ -348,7 +352,7 @@ int main() {
 			Bvh bvhPlaneFull45{ bvhProperties, influenceAreaPlaneFull45, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFull45) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "Random100PlaneFull45", random100Triangles, vector{&rayCasterPlaneFull45}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("Random100PlaneFull45", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("Random100PlaneFull45", scene.buildAndTraverse());
 		}
 
 		// === Random100 scene: 1 plane influence area oblique covering all the scene. 1 ray caster relative to the influence area. ===
@@ -358,7 +362,7 @@ int main() {
 			Bvh bvhPlaneFullOblique{ bvhProperties, influenceAreaPlaneFullOblique, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFullOblique) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "Random100PlaneFullOblique", random100Triangles, vector{&rayCasterPlaneFullOblique}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("Random100PlaneFullOblique", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("Random100PlaneFullOblique", scene.buildAndTraverse());
 		}
 	}
 
@@ -371,7 +375,7 @@ int main() {
 			Bvh bvhPlaneFullParallel{ bvhProperties, influenceAreaPlaneFullParallel, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFullParallel) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "Random1000PlaneFullParallel", random1000Triangles, vector{&rayCasterPlaneFullParallel}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("Random1000PlaneFullParallel", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("Random1000PlaneFullParallel", scene.buildAndTraverse());
 		}
 
 		// === Random1000 scene: 1 plane influence area 15 degrees covering all the scene. 1 ray caster relative to the influence area. ===
@@ -381,7 +385,7 @@ int main() {
 			Bvh bvhPlaneFull15{ bvhProperties, influenceAreaPlaneFull15, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFull15) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "Random1000PlaneFull15", random1000Triangles, vector{&rayCasterPlaneFull15}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("Random1000PlaneFull15", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("Random1000PlaneFull15", scene.buildAndTraverse());
 		}
 
 		// === Random1000 scene: 1 plane influence area 45 degrees covering all the scene. 1 ray caster relative to the influence area. ===
@@ -391,7 +395,7 @@ int main() {
 			Bvh bvhPlaneFull45{ bvhProperties, influenceAreaPlaneFull45, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFull45) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "Random1000PlaneFull45", random1000Triangles, vector{&rayCasterPlaneFull45}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("Random1000PlaneFull45", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("Random1000PlaneFull45", scene.buildAndTraverse());
 		}
 
 		// === Random1000 scene: 1 plane influence area oblique covering all the scene. 1 ray caster relative to the influence area. ===
@@ -401,7 +405,7 @@ int main() {
 			Bvh bvhPlaneFullOblique{ bvhProperties, influenceAreaPlaneFullOblique, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFullOblique) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "Random1000PlaneFullOblique", random1000Triangles, vector{&rayCasterPlaneFullOblique}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("Random1000PlaneFullOblique", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("Random1000PlaneFullOblique", scene.buildAndTraverse());
 		}
 	}
 
@@ -415,7 +419,7 @@ int main() {
 			Bvh bvhPlaneFullParallel{ bvhProperties, influenceAreaPlaneFullParallel, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesLongest, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFullParallel) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "WoodPlaneFullParallelLongest", woodTriangles, vector{&rayCasterPlaneFullParallel}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("WoodPlaneFullParallelLongest", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("WoodPlaneFullParallelLongest", scene.buildAndTraverse());
 		}
 
 		// === Wood scene: 1 plane influence area 15 degrees covering all the scene. 1 ray caster relative to the influence area. ===
@@ -425,7 +429,7 @@ int main() {
 			Bvh bvhPlaneFull15{ bvhProperties, influenceAreaPlaneFull15, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesLongest, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFull15) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "WoodPlaneFull15Longest", woodTriangles, vector{&rayCasterPlaneFull15}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("WoodPlaneFull15Longest", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("WoodPlaneFull15Longest", scene.buildAndTraverse());
 		}
 
 		// === Wood scene: 1 plane influence area 45 degrees covering all the scene. 1 ray caster relative to the influence area. ===
@@ -435,7 +439,7 @@ int main() {
 			Bvh bvhPlaneFull45{ bvhProperties, influenceAreaPlaneFull45, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesLongest, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFull45) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "WoodPlaneFull45Longest", woodTriangles, vector{&rayCasterPlaneFull45}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("WoodPlaneFull45Longest", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("WoodPlaneFull45Longest", scene.buildAndTraverse());
 		}
 
 		// === Wood scene: 1 plane influence area oblique covering all the scene. 1 ray caster relative to the influence area. ===
@@ -445,7 +449,7 @@ int main() {
 			Bvh bvhPlaneFullOblique{ bvhProperties, influenceAreaPlaneFullOblique, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesLongest, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFullOblique) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "WoodPlaneFullObliqueLongest", woodTriangles, vector{&rayCasterPlaneFullOblique}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("WoodPlaneFullObliqueLongest", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("WoodPlaneFullObliqueLongest", scene.buildAndTraverse());
 		}
 	}
 
@@ -458,7 +462,7 @@ int main() {
 			Bvh bvhPlaneFullParallel{ bvhProperties, influenceAreaPlaneFullParallel, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesLongest, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFullParallel) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "SuzannePlaneFullParallelLongest", suzanneTriangles, vector{&rayCasterPlaneFullParallel}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("SuzannePlaneFullParallelLongest", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("SuzannePlaneFullParallelLongest", scene.buildAndTraverse());
 		}
 
 		// === Suzanne scene: 1 plane influence area 15 degrees covering all the scene. 1 ray caster relative to the influence area. ===
@@ -468,7 +472,7 @@ int main() {
 			Bvh bvhPlaneFull15{ bvhProperties, influenceAreaPlaneFull15, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesLongest, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFull15) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "SuzannePlaneFull15Longest", suzanneTriangles, vector{&rayCasterPlaneFull15}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("SuzannePlaneFull15Longest", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("SuzannePlaneFull15Longest", scene.buildAndTraverse());
 		}
 
 		// === Suzanne scene: 1 plane influence area 45 degrees covering all the scene. 1 ray caster relative to the influence area. ===
@@ -478,7 +482,7 @@ int main() {
 			Bvh bvhPlaneFull45{ bvhProperties, influenceAreaPlaneFull45, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesLongest, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFull45) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "SuzannePlaneFull45Longest", suzanneTriangles, vector{&rayCasterPlaneFull45}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("SuzannePlaneFull45Longest", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("SuzannePlaneFull45Longest", scene.buildAndTraverse());
 		}
 
 		// === Suzanne scene: 1 plane influence area oblique covering all the scene. 1 ray caster relative to the influence area. ===
@@ -488,7 +492,7 @@ int main() {
 			Bvh bvhPlaneFullOblique{ bvhProperties, influenceAreaPlaneFullOblique, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesLongest, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFullOblique) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "SuzannePlaneFullObliqueLongest", suzanneTriangles, vector{&rayCasterPlaneFullOblique}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("SuzannePlaneFullObliqueLongest", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("SuzannePlaneFullObliqueLongest", scene.buildAndTraverse());
 		}
 	}
 
@@ -501,7 +505,7 @@ int main() {
 			Bvh bvhPlaneFullParallel{ bvhProperties, influenceAreaPlaneFullParallel, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesLongest, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFullParallel) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "CottagePlaneFullParallelLongest", cottageTriangles, vector{&rayCasterPlaneFullParallel}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("CottagePlaneFullParallelLongest", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("CottagePlaneFullParallelLongest", scene.buildAndTraverse());
 		}
 
 		// === Cottage scene: 1 plane influence area 15 degrees covering all the scene. 1 ray caster relative to the influence area. ===
@@ -511,7 +515,7 @@ int main() {
 			Bvh bvhPlaneFull15{ bvhProperties, influenceAreaPlaneFull15, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesLongest, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFull15) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "CottagePlaneFull15Longest", cottageTriangles, vector{&rayCasterPlaneFull15}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("CottagePlaneFull15Longest", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("CottagePlaneFull15Longest", scene.buildAndTraverse());
 		}
 
 		// === Cottage scene: 1 plane influence area 45 degrees covering all the scene. 1 ray caster relative to the influence area. ===
@@ -521,7 +525,7 @@ int main() {
 			Bvh bvhPlaneFull45{ bvhProperties, influenceAreaPlaneFull45, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesLongest, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFull45) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "CottagePlaneFull45Longest", cottageTriangles, vector{&rayCasterPlaneFull45}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("CottagePlaneFull45Longest", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("CottagePlaneFull45Longest", scene.buildAndTraverse());
 		}
 
 		// === Cottage scene: 1 plane influence area oblique covering all the scene. 1 ray caster relative to the influence area. ===
@@ -531,7 +535,7 @@ int main() {
 			Bvh bvhPlaneFullOblique{ bvhProperties, influenceAreaPlaneFullOblique, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesLongest, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFullOblique) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "CottagePlaneFullObliqueLongest", cottageTriangles, vector{&rayCasterPlaneFullOblique}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("CottagePlaneFullObliqueLongest", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("CottagePlaneFullObliqueLongest", scene.buildAndTraverse());
 		}
 	}
 
@@ -544,7 +548,7 @@ int main() {
 			Bvh bvhPlaneFullParallel{ bvhProperties, influenceAreaPlaneFullParallel, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesLongest, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFullParallel) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "CottageWallsPlaneFullParallelLongest", cottageWallsTriangles, vector{&rayCasterPlaneFullParallel}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("CottageWallsPlaneFullParallelLongest", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("CottageWallsPlaneFullParallelLongest", scene.buildAndTraverse());
 		}
 
 		// === CottageWalls scene: 1 plane influence area 15 degrees covering all the scene. 1 ray caster relative to the influence area. ===
@@ -554,7 +558,7 @@ int main() {
 			Bvh bvhPlaneFull15{ bvhProperties, influenceAreaPlaneFull15, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesLongest, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFull15) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "CottageWallsPlaneFull15Longest", cottageWallsTriangles, vector{&rayCasterPlaneFull15}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("CottageWallsPlaneFull15Longest", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("CottageWallsPlaneFull15Longest", scene.buildAndTraverse());
 		}
 
 		// === CottageWalls scene: 1 plane influence area 45 degrees covering all the scene. 1 ray caster relative to the influence area. ===
@@ -564,7 +568,7 @@ int main() {
 			Bvh bvhPlaneFull45{ bvhProperties, influenceAreaPlaneFull45, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesLongest, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFull45) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "CottageWallsPlaneFull45Longest", cottageWallsTriangles, vector{&rayCasterPlaneFull45}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("CottageWallsPlaneFull45Longest", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("CottageWallsPlaneFull45Longest", scene.buildAndTraverse());
 		}
 
 		// === CottageWalls scene: 1 plane influence area oblique covering all the scene. 1 ray caster relative to the influence area. ===
@@ -574,7 +578,7 @@ int main() {
 			Bvh bvhPlaneFullOblique{ bvhProperties, influenceAreaPlaneFullOblique, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesLongest, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFullOblique) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "CottageWallsPlaneFullObliqueLongest", cottageWallsTriangles, vector{&rayCasterPlaneFullOblique}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("CottageWallsPlaneFullObliqueLongest", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("CottageWallsPlaneFullObliqueLongest", scene.buildAndTraverse());
 		}
 	}
 
@@ -587,7 +591,7 @@ int main() {
 			Bvh bvhPlaneFullParallel{ bvhProperties, influenceAreaPlaneFullParallel, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesLongest, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFullParallel) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "CrowdPlaneFullParallelLongest", crowdTriangles, vector{&rayCasterPlaneFullParallel}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("CrowdPlaneFullParallelLongest", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("CrowdPlaneFullParallelLongest", scene.buildAndTraverse());
 		}
 
 		// === Crowd scene: 1 plane influence area 15 degrees covering all the scene. 1 ray caster relative to the influence area. ===
@@ -597,7 +601,7 @@ int main() {
 			Bvh bvhPlaneFull15{ bvhProperties, influenceAreaPlaneFull15, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesLongest, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFull15) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "CrowdPlaneFull15Longest", crowdTriangles, vector{&rayCasterPlaneFull15}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("CrowdPlaneFull15Longest", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("CrowdPlaneFull15Longest", scene.buildAndTraverse());
 		}
 
 		// === Crowd scene: 1 plane influence area 45 degrees covering all the scene. 1 ray caster relative to the influence area. ===
@@ -607,7 +611,7 @@ int main() {
 			Bvh bvhPlaneFull45{ bvhProperties, influenceAreaPlaneFull45, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesLongest, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFull45) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "CrowdPlaneFull45Longest", crowdTriangles, vector{&rayCasterPlaneFull45}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("CrowdPlaneFull45Longest", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("CrowdPlaneFull45Longest", scene.buildAndTraverse());
 		}
 
 		// === Crowd scene: 1 plane influence area oblique covering all the scene. 1 ray caster relative to the influence area. ===
@@ -617,7 +621,7 @@ int main() {
 			Bvh bvhPlaneFullOblique{ bvhProperties, influenceAreaPlaneFullOblique, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesLongest, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFullOblique) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "CrowdPlaneFullObliqueLongest", crowdTriangles, vector{&rayCasterPlaneFullOblique}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("CrowdPlaneFullObliqueLongest", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("CrowdPlaneFullObliqueLongest", scene.buildAndTraverse());
 		}
 	}
 
@@ -630,7 +634,7 @@ int main() {
 			Bvh bvhPlaneFullParallel{ bvhProperties, influenceAreaPlaneFullParallel, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesLongest, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFullParallel) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "Random100PlaneFullParallelLongest", random100Triangles, vector{&rayCasterPlaneFullParallel}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("Random100PlaneFullParallelLongest", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("Random100PlaneFullParallelLongest", scene.buildAndTraverse());
 		}
 
 		// === Random100 scene: 1 plane influence area 15 degrees covering all the scene. 1 ray caster relative to the influence area. ===
@@ -640,7 +644,7 @@ int main() {
 			Bvh bvhPlaneFull15{ bvhProperties, influenceAreaPlaneFull15, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesLongest, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFull15) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "Random100PlaneFull15Longest", random100Triangles, vector{&rayCasterPlaneFull15}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("Random100PlaneFull15Longest", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("Random100PlaneFull15Longest", scene.buildAndTraverse());
 		}
 
 		// === Random100 scene: 1 plane influence area 45 degrees covering all the scene. 1 ray caster relative to the influence area. ===
@@ -650,7 +654,7 @@ int main() {
 			Bvh bvhPlaneFull45{ bvhProperties, influenceAreaPlaneFull45, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesLongest, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFull45) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "Random100PlaneFull45Longest", random100Triangles, vector{&rayCasterPlaneFull45}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("Random100PlaneFull45Longest", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("Random100PlaneFull45Longest", scene.buildAndTraverse());
 		}
 
 		// === Random100 scene: 1 plane influence area oblique covering all the scene. 1 ray caster relative to the influence area. ===
@@ -660,7 +664,7 @@ int main() {
 			Bvh bvhPlaneFullOblique{ bvhProperties, influenceAreaPlaneFullOblique, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesLongest, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFullOblique) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "Random100PlaneFullObliqueLongest", random100Triangles, vector{&rayCasterPlaneFullOblique}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("Random100PlaneFullObliqueLongest", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("Random100PlaneFullObliqueLongest", scene.buildAndTraverse());
 		}
 	}
 
@@ -673,7 +677,7 @@ int main() {
 			Bvh bvhPlaneFullParallel{ bvhProperties, influenceAreaPlaneFullParallel, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesLongest, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFullParallel) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "Random1000PlaneFullParallelLongest", random1000Triangles, vector{&rayCasterPlaneFullParallel}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("Random1000PlaneFullParallelLongest", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("Random1000PlaneFullParallelLongest", scene.buildAndTraverse());
 		}
 
 		// === Random1000 scene: 1 plane influence area 15 degrees covering all the scene. 1 ray caster relative to the influence area. ===
@@ -683,7 +687,7 @@ int main() {
 			Bvh bvhPlaneFull15{ bvhProperties, influenceAreaPlaneFull15, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesLongest, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFull15) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "Random1000PlaneFull15Longest", random1000Triangles, vector{&rayCasterPlaneFull15}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("Random1000PlaneFull15Longest", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("Random1000PlaneFull15Longest", scene.buildAndTraverse());
 		}
 
 		// === Random1000 scene: 1 plane influence area 45 degrees covering all the scene. 1 ray caster relative to the influence area. ===
@@ -693,7 +697,7 @@ int main() {
 			Bvh bvhPlaneFull45{ bvhProperties, influenceAreaPlaneFull45, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesLongest, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFull45) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "Random1000PlaneFull45Longest", random1000Triangles, vector{&rayCasterPlaneFull45}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("Random1000PlaneFull45Longest", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("Random1000PlaneFull45Longest", scene.buildAndTraverse());
 		}
 
 		// === Random1000 scene: 1 plane influence area oblique covering all the scene. 1 ray caster relative to the influence area. ===
@@ -703,11 +707,11 @@ int main() {
 			Bvh bvhPlaneFullOblique{ bvhProperties, influenceAreaPlaneFullOblique, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesLongest, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 			TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPlaneFullOblique) };
 			auto scene = TestScene{ string(RESULTS_DIRECTORY) + "Random1000PlaneFullObliqueLongest", random1000Triangles, vector{&rayCasterPlaneFullOblique}, std::move(topLevel), topLevelAnalyzer };
-			csvExporter.addAnalysis("Random1000PlaneFullObliqueLongest", scene.buildAndTraverse());
+			csvTraversal.addAnalysis("Random1000PlaneFullObliqueLongest", scene.buildAndTraverse());
 		}
 	}
 	
 
-	csvExporter.generateCsv("D:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/Results/ExportedCsv.csv");
+	csvTraversal.generateCsv("D:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/Results/ExportedCsv.csv");
 	return 0;
 }
