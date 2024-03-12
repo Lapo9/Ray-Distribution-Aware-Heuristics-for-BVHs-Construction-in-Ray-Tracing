@@ -17,11 +17,11 @@ const pah::Region& pah::InfluenceArea::getBvhRegion() const {
 // ======| PlaneInfluenceArea |======
 pah::PlaneInfluenceArea::PlaneInfluenceArea(Plane plane, Vector2 size, float forwardSize, float density)
 	: InfluenceArea{ make_unique<AabbForObb>(plane.getPoint() + plane.getNormal() * (forwardSize / 2.0f), Vector3{size.x, size.y, forwardSize / 2.0f}, plane.getNormal()) },
-	plane{ plane }, size{ size }, density{ density }, farPlane{ forwardSize } {
+	viewMatrix{ projection::computeViewMatrix(plane.getPoint(), plane.getNormal()) }, plane{ plane }, size{ size }, density{ density }, farPlane{ forwardSize } {
 }
 
 float pah::PlaneInfluenceArea::getProjectedArea(const Aabb& aabb) const {
-	return projection::orthographic::computeProjectedArea(aabb, plane);
+	return projection::orthographic::computeProjectedArea(aabb, viewMatrix);
 }
 
 float pah::PlaneInfluenceArea::getInfluence(const Aabb& aabb) const {

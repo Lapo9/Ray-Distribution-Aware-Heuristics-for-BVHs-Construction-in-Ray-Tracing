@@ -76,6 +76,7 @@ namespace pah {
 		Vector2 size;
 		float farPlane;
 		float density;
+		Matrix4 viewMatrix; //stores the view matrix for this plane, so that we can avoid calculating it each time
 	};
 
 

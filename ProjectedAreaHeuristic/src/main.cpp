@@ -91,14 +91,14 @@ int main() {
 
 
 	// Filter test scenes to run
-	constexpr bool ALL = true;
+	constexpr bool ALL = false;
 	constexpr bool PLANE_FULL_PARALLEL = ALL || false;
 	constexpr bool PLANE_FULL_PARALLEL_LONGEST = ALL || false;
 	constexpr bool WOOD_SCENE = ALL || false;
-	constexpr bool SUZANNE_SCENE = ALL || false;
+	constexpr bool SUZANNE_SCENE = ALL || true;
 	constexpr bool COTTAGE_SCENE = ALL || false;
 	constexpr bool COTTAGE_WALLS_SCENE = ALL || false;
-	constexpr bool CROWD_SCENE = ALL || true;
+	constexpr bool CROWD_SCENE = ALL || false;
 	constexpr bool RANDOM100_SCENE = ALL || false;
 	constexpr bool RANDOM1000_SCENE = ALL || false;
 	constexpr string_view RESULTS_DIRECTORY = "D:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/Results/";

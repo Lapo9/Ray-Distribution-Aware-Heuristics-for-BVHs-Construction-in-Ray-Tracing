@@ -400,3 +400,6 @@ FodyWeavers.xsd
 # Draw.io backups
 *.drawio.bkp
 *.drawio.dtmp
+
+# Large files
+Results/Crowd*/*

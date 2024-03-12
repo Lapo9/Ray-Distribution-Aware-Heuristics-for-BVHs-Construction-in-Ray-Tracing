@@ -134,11 +134,15 @@ namespace pah::projection {
 	 */
 	namespace orthographic {
 
+		static Vector2 projectPoint(Vector4 point, const Matrix4& viewMatrix) {
+			return viewMatrix * point;
+		}
+
 		/**
 		 * @brief Given a plane, projects the point to it.
 		 */
 		static Vector2 projectPoint(Vector4 point, Plane plane) {
-			return computeViewMatrix(plane.getPoint(), plane.getNormal()) * point;
+			return projectPoint(point, computeViewMatrix(plane.getPoint(), plane.getNormal()));
 		}
 
 		/**
@@ -148,15 +152,24 @@ namespace pah::projection {
 			return projectPoint(Vector4{ point, 1.0f }, plane);
 		}
 
+		static Vector2 projectPoint(Vector3 point, const Matrix4& viewMatrix) {
+			return projectPoint(Vector4{ point, 1.0f }, viewMatrix);
+		}
+
+		static std::vector<Vector2> projectPoints(const std::vector<Vector3>& points, const Matrix4& viewMatrix) {
+			std::vector<Vector2> projectedPoints;
+			for (int i = 0; i < points.size(); ++i) {
+				projectedPoints.emplace_back(projectPoint(points[i], viewMatrix));
+			}
+			return projectedPoints;
+		}
+		
 		/**
 		 * @brief Projects the given points to the specified plane.
 		 */
 		static std::vector<Vector2> projectPoints(const std::vector<Vector3>& points, Plane plane) {
-			std::vector<Vector2> projectedPoints;
-			for (int i = 0; i < points.size(); ++i) {
-				projectedPoints.emplace_back(projectPoint(points[i], plane));
-			}
-			return projectedPoints;
+			auto viewMatrix = computeViewMatrix(plane.getPoint(), plane.getNormal());
+			return projectPoints(points, viewMatrix);
 		}
 
 		/**
@@ -171,31 +184,36 @@ namespace pah::projection {
 			return result;
 		}
 
-		/**
-		 * @brief Given an @p Aabb and a plane, it returns the area the @p Aabb projects on the plane.
-		 */
-		static float computeProjectedArea(const Aabb& aabb, Plane plane) {
+		static float computeProjectedArea(const Aabb& aabb, const Matrix4& viewMatrix) {
 			auto points = aabb.getPoints();
 			std::vector<Vector3> keyPoints = { points[3], points[1], points[2], points[7] };
-			auto projectedPoints = projectPoints(keyPoints, plane);
+			auto projectedPoints = projectPoints(keyPoints, viewMatrix);
 
 			Vector3 side1 = Vector3{ projectedPoints[0] - projectedPoints[1], 0.0f };
 			Vector3 side2 = Vector3{ projectedPoints[0] - projectedPoints[2], 0.0f };
 			Vector3 side3 = Vector3{ projectedPoints[0] - projectedPoints[3], 0.0f };
 
-				//  2_______________                                                                                           _______________
-				//  |\              \                                                                                         |               \
-				//  | \______________\7                                                                                       |                \
-				//  | 3|             |   ==> We have 3 parallelograms, the sum of their areas is the area of the polygon ==>  |                |
-				//   \ |             |                                                                                         \               |
-				//    \|_____________|                                                                                          \______________|
-				//     1
+			//  2_______________                                                                                           _______________
+			//  |\              \                                                                                         |               \
+			//  | \______________\7                                                                                       |                \
+			//  | 3|             |   ==> We have 3 parallelograms, the sum of their areas is the area of the polygon ==>  |                |
+			//   \ |             |                                                                                         \               |
+			//    \|_____________|                                                                                          \______________|
+			//     1
 
-			float area1 = glm::abs(glm::length(glm::cross(side1, side2)));
-			float area2 = glm::abs(glm::length(glm::cross(side2, side3)));
-			float area3 = glm::abs(glm::length(glm::cross(side1, side3)));
+			float area1 = glm::length(glm::cross(side1, side2));
+			float area2 = glm::length(glm::cross(side2, side3));
+			float area3 = glm::length(glm::cross(side1, side3));
 
 			return area1 + area2 + area3;
+		}
+		
+		/**
+		 * @brief Given an @p Aabb and a plane, it returns the area the @p Aabb projects on the plane.
+		 */
+		static float computeProjectedArea(const Aabb& aabb, Plane plane) {
+			auto viewMatrix = computeViewMatrix(plane.getPoint(), plane.getNormal());
+			return computeProjectedArea(aabb, viewMatrix);
 		}
 	}
 
