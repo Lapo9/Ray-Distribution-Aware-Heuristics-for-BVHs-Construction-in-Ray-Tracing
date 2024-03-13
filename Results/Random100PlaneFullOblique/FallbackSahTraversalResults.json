@@ -60,12 +60,12 @@
   "general": {
     "rayCastersAmount": 1,
     "raysAmount": 1000,
-    "timeTraversingAveragePerBvh": 0.0006142000784166157,
-    "timeTraversingAveragePerRay": 0.0006142000784166157,
-    "timeTraversingOnlyBvhsAveragePerBvh": 0.0006142000784166157,
-    "timeTraversingOnlyBvhsAveragePerRay": 0.0006142000784166157,
-    "timeTraversingOnlyBvhsTotal": 0.6142000555992126,
-    "timeTraversingTotal": 0.6142000555992126
+    "timeTraversingAveragePerBvh": 0.0006188997649587691,
+    "timeTraversingAveragePerRay": 0.0006188997649587691,
+    "timeTraversingOnlyBvhsAveragePerBvh": 0.0006188997649587691,
+    "timeTraversingOnlyBvhsAveragePerRay": 0.0006188997649587691,
+    "timeTraversingOnlyBvhsTotal": 0.6188997626304626,
+    "timeTraversingTotal": 0.6188997626304626
   },
   "total": {
     "bvhsTraversed": {

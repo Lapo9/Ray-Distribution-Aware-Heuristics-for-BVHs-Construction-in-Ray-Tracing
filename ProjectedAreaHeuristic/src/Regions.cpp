@@ -41,12 +41,12 @@ pah::Aabb::Aabb(const Vector3 & min, const Vector3 & max) : min{ min }, max{ max
 
 bool pah::Aabb::contains(const Vector3 & point) const {
 	return
-		point.x >= min.x &&
-		point.y >= min.y &&
-		point.z >= min.z &&
-		point.x <= max.x &&
-		point.y <= max.y &&
-		point.z <= max.z;
+		point.x >= min.x - TOLERANCE &&
+		point.y >= min.y - TOLERANCE &&
+		point.z >= min.z - TOLERANCE &&
+		point.x <= max.x + TOLERANCE &&
+		point.y <= max.y + TOLERANCE &&
+		point.z <= max.z + TOLERANCE;
 }
 
 Aabb pah::Aabb::enclosingAabb() const {

@@ -13,12 +13,12 @@
 - [ ] CPU
   - [ ] Clustering for influence area detection
   - [x] **Single area PAH**
-    - [ ] Orthogonal optimization
+    - [x] Orthogonal optimization
     - [ ] Perspective optimization
   - [x] **Single area plane splitting**
-    - [ ] *Does it work when there is no clear direction to choose from?*
+    - [x] *Does it work when there is no clear direction to choose from?*
     - [x] Choose more than one plane if results are similar
-      - [ ] Tuning of multiple plane selection
+      - [x] Tuning of multiple plane selection
   - [ ] **Multi area PAH**
     - [ ] *Deferred rendering integration?*
     - [ ] **Top level acceleration structure**
@@ -27,11 +27,11 @@
         - [ ] Binary Space Partitioning
         - [x] AABB for OBB
         - [ ] Simplify OBB with AABBs or spheres
-      - [ ] Traversal (choose best BVH based on ray direction)
+      - [x] Traversal (choose best BVH based on ray direction)
   - [x] **Multi area plane splitting** 
   - [ ] **Data collection**
-    - [ ] How to collect data
-    - [ ] Time results
+    - [x] How to collect data
+    - [x] Time results
     - [ ] Functional results
 - [x] **Port to C++**
 - [x] Visualizer in Unity

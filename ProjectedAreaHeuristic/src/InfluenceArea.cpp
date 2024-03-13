@@ -82,7 +82,9 @@ Vector3 pah::PointInfluenceArea::getRayDirection(const Aabb& aabb) const{
 
 bool pah::PointInfluenceArea::isDirectionAffine(const Ray& ray, float tolerance) const {
 	// get the focal point of this point influence area and connect it with the ray origin; then compare the directions of this segment and the ray
+	// we assume that it is true that the ray origin is inside the influence area
 	Vector3 povOriginDirection = ray.getOrigin() - pov.position;
+	if (glm::length(povOriginDirection) <= TOLERANCE && glm::length(povOriginDirection) >= -TOLERANCE) return true;
 	return collisionDetection::almostParallel(ray.getDirection(), povOriginDirection, tolerance);
 }
 

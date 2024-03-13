@@ -126,7 +126,7 @@ namespace pah {
 		std::vector<Bvh> bvhs;
 		Bvh fallbackBvh; //if none of the other BVHs is hit, this one is used; it will contain every triangle in the scene
 		Properties properties;
-		const std::vector<Triangle>* lastBuilTriangles; //triangle array used for last build
+		const std::vector<Triangle>* lastBuildTriangles; //triangle array used for last build
 	};
 
 
@@ -212,7 +212,7 @@ namespace pah {
 		};
 
 
-		//COMPILER_BUG C++ allows this, but MSVC makes it so that constrained template parameters cannot be universal references template<std::same_as<Bvh> BvhType, std::same_as<Bvh>... Bvhs>
+		//COMPILER_BUG C++ allows this, but MSVC makes it so that constrained template parameters cannot be universal references: template<std::same_as<Bvh> BvhType, std::same_as<Bvh>... Bvhs>
 		template<typename BvhType, typename... Bvhs>
 		TopLevelOctree(const Properties& properties, const OctreeProperties& octreeProperties, BvhType&& fallbackBvh, Bvhs&&... bvhs)
 			: TopLevel{ properties, std::forward<BvhType>(fallbackBvh), std::forward<Bvhs>(bvhs)... }, octreeProperties{ octreeProperties }, root{} {

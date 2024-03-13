@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Utilities.h"
+#include <ranges>
 
 /**
  * @brief Function and utilities to project points and @Aabb s to a plane.
@@ -214,6 +215,29 @@ namespace pah::projection {
 		static float computeProjectedArea(const Aabb& aabb, Plane plane) {
 			auto viewMatrix = computeViewMatrix(plane.getPoint(), plane.getNormal());
 			return computeProjectedArea(aabb, viewMatrix);
+		}
+
+		// TODO perform tests with this algorithm
+		static float computeProjectedAreaFast(const Aabb& aabb, Plane plane) {
+			auto points = aabb.getPoints();
+			std::vector<Vector3> keyPoints = { points[3], points[1], points[2], points[7] };
+			auto projectOnPlane = [&plane](const Vector3& p) {
+				Vector3 distFromOrig = p - plane.getPoint();
+				float distFromPlane = glm::dot(distFromOrig, plane.getNormal());
+				return p - distFromPlane * plane.getNormal();
+				};
+			keyPoints = keyPoints | std::views::transform(projectOnPlane) | std::ranges::to<std::vector>();
+
+			// see computeProjectedArea from now on for comments
+			Vector3 side1 = Vector3{ keyPoints[0] - keyPoints[1] };
+			Vector3 side2 = Vector3{ keyPoints[0] - keyPoints[2] };
+			Vector3 side3 = Vector3{ keyPoints[0] - keyPoints[3] };
+
+			float area1 = glm::length(glm::cross(side1, side2));
+			float area2 = glm::length(glm::cross(side2, side3));
+			float area3 = glm::length(glm::cross(side1, side3));
+
+			return area1 + area2 + area3;
 		}
 	}
 

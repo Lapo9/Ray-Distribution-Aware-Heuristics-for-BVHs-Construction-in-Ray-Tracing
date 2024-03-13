@@ -14,7 +14,7 @@ using namespace pah::utilities;
 
 // ======| TopLevel |======
 void pah::TopLevel::build(const std::vector<Triangle>& triangles) {
-	lastBuilTriangles = &triangles; //save a pointer to the triangles for this build
+	lastBuildTriangles = &triangles; //save a pointer to the triangles for this build
 	fallbackBvh.build(triangles); //build the fallback BVH with all the triangles
 
 	unordered_map<const pah::Bvh*, vector<const Triangle*>> bvhsTriangles; //maps the BVH and the triangles it contains
@@ -77,7 +77,7 @@ const vector<pah::Bvh>& pah::TopLevel::getBvhs() const {
 }
 
 const std::vector<Triangle>& pah::TopLevel::getLastBuildTriangles() const {
-	return *lastBuilTriangles;
+	return *lastBuildTriangles;
 }
 
 // ======| TopLevelAabbs |======
@@ -86,7 +86,7 @@ void pah::TopLevelAabbs::build(const std::vector<Triangle>& triangles) {
 }
 
 void pah::TopLevelAabbs::update() {
-	throw exception{ "TopLevelAabbs::update function not implemented yet." };
+	
 }
 
 vector<const pah::Bvh*> pah::TopLevelAabbs::containedIn(const Vector3& point) const {
