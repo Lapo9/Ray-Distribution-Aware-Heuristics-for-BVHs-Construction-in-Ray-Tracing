@@ -403,3 +403,7 @@ FodyWeavers.xsd
 
 # Large files
 Results/Crowd*/*
+
+# Include .obj files in exampleData folder
+!ProjectedAreaHeuristic/exampleData/*.obj
+*.mtl
