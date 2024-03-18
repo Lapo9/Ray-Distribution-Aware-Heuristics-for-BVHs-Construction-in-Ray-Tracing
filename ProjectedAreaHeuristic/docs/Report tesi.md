@@ -1,12 +1,11 @@
 # Octree
 ## Construction
-<img src="./pngs/octree_construction_draft.png"/>
+<img src="./pngs/octree_construction_draft.png" width = 530/>
 
 ## Traversal
-<img src="./pngs/octree_traversal_draft.png"/>
+<img src="./pngs/octree_traversal_draft.png" height = 670/>
 
 - It is possible to set a maximum depth level
-- I don't know if adding other structures can improve my thesis
 
 
 # Splitting plane facing
@@ -18,8 +17,6 @@
 
 # Data collection
 - 2 types of data collection:
-  - Construction
-  - Traversal
 
 ## Construction
 - It is possible to specify a pair of functions that are respectively run on each node (and can store "global" data) of a BVH and at the end of the BVH traversal (traversal for the analysis)
@@ -73,8 +70,7 @@
 - A better estimate can be calculated if we know the fallback SAH cost (i.e. the SAH cost only of the rays that miss on the PAH BVH):
     $$\#rays \cdot PAH_{avg \space cost} + \#rays \cdot (1-hit\%) \cdot FallbackSAH_{avg \space cost} < \#rays \cdot SAH_{avg \space cost}$$
     $$hit\% > \frac{PAH_{avg \space cost}+FallbackSAH_{avg \space cost}+SAH_{avg \space cost}}{FallbackSAH_{avge \space cost}}$$
-- ==Maybe we can try to plug in average PAH and SAH values for each scene?==
-- ==Morevoer, in addition to these considerations, we also must take into account the time to find the PAH BVH to traverse, given a ray== (or maybe there isn't and we directly use the SAH fallback)
+- Morevoer, in addition to these considerations, we also must take into account the time to find the PAH BVH to traverse, given a ray (or maybe there isn't and we directly use the SAH fallback)
 
 ## Construction
 - For what concerns the construction, I used both benchmarking and algorithm analysis, but both have their problems:
@@ -82,3 +78,18 @@
 - Algorithm analysis can theoretically be more sound, but, again, it is not possible to assign a universal cost to the instructions, because it varies by the hardware.
 - By the way it is no secret that PAH cost computation is slower than SAH. The first analysis shows that it is 5.9x slower on average (4.31ms vs 0.77ms for BVH)
 - On the other hand plane facing splitting is basically the same as longest plane splitting (2.3ms for BVH)
+
+## Other ideas
+- Grid based top level
+- BSP top level (I don't know if it is worth it since we already have the octree, and BSP is more suited to find the closes neighbor, and most likely slower to build)
+- I can try to improve plane facing split method for point influence areas, is it worth to try it, or would it be almost irrelevant?
+
+## Questions
+- Is this enough from a quantity/quality?
+- Can I make a small chapter/appendix about the C++ code itself? I tried to write clean code and I think it can be an easy to use and customizable tool.
+- Do I need to try and optimize the algorithms better from a "hardware" point of view (e.g. cache utilization, parallelization)?
+- Related to the $hit\%$ formula: Maybe we can try to plug in average PAH and SAH values for each scene?
+- I tried to compare my SAH results to the ones of other papers, but they seem to just use benchmarking (i.e. seconds per ray metric)
+- ==I find it difficult to analyze data: I don't know the right methodologies, and all in all I'm afraid to make considerations that are not mathematically sound/too empirical== (e.g. I noticed that PAH works better if there is a clear splitting direction, but I don't know how to formalize it)
+- I'm using a pretty base version of SAH, modern BVH builders use more sophisticated techniques (e.g. primitives splitting, ordering to improve cache usage, stochastic sampling ...)
+- Can I start writing?

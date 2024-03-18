@@ -104,9 +104,9 @@ int main() {
 	constexpr bool POINT_FULL_LONGEST = ALL || false;
 
 	constexpr bool WOOD_SCENE = ALL || false;
-	constexpr bool SUZANNE_SCENE = ALL || true;
+	constexpr bool SUZANNE_SCENE = ALL || false;
 	constexpr bool COTTAGE_SCENE = ALL || false;
-	constexpr bool COTTAGE_WALLS_SCENE = ALL || false;
+	constexpr bool COTTAGE_WALLS_SCENE = ALL || true;
 	constexpr bool CROWD_SCENE = ALL || false;
 	constexpr bool RANDOM100_SCENE = ALL || false;
 	constexpr bool RANDOM1000_SCENE = ALL || false;
@@ -814,7 +814,7 @@ int main() {
 		if constexpr (POINT_FULL and_or COTTAGE_SCENE) {
 			// === Cottage scene: 1 point influence area parallel to x covering all the scene. 1 ray caster relative to the influence area. ===
 			{
-				PointInfluenceArea influenceAreaPointFullParallel{ Pov{{10,2.8,0}, {-1,0,0}, 110,50}, 35, 1, 10000 };
+				PointInfluenceArea influenceAreaPointFullParallel{ Pov{{15,2.7,0}, {-1,0,0}, 70, 35}, 35, 1, 10000 };
 				PointRayCaster rayCasterPointFullParallel{ influenceAreaPointFullParallel }; rayCasterPointFullParallel.generateRays(rng, 1000, true);
 				Bvh bvhPointFullParallel{ bvhProperties, influenceAreaPointFullParallel, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing, bvhStrategies::shouldStopThresholdOrLevel, "point" };
 				TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPointFullParallel) };
@@ -824,7 +824,7 @@ int main() {
 
 			// === Cottage scene: 1 point influence area 15 degrees covering all the scene. 1 ray caster relative to the influence area. ===
 			{
-				PointInfluenceArea influenceAreaPointFull15{ Pov{{10,2.9,-3}, {-.966,0,.259}, 110,50}, 35, 1, 10000 };
+				PointInfluenceArea influenceAreaPointFull15{ Pov{{15,2.7,-3}, {-.966,0,.259}, 70, 35}, 35, 1, 10000 };
 				PointRayCaster rayCasterPointFull15{ influenceAreaPointFull15 }; rayCasterPointFull15.generateRays(rng, 1000, true);
 				Bvh bvhPointFull15{ bvhProperties, influenceAreaPointFull15, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing, bvhStrategies::shouldStopThresholdOrLevel, "point" };
 				TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPointFull15) };
@@ -834,7 +834,7 @@ int main() {
 
 			// === Cottage scene: 1 point influence area 45 degrees covering all the scene. 1 ray caster relative to the influence area. ===
 			{
-				PointInfluenceArea influenceAreaPointFull45{ Pov{{7.5,2.9,-7.5}, {-1,0,1}, 110,50}, 35, 1, 10000 };
+				PointInfluenceArea influenceAreaPointFull45{ Pov{{13,2.5,-13}, {-1,0,1}, 50, 20}, 35, 1, 10000 };
 				PointRayCaster rayCasterPointFull45{ influenceAreaPointFull45 }; rayCasterPointFull45.generateRays(rng, 1000, true);
 				Bvh bvhPointFull45{ bvhProperties, influenceAreaPointFull45, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing, bvhStrategies::shouldStopThresholdOrLevel, "point" };
 				TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPointFull45) };
@@ -844,7 +844,7 @@ int main() {
 
 			// === Cottage scene: 1 point influence area oblique covering all the scene. 1 ray caster relative to the influence area. ===
 			{
-				PointInfluenceArea influenceAreaPointFullOblique{ Pov{{10,5,-8}, {-1,-.3,.9}, 110,50}, 35, 1, 10000 };
+				PointInfluenceArea influenceAreaPointFullOblique{ Pov{{15,7,-11}, {-1,-.45,.75}, 50, 30}, 35, 1, 10000 };
 				PointRayCaster rayCasterPointFullOblique{ influenceAreaPointFullOblique }; rayCasterPointFullOblique.generateRays(rng, 1000, true);
 				Bvh bvhPointFullOblique{ bvhProperties, influenceAreaPointFullOblique, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing, bvhStrategies::shouldStopThresholdOrLevel, "point" };
 				TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPointFullOblique) };
@@ -857,7 +857,7 @@ int main() {
 		if constexpr (POINT_FULL and_or COTTAGE_WALLS_SCENE) {
 			// === CottageWalls scene: 1 point influence area parallel to x covering all the scene. 1 ray caster relative to the influence area. ===
 			{
-				PointInfluenceArea influenceAreaPointFullParallel{ Pov{{10,2.8,0}, {-1,0,0}, 110, 50}, 35, 1, 10000 };
+				PointInfluenceArea influenceAreaPointFullParallel{ Pov{{15,2.7,0}, {-1,0,0}, 70, 35}, 35, 1, 10000 };
 				PointRayCaster rayCasterPointFullParallel{ influenceAreaPointFullParallel }; rayCasterPointFullParallel.generateRays(rng, 1000, true);
 				Bvh bvhPointFullParallel{ bvhProperties, influenceAreaPointFullParallel, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing, bvhStrategies::shouldStopThresholdOrLevel, "point" };
 				TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPointFullParallel) };
@@ -867,7 +867,7 @@ int main() {
 
 			// === CottageWalls scene: 1 point influence area 15 degrees covering all the scene. 1 ray caster relative to the influence area. ===
 			{
-				PointInfluenceArea influenceAreaPointFull15{ Pov{{10,2.9,-3}, {-.966,0,.259}, 110, 50}, 35, 1, 10000 };
+				PointInfluenceArea influenceAreaPointFull15{ Pov{{15,2.7,-3}, {-.966,0,.259}, 70, 35}, 35, 1, 10000 };
 				PointRayCaster rayCasterPointFull15{ influenceAreaPointFull15 }; rayCasterPointFull15.generateRays(rng, 1000, true);
 				Bvh bvhPointFull15{ bvhProperties, influenceAreaPointFull15, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing, bvhStrategies::shouldStopThresholdOrLevel, "point" };
 				TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPointFull15) };
@@ -877,7 +877,7 @@ int main() {
 
 			// === CottageWalls scene: 1 point influence area 45 degrees covering all the scene. 1 ray caster relative to the influence area. ===
 			{
-				PointInfluenceArea influenceAreaPointFull45{ Pov{{7.5,2.9,-7.5}, {-1,0,1}, 110, 50}, 35, 1, 10000 };
+				PointInfluenceArea influenceAreaPointFull45{ Pov{{13,2.5,-13}, {-1,0,1}, 50, 20}, 35, 1, 10000 };
 				PointRayCaster rayCasterPointFull45{ influenceAreaPointFull45 }; rayCasterPointFull45.generateRays(rng, 1000, true);
 				Bvh bvhPointFull45{ bvhProperties, influenceAreaPointFull45, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing, bvhStrategies::shouldStopThresholdOrLevel, "point" };
 				TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPointFull45) };
@@ -887,7 +887,7 @@ int main() {
 
 			// === CottageWalls scene: 1 point influence area oblique covering all the scene. 1 ray caster relative to the influence area. ===
 			{
-				PointInfluenceArea influenceAreaPointFullOblique{ Pov{{10,5,-8}, {-1,-.3,.9}, 110, 50}, 35, 1, 10000 };
+				PointInfluenceArea influenceAreaPointFullOblique{ Pov{{15,7,-11}, {-1,-.45,.75}, 50, 30}, 35, 1, 10000 };
 				PointRayCaster rayCasterPointFullOblique{ influenceAreaPointFullOblique }; rayCasterPointFullOblique.generateRays(rng, 1000, true);
 				Bvh bvhPointFullOblique{ bvhProperties, influenceAreaPointFullOblique, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing, bvhStrategies::shouldStopThresholdOrLevel, "point" };
 				TopLevelOctree topLevel{ topLevelProperties, TopLevelOctree::OctreeProperties{ 4, false }, fallbackBvh, std::move(bvhPointFullOblique) };

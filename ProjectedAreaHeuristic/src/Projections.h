@@ -425,14 +425,15 @@ namespace pah::projection {
 		 */
 		static float computeProjectedArea(const std::vector<Vector2>& contourPoints) {
 			float area = 0.0f;
-			//for each segment of the hull, we compute its SIGNED area w.r.t. the x-axis
+			//use the shoelace formula to comute the area
 			for (int i = 0; i < contourPoints.size(); ++i) {
-				float width = contourPoints[i + 1 == contourPoints.size() ? 0 : i + 1].x - contourPoints[i].x; //width of the segment
-				float meanHeight = (contourPoints[i + 1 == contourPoints.size() ? 0 : i + 1].y + contourPoints[i].y) / 2.0f; //mean height of the segment
-				area += width * meanHeight;
+				//float width = contourPoints[i + 1 == contourPoints.size() ? 0 : i + 1].x - contourPoints[i].x; //width of the segment
+				//float meanHeight = (contourPoints[i + 1 == contourPoints.size() ? 0 : i + 1].y + contourPoints[i].y) / 2.0f; //mean height of the segment
+				//area += width * meanHeight;
+				int iNext = i + 1 == contourPoints.size() ? 0 : i + 1;
+				area += contourPoints[i].x * contourPoints[iNext].y - contourPoints[i].y * contourPoints[iNext].x;
 			}
-			assert((area > 0, "Projected area <= 0"));
-			return area;
+			return abs(area / 2.f); //we can probably just return area, since we use the area to calculate the hit probability, therefore a ratio between 2 areas
 		}
 
 		/**
