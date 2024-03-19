@@ -421,15 +421,12 @@ namespace pah::projection {
 
 		/**
 		 * @brief Given the contour points of a convex 2D hull, it calculates its area.
-		 * It uses a technique called contour integral.
+		 * It uses a technique called shoelace formula.
 		 */
 		static float computeProjectedArea(const std::vector<Vector2>& contourPoints) {
 			float area = 0.0f;
 			//use the shoelace formula to comute the area
 			for (int i = 0; i < contourPoints.size(); ++i) {
-				//float width = contourPoints[i + 1 == contourPoints.size() ? 0 : i + 1].x - contourPoints[i].x; //width of the segment
-				//float meanHeight = (contourPoints[i + 1 == contourPoints.size() ? 0 : i + 1].y + contourPoints[i].y) / 2.0f; //mean height of the segment
-				//area += width * meanHeight;
 				int iNext = i + 1 == contourPoints.size() ? 0 : i + 1;
 				area += contourPoints[i].x * contourPoints[iNext].y - contourPoints[i].y * contourPoints[iNext].x;
 			}
