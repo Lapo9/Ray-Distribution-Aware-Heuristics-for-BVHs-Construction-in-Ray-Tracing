@@ -110,6 +110,22 @@ namespace pah::analyzerActions {
 			//log to JSON the times of this node
 			TIME(localLog["timing"] = node.nodeTimingInfo;);
 		}
+
+		/**
+		 * @brief Computes the percentage of the overlapping area between the 2 children.
+		 */
+		static void siblingsOverlapping(std::pair<float,float>& totalAndOverlappingArea, ANALYZER_ACTION_PER_NODE_ARGUMENTS) {
+			if (node.isLeaf() || !bvh.getInfluenceArea()) return;
+			const auto& contourPointsLeft = ConvexHull2d{ bvh.getInfluenceArea()->getProjectedHull(node.leftChild->aabb) };
+			const auto& contourPointsRight = ConvexHull2d{ bvh.getInfluenceArea()->getProjectedHull(node.rightChild->aabb) };
+
+			float childrenArea = contourPointsLeft.computeArea() + contourPointsRight.computeArea();
+			float overlappingChildrenArea = overlappingArea(contourPointsLeft, contourPointsRight);
+			totalAndOverlappingArea.first += childrenArea;
+			totalAndOverlappingArea.second += overlappingChildrenArea;
+
+			localLog["metrics"]["childrenOverlappingPercentage"] = overlappingChildrenArea / childrenArea;
+		}
 	}
 
 
@@ -175,6 +191,13 @@ namespace pah::analyzerActions {
 
 			//log total time
 			INFO(log["totalTiming"]["fullTotal"] = bvh.getTotalBuildTime().count(););
+		}
+
+		/**
+		 * @brief Computes the total percentage of overlapping area among siblings.
+		 */
+		static void siblingsOverlapping(std::pair<float, float>& totalAndOverlappingArea, ANALYZER_ACTION_FINAL_ARGUMENTS) {
+			log["globalInfo"]["siblingsOverlappingPercentage"] = totalAndOverlappingArea.second / totalAndOverlappingArea.first;
 		}
 	}
 }

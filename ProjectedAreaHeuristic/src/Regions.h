@@ -62,34 +62,7 @@ namespace pah {
 		 * @brief Returns whether a @p Ray is colliding with a @p ConvexHull, and the distance of the hit (if present).
 		 * This is a generalization of this method for triangles: https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/ray-triangle-intersection-geometric-solution.html
 		 */
-		template<std::size_t M>
-		RayCollisionInfo areColliding(const Ray& ray, const ConvexHull<M> hull) {
-			using namespace glm;
-			// IMPORTANT: in the comments we always use the world triangle in place of convex hull
-			// It should help to think about this method as if the hull was always a triangle, it is then easier to generalize to any N-sided convex hull.
-			
-			const auto& R = ray.getDirection(); //direction of the ray
-			const auto& N = hull.normal(); // normal to the plane where the triangle lies
-			
-			// Compute the intersection between the ray and the plane the triangle is lying on.
-			auto [isCollidingWithPlane, t] = areColliding(ray, Plane{ hull[0], N });
-			if (!isCollidingWithPlane) return { false, 0.0f };
-
-			// Now, since there is a hit with the plane, we have to find out whether the point is inside the triangle .
-			// The point is inside iff it is "to the left" of all sides (taken in counter clockwise order).
-			// If it is "to the left" of an edge, then the normal (N) and the cross product between the edge and the vector connecting the start of the edge and the point (P) should face the same direction (i.e. their dot product > 0).
-			const auto& P = ray.getOrigin() + R * t; //coordinates of the intersection point between the ray and the plane
-			for (std::size_t i = 0; i < M - 1; ++i) {
-				Vector3 edge = hull[i + 1] - hull[i]; //vector representing a triangle edge
-				Vector3 p = P - hull[i]; //vector from the vertex of the triangle to the intersection point
-				if (dot(N, cross(edge, p)) <= 0) return { false, 0.0f };
-			}
-			Vector3 edge = hull[0] - hull[M - 1];
-			Vector3 p = P - hull[M - 1];
-			if (dot(N, cross(edge, p)) <= 0) return { false, 0.0f };
-
-			return { true, t };
-		}
+		RayCollisionInfo areColliding(const Ray& ray, const ConvexHull3d hull);
 
 		/**
 		 * @brief Checks whether 2 vectors are almost parallel.

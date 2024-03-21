@@ -24,6 +24,11 @@ float pah::PlaneInfluenceArea::getProjectedArea(const Aabb& aabb) const {
 	return projection::orthographic::computeProjectedArea(aabb, viewMatrix);
 }
 
+std::vector<Vector2> pah::PlaneInfluenceArea::getProjectedHull(const Aabb& aabb) const {
+	const auto& contourPoints = projection::orthographic::findContourPoints(aabb, plane.getNormal());
+	return projection::orthographic::projectPoints(contourPoints, plane);
+}
+
 float pah::PlaneInfluenceArea::getInfluence(const Aabb& aabb) const {
 	return density;
 }
@@ -68,8 +73,13 @@ float pah::PointInfluenceArea::getProjectedArea(const Aabb& aabb) const
 	//we want to project to a frustum that points to the AABB.
 	//indeed the projected area should approximate the number of rays that hit the AABB, but by projecting it to the near plane, objects far from the z axis tend to get distorted.
 	//basically we want the solid angle.
-	Pov centeredPov{ pov.position, aabb.center() - pov.position, pov.fovX, pov.fovY };
-	return projection::perspective::computeProjectedArea(aabb, centeredPov);
+	//Pov centeredPov{ pov.position, aabb.center() - pov.position, pov.fovX, pov.fovY };
+	return projection::perspective::computeProjectedArea(aabb, pov);
+}
+
+std::vector<Vector2> pah::PointInfluenceArea::getProjectedHull(const Aabb& aabb) const {
+	const auto& contourPoints = projection::perspective::findContourPoints(aabb, pov.position);
+	return projection::perspective::projectPoints(contourPoints, pov);
 }
 
 float pah::PointInfluenceArea::getInfluence(const Aabb& aabb) const{

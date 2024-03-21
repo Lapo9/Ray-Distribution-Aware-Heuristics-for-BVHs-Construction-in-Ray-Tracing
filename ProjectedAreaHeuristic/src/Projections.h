@@ -9,6 +9,102 @@
 namespace pah::projection {
 
 	/**
+	 * @brief An HullInfo object keeps a list of the indexes of the vertices that are part of the convex hull.
+	 * See hull table for more info.
+	 */
+	struct HullInfo {
+		std::vector<int> vertices; //index of the indices creating the hull
+
+		HullInfo() {}
+		HullInfo(std::vector<int> vertices) : vertices{ vertices } {}
+
+		/**
+		 * @brief The indexing follows this scheme:
+		 * |   5   |   4   |   3   |   2   |   1   |   0   |
+		 * | back  | front |  top  | bott. | right | left  |
+		 */
+		static std::string getDescription(int i) {
+			using namespace std;
+			string description = "";
+			array<string, 6> keywords = { "left", "right", "bottom", "top", "front", "back" };
+			for (int j = 0; j < 6; j++) {
+				if ((i & 1) != 0) description += keywords[j] + " ";
+				i >>= 1;
+			}
+			return description;
+		}
+	};
+
+	/** @brief This array contains arrays containing the indices of the veritces making up the hull.
+	 * The indexing of this array follows this rule:
+	 * |   5   |   4   |   3   |   2   |   1   |   0   |
+	 * | back  | front |  top  | bott. | right | left  |
+	 * So, for example index 9 = 001001b will contain the indexes when the AABB is seen from top-left, whereas index 4 = 000100b will contain the indexes when the AABB is seen from bottom.
+	 * Of course some indexes will be empty, since you cannot see the AABB from bottom and top at the same time, therefore xx11xxb = 13 is empty.
+	 * To get more info about how we index the vertices of an @p Aabb look at the function @p pah::Aabb::getPoints
+	 */
+	static std::array<HullInfo, 43> hullTable =
+	{
+		HullInfo{},
+		HullInfo{{ 1, 0, 2, 3 }},
+		HullInfo{{ 5, 7, 6, 4 }},
+		HullInfo{},
+		HullInfo{{ 1, 5, 4, 0 }},
+		HullInfo{{ 1, 5, 4, 0, 2, 3 }},
+		HullInfo{{ 1, 5, 7, 6, 4, 0 }},
+		HullInfo{},
+		HullInfo{{ 7, 3, 2, 6 }},
+		HullInfo{{ 0, 2, 6, 7, 3, 1 }},
+		HullInfo{{ 7, 3, 2, 6, 4, 5 }},
+		HullInfo{},
+		HullInfo{},
+		HullInfo{},
+		HullInfo{},
+		HullInfo{},
+		HullInfo{{ 1, 3, 7, 5 }},
+		HullInfo{{ 1, 0, 2, 3, 7, 5 }},
+		HullInfo{{ 1, 3, 7, 6, 4, 5 }},
+		HullInfo{},
+		HullInfo{{ 1, 3, 7, 5, 4, 0 }},
+		HullInfo{{ 7, 5, 4, 0, 2, 3 }},
+		HullInfo{{ 1, 3, 7, 6, 4, 0 }},
+		HullInfo{},
+		HullInfo{{ 1, 3, 2, 6, 7, 5 }},
+		HullInfo{{ 1, 0, 2, 6, 7, 5 }},
+		HullInfo{{ 1, 3, 2, 6, 4, 5 }},
+		HullInfo{},
+		HullInfo{},
+		HullInfo{},
+		HullInfo{},
+		HullInfo{},
+		HullInfo{{ 0, 4, 6, 2 }},
+		HullInfo{{ 0, 4, 6, 2, 3, 1 }},
+		HullInfo{{ 5, 7, 6, 2, 0, 4 }},
+		HullInfo{},
+		HullInfo{{ 1, 5, 4, 6, 2, 0 }},
+		HullInfo{{ 1, 5, 4, 6, 2, 3 }},
+		HullInfo{{ 1, 5, 7, 6, 2, 0 }},
+		HullInfo{},
+		HullInfo{{ 7, 3, 2, 0, 4, 6 }},
+		HullInfo{{ 1, 0, 4, 6, 7, 3 }},
+		HullInfo{{ 5, 7, 3, 2, 0, 4 }}
+	};
+
+	/**
+	 * @brief Given an @p Aabb and the index of the hull table, it returns the 3D contour points (to be projected later on).
+	 */
+	static std::vector<Vector3> findContourPoints(const Aabb& aabb, int i) {
+		using namespace std;
+		const vector<int>& verticesIndexes = hullTable[i].vertices; //get the array of indexes of the contour vertices
+		vector<Vector3> contourVertices(verticesIndexes.size());
+		for (int j = 0; j < verticesIndexes.size(); j++) {
+			contourVertices[j] = aabb.getPoint(verticesIndexes[j]);
+		}
+		return contourVertices;
+	}
+
+
+	/**
 	 * @brief Returns the view matrix, to go from world space to camera space.
 	 */
 	static Matrix4 computeViewMatrix(const Vector3& eye, const Vector3& direction, const Vector3& up = Vector3{ 0.0f,1.0f,0.0f }) {
@@ -83,6 +179,10 @@ namespace pah::projection {
 		float aspectRatio = right / top;
 
 		return glm::perspective(radians(fovY), aspectRatio, n, f);
+	}
+
+	static Matrix4 computeOrthographicMatrix(float l, float r, float b, float t) {
+		return glm::ortho(l, r, b, t);
 	}
 
 	/**
@@ -185,6 +285,28 @@ namespace pah::projection {
 			return result;
 		}
 
+		/**
+		 * @brief Given the direction of the PoV it returns the corresponding index in the hull table.
+		 */
+		static int findHullTableIndex(Vector3 dir) {
+			int i = 0;
+			if (dir.x > TOLERANCE) i |= 1;
+			else if (dir.x < -TOLERANCE) i |= 2;
+			if (dir.y > TOLERANCE) i |= 4;
+			else if (dir.y < -TOLERANCE) i |= 8;
+			if (dir.z > TOLERANCE) i |= 32;
+			else if (dir.z < -TOLERANCE) i |= 16;
+
+			return i;
+		}
+
+		/**
+		 * @brief Given and @p Aabb and a PoV, it returns the 3D contour points by using the hull table and the relative position of the PoV and the @p Aabb.
+		 */
+		static std::vector<Vector3> findContourPoints(const Aabb& aabb, Vector3 viewDirection) {
+			return projection::findContourPoints(aabb, findHullTableIndex(viewDirection));
+		}
+
 		static float computeProjectedArea(const Aabb& aabb, const Matrix4& viewMatrix) {
 			auto points = aabb.getPoints();
 			std::vector<Vector3> keyPoints = { points[3], points[1], points[2], points[7] };
@@ -246,88 +368,6 @@ namespace pah::projection {
 	 * @brief Functions and utilities for perspective projections.
 	 */
 	namespace perspective {
-		/**
-		 * @brief An HullInfo object keeps a list of the indexes of the vertices that are part of the convex hull.
-		 * See hull table for more info.
-		 */
-		struct HullInfo {
-			std::vector<int> vertices; //index of the indices creating the hull
-
-			HullInfo() {}
-			HullInfo(std::vector<int> vertices) : vertices{ vertices } {}
-
-			/**
-			 * @brief The indexing follows this scheme:
-			 * |   5   |   4   |   3   |   2   |   1   |   0   |
-			 * | back  | front |  top  | bott. | right | left  |
-			 */
-			static std::string getDescription(int i) {
-				using namespace std;
-				string description = "";
-				array<string, 6> keywords = { "left", "right", "bottom", "top", "front", "back" };
-				for (int j = 0; j < 6; j++) {
-					if ((i & 1) != 0) description += keywords[j] + " ";
-					i >>= 1;
-				}
-				return description;
-			}
-		};
-
-		/** @brief This array contains arrays containing the indices of the veritces making up the hull.
-		 * The indexing of this array follows this rule:
-		 * |   5   |   4   |   3   |   2   |   1   |   0   |
-		 * | back  | front |  top  | bott. | right | left  |
-		 * So, for example index 9 = 001001b will contain the indexes when the AABB is seen from top-left, whereas index 4 = 000100b will contain the indexes when the AABB is seen from bottom.
-		 * Of course some indexes will be empty, since you cannot see the AABB from bottom and top at the same time, therefore xx11xxb = 13 is empty.
-		 * To get more info about how we index the vertices of an @p Aabb look at the function @p pah::Aabb::getPoints
-		 */
-		static std::array<HullInfo, 43> hullTable =
-		{
-			HullInfo{},
-			HullInfo{{ 1, 0, 2, 3 }},
-			HullInfo{{ 5, 7, 6, 4 }},
-			HullInfo{},
-			HullInfo{{ 1, 5, 4, 0 }},
-			HullInfo{{ 1, 5, 4, 0, 2, 3 }},
-			HullInfo{{ 1, 5, 7, 6, 4, 0 }},
-			HullInfo{},
-			HullInfo{{ 7, 3, 2, 6 }},
-			HullInfo{{ 0, 2, 6, 7, 3, 1 }},
-			HullInfo{{ 7, 3, 2, 6, 4, 5 }},
-			HullInfo{},
-			HullInfo{},
-			HullInfo{},
-			HullInfo{},
-			HullInfo{},
-			HullInfo{{ 1, 3, 7, 5 }},
-			HullInfo{{ 1, 0, 2, 3, 7, 5 }},
-			HullInfo{{ 1, 3, 7, 6, 4, 5 }},
-			HullInfo{},
-			HullInfo{{ 1, 3, 7, 5, 4, 0 }},
-			HullInfo{{ 7, 5, 4, 0, 2, 3 }},
-			HullInfo{{ 1, 3, 7, 6, 4, 0 }},
-			HullInfo{},
-			HullInfo{{ 1, 3, 2, 6, 7, 5 }},
-			HullInfo{{ 1, 0, 2, 6, 7, 5 }},
-			HullInfo{{ 1, 3, 2, 6, 4, 5 }},
-			HullInfo{},
-			HullInfo{},
-			HullInfo{},
-			HullInfo{},
-			HullInfo{},
-			HullInfo{{ 0, 4, 6, 2 }},
-			HullInfo{{ 0, 4, 6, 2, 3, 1 }},
-			HullInfo{{ 5, 7, 6, 2, 0, 4 }},
-			HullInfo{},
-			HullInfo{{ 1, 5, 4, 6, 2, 0 }},
-			HullInfo{{ 1, 5, 4, 6, 2, 3 }},
-			HullInfo{{ 1, 5, 7, 6, 2, 0 }},
-			HullInfo{},
-			HullInfo{{ 7, 3, 2, 0, 4, 6 }},
-			HullInfo{{ 1, 0, 4, 6, 7, 3 }},
-			HullInfo{{ 5, 7, 3, 2, 0, 4 }}
-		};
-
 
 		static Vector2 projectPoint(Vector4 point, const Matrix4& viewProjectionMatrix) {
 			Vector4 projectedPoint = viewProjectionMatrix * point;
@@ -400,23 +440,10 @@ namespace pah::projection {
 		}
 
 		/**
-		 * @brief Given an @p Aabb and the index of the hull table, it returns the 3D contour points (to be projected later on).
-		 */
-		static std::vector<Vector3> findContourPoints(const Aabb& aabb, int i) {
-			using namespace std;
-			const vector<int>& verticesIndexes = hullTable[i].vertices; //get the array of indexes of the contour vertices
-			vector<Vector3> contourVertices(verticesIndexes.size());
-			for (int j = 0; j < verticesIndexes.size(); j++) {
-				contourVertices[j] = aabb.getPoint(verticesIndexes[j]);
-			}
-			return contourVertices;
-		}
-
-		/**
 		 * @brief Given and @p Aabb and a PoV, it returns the 3D contour points by using the hull table and the relative position of the PoV and the @p Aabb.
 		 */
 		static std::vector<Vector3> findContourPoints(const Aabb& aabb, Vector3 pov) {
-			return findContourPoints(aabb, findHullTableIndex(aabb, pov));
+			return projection::findContourPoints(aabb, findHullTableIndex(aabb, pov));
 		}
 
 		/**
@@ -424,13 +451,7 @@ namespace pah::projection {
 		 * It uses a technique called shoelace formula.
 		 */
 		static float computeProjectedArea(const std::vector<Vector2>& contourPoints) {
-			float area = 0.0f;
-			//use the shoelace formula to comute the area
-			for (int i = 0; i < contourPoints.size(); ++i) {
-				int iNext = i + 1 == contourPoints.size() ? 0 : i + 1;
-				area += contourPoints[i].x * contourPoints[iNext].y - contourPoints[i].y * contourPoints[iNext].x;
-			}
-			return abs(area / 2.f); //we can probably just return area, since we use the area to calculate the hit probability, therefore a ratio between 2 areas
+			return ConvexHull2d{ contourPoints }.computeArea();
 		}
 
 		/**

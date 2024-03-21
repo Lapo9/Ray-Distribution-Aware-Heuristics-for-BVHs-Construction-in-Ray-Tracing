@@ -24,6 +24,11 @@ namespace pah {
 		virtual float getProjectedArea(const Aabb& aabb) const = 0;
 
 		/**
+		 * @brief Returns the convex hull formed by the projected points of the specified Aabb.
+		 */
+		virtual std::vector<Vector2> getProjectedHull(const Aabb& aabb) const = 0;
+
+		/**
 		 * @brief Given an @p Aabb, returns the influence that this @p InfluenceArea has on it.
 		 * This may depend on many factors, such as the amount of rays in the area or the distance.
 		 */
@@ -60,6 +65,7 @@ namespace pah {
 		PlaneInfluenceArea(Plane plane, Vector2 size, float forwardSize, float density);
 
 		float getProjectedArea(const Aabb& aabb) const override;
+		std::vector<Vector2> getProjectedHull(const Aabb& aabb) const override;
 		float getInfluence(const Aabb& aabb) const override;
 		Vector3 getRayDirection(const Aabb& aabb) const override;
 		bool isDirectionAffine(const Ray& ray, float tolerance) const override;
@@ -85,6 +91,7 @@ namespace pah {
 		PointInfluenceArea(Pov pov, float far, float near, float density);
 
 		float getProjectedArea(const Aabb& aabb) const override;
+		std::vector<Vector2> getProjectedHull(const Aabb& aabb) const override;
 		float getInfluence(const Aabb& aabb) const override;
 		Vector3 getRayDirection(const Aabb& aabb) const override;
 		bool isDirectionAffine(const Ray& ray, float tolerance) const override;

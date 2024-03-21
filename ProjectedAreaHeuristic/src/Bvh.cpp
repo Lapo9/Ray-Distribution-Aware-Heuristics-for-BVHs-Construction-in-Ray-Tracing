@@ -67,7 +67,7 @@ pah::Bvh::TraversalResults pah::Bvh::traverse(const Ray& ray) const {
 				for (const Triangle* triangle : triangles) {
 					res.intersectionTestsTotal++;
 					res.intersectionTestsWithTriangles++;
-					const auto& hitInfo = collisionDetection::areColliding(ray, *triangle);
+					const auto& hitInfo = collisionDetection::areColliding(ray, **triangle);
 					if (hitInfo.hit && hitInfo.distance < closestHit) {
 						closestHit = hitInfo.distance;
 						res.closestHit = triangle;

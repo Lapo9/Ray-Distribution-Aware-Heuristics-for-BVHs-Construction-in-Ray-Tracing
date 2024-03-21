@@ -10,6 +10,7 @@
 #include <stdexcept>
 #include <concepts>
 #include <fstream>
+#include <ranges>
 
 #include  "../libs/json.hpp"
 
@@ -56,28 +57,170 @@ namespace pah {
 											     { point.w } -> std::convertible_to<float>; }; //if it has .w it must also have .z, and they both must be float
 	};
 
-	
+
+	/**
+	 * @brief Represents any polygonal convex shape in 2 dimensions.
+	 */
+	struct ConvexHull2d {
+	public:
+		template<std::same_as<Vector2>... Vec2>
+		ConvexHull2d(const Vec2&... vertices) : vertices{} {
+			(this->vertices.push_back(vertices), ...);
+		}
+
+		ConvexHull2d(const std::vector<Vector2>& vertices) : vertices{ vertices } {}
+
+		/**
+		 * @brief Returns the barycenter of the @p ConvexHull.
+		 */
+		Vector2 barycenter() const {
+			Vector2 sum{ 0.0f, 0.0f };
+			for (int i = 0; i < size(); ++i) {
+				sum += vertices[i];
+			}
+			return sum / (float)size();
+		}
+
+		/**
+		 * @brief Returns the specified vertex of the @p ConvexHull2d.
+		 */
+		Vector2& operator[](std::size_t i) {
+			return vertices[i];
+		}
+
+		/**
+		 * @brief Returns the specified vertex of the @p ConvexHull2d.
+		 */
+		Vector2 operator[](std::size_t i) const {
+			return vertices[i];
+		}
+
+		std::size_t size() const {
+			return vertices.size();
+		}
+
+		/**
+		 * @brief Returns the array of the vertices of the @p ConvexHull2d.
+		 */
+		const std::vector<Vector2>& getVertices() const {
+			return vertices;
+		}
+
+		/**
+		 * @brief Returns whether a point is inside the hull.
+		 */
+		bool isPointInside(const Vector2& P) const {
+			// returns whether the cross product of 2d vectors is positive
+			auto cross2d = [](const Vector2& lhs, const Vector2& rhs) -> float { return lhs.x * rhs.y - rhs.x * lhs.y; };
+
+			// we compute the cross product between the first edge and the vector connecting the first vertex of the edge and our point.
+			// this will be > 0 if the point is "to the left" and < 0 if it is "to the right" of the edge.
+			// we do the same with all the edges: the point is inside iff it is to the left/right of all edges.
+			int M = size();
+			Vector2 edge = vertices[0] - vertices[M - 1];
+			Vector2 p = P - vertices[M - 1];
+			float signum = cross2d(edge, p);
+			for (std::size_t i = 0; i < M - 1; ++i) {
+				edge = vertices[i + 1] - vertices[i]; //vector representing a triangle edge
+				p = P - vertices[i]; //vector from the vertex of the triangle to the intersection point
+				if (cross2d(edge, p) * signum <= 0) return false;
+			}
+
+			return true;
+		}
+
+		/**
+		 * @brief Returns the area of the hull.
+		 */
+		float computeArea() const {
+			float area = 0.0f;
+			//use the shoelace formula to comute the area
+			for (int i = 0; i < vertices.size(); ++i) {
+				int iNext = i + 1 == vertices.size() ? 0 : i + 1;
+				area += vertices[i].x * vertices[iNext].y - vertices[i].y * vertices[iNext].x;
+			}
+			return abs(area / 2.f); //we can probably just return area, since we use the area to calculate the hit probability, therefore a ratio between 2 areas
+		}
+
+		/**
+		 * @brief Returns the amount of overlapping area between 2 convex hulls.
+		 */
+		friend float overlappingArea(const ConvexHull2d& h1, const ConvexHull2d& h2) {
+			std::vector<Vector2> vertices{};
+
+			// find all the points of a hull, internal to the other hull
+			for (int i = 0; i < h1.size(); ++i) {
+				if (h2.isPointInside(h1[i])) {
+					vertices.push_back(h1[i]);
+				}
+			}
+			for (int i = 0; i < h2.size(); ++i) {
+				if (h1.isPointInside(h2[i])) {
+					vertices.push_back(h2[i]);
+				}
+			}
+
+			// function to find the intersection point between 2 segments (if present)
+			auto segmentsIntersection = [](const Vector2& a1, const Vector2& a2, const Vector2& b1, const Vector2& b2) -> std::pair<bool, Vector2> {
+				//Ax+By = C
+				float A1 = a2.y - a1.y; float B1 = a1.x - a2.x; float C1 = A1 * a1.x + B1 * a1.y;
+				float A2 = b2.y - b1.y; float B2 = b1.x - b2.x; float C2 = A2 * b1.x + B2 * b1.y;
+				float det = A1 * B2 - A2 * B1;
+				if (det == 0) return { false, Vector2{0,0} };
+
+				//intersection point coords
+				Vector2 res{ (B2 * C1 - B1 * C2) / det, (A1 * C2 - A2 * C1) / det };
+
+				//is the intersection point inside the segment?
+				bool onSegmA = fmin(a1.x, a2.x) <= res.x && fmax(a2.x, a2.x) >= res.x && fmin(a1.y, a2.y) <= res.y && fmax(a2.y, a2.y) >= res.y;
+				bool onSegmB = fmin(b1.x, b2.x) <= res.x && fmax(b2.x, b2.x) >= res.x && fmin(b1.y, b2.y) <= res.y && fmax(b2.y, b2.y) >= res.y;
+				return { onSegmA && onSegmB, res };
+				};
+
+			// find all intersection points of the edges
+			for (int i = 0; i < h1.size(); ++i) {
+				for (int j = 0; j < h2.size(); ++j) {
+					auto [intersect, point] = segmentsIntersection(h1[i], h1[(i + 1) % h1.size()], h2[j], h2[(j + 1) % h2.size()]);
+					if (intersect) vertices.push_back(point);
+				}
+			}
+
+			if (vertices.size() == 0) return 0.0f;
+
+			// sort all the points in counterclockwise order (find a point inside the overlap hull and sort by atan2)
+			std::ranges::sort(vertices, [center = ConvexHull2d{ vertices }.barycenter()](const Vector2& a, const Vector2& b) {return atan2(a.y - center.y, a.x - center.x) >= atan2(b.y - center.y, b.x - center.x); });
+
+			return ConvexHull2d{ vertices }.computeArea();
+		}
+
+	private:
+
+		std::vector<Vector2> vertices;
+	};
+
 
 	/**
 	 * @brief Represents any polygonal convex shape.
 	 */
-	template<std::size_t N>
-	struct ConvexHull {
+	struct ConvexHull3d {
 	public:
 		template<std::same_as<Vector3>... Vec3> //requires { sizeof...(Vec3) > 2; }
-		ConvexHull(const Vec3&... vertices) : vertices{} {
-			fillVertices(std::make_index_sequence<sizeof...(Vec3)>{}, vertices...);
+		ConvexHull3d(const Vec3&... vertices) : vertices{} {
+			(this->vertices.push_back(vertices), ...);
+			checkCoplanar();
 		}
+
+		ConvexHull3d(const std::vector<Vector3>& vertices) : vertices{ vertices } {}
 
 		/**
 		 * @brief Returns the barycenter of the @p ConvexHull.
 		 */
 		Vector3 barycenter() const {
 			Vector3 sum{ 0.0f, 0.0f, 0.0f };
-			for (int i = 0; i < N; ++i) {
+			for (int i = 0; i < size(); ++i) {
 				sum += vertices[i];
 			}
-			return sum / N;
+			return sum / (float)size();
 		}
 
 		/**
@@ -103,28 +246,50 @@ namespace pah {
 			return vertices[i];
 		}
 
+		std::size_t size() const {
+			return vertices.size();
+		}
+
 		/**
 		 * @brief Returns the array of the vertices of the @p ConvexHull..
 		 */
-		const std::array<Vector3, N>& getVertices() const {
+		const std::vector<Vector3>& getVertices() const {
 			return vertices;
 		}
 
-	private:
 		/**
-		 * @brief Given a parameter pack of vertices, it fills the array pf vertices of this object.
+		 * @brief Returns whether a point is inside the hull.
 		 */
-		template<std::size_t... Is, std::same_as<Vector3>... Vec3>
-		void fillVertices(std::index_sequence<Is...>, const Vec3&... vertices) {
-			([this]<std::size_t I>(const Vec3& vec) { std::get<I>(this->vertices) = vec; }.template operator()<Is>(vertices), ...); //basically a compile time loop to fill the array with the variadic arg
-			//break down of the statement above:
-			// 1) Create a templated lambda: this lambda statically accesses the array at index I, and sets the content to vec
-			// 2) The lambda is immediately called, but since it is templated and I mus be explicitly specified, we have to use the syntax: foo.template operator()<TemplateArg>(functionarg);
-			// 3) The arguments to pass to the lambda are variadic template arguments (the first one is non-type), therefore we use the right fold syntax for the comma operator: (foo, ...);
-
-			if constexpr (N > 3) checkCoplanar(); //if the hull has 3 vertices, they are always coplanar
+		bool isPointInside(const Vector3& P) const {
+			// The point is inside iff it is "to the left" of all sides taken in counter clockwise order (or "to the right" in counterclockwise order)
+			// We determine whether the point is to the left or right of the first edge, by calculating the cross product between the edge vector and the vector connecting the first vertex of the edge to our point.
+			// Then we try the sam ewith all the edges, and the cross product result must point in the same direction as the first one (therefore the dot product should be > 0)
+			int M = size();
+			Vector3 edge = vertices[0] - vertices[M - 1];
+			Vector3 p = P - vertices[M - 1];
+			auto N = cross(edge, p);
+			for (std::size_t i = 0; i < M - 1; ++i) {
+				edge = vertices[i + 1] - vertices[i]; //vector representing a triangle edge
+				p = P - vertices[i]; //vector from the vertex of the triangle to the intersection point
+				if (dot(N, cross(edge, p)) <= 0) return false;
+			}
+			return true;
+		}
+		
+		/**
+		 * @brief Returns the area of the hull..
+		 */
+		float computeArea() const {
+			float area = 0.0f;
+			//use the shoelace formula to comute the area
+			for (int i = 0; i < vertices.size(); ++i) {
+				int iNext = i + 1 == vertices.size() ? 0 : i + 1;
+				area += vertices[i].x * vertices[iNext].y - vertices[i].y * vertices[iNext].x;
+			}
+			return abs(area / 2.f); //we can probably just return area, since we use the area to calculate the hit probability, therefore a ratio between 2 areas
 		}
 
+	private:
 		/**
 		 * @brief Checks if the vertices of the @p ConvexHull are coplanar. If they are not, it throws an exception.
 		 *
@@ -143,36 +308,31 @@ namespace pah {
 			}
 		}
 
-
-		std::array<Vector3, N> vertices;
+		std::vector<Vector3> vertices;
 	};
-	template<std::same_as<Vector3>... Vec3> ConvexHull(const Vec3&... vertices) -> ConvexHull<sizeof...(Vec3)>; /**< @brief Deduction guide. */
 
-	using Triangle = ConvexHull<3>;
+
 	/**
 	 * @brief Represents a triangle.
 	 */
-	template<>
-	struct ConvexHull<3> {
-		Vector3 v0, v1, v2;
+	struct Triangle {
+		//Vector3 v0, v1, v2;
 
-		ConvexHull() = delete;
-		ConvexHull(Vector3 v0, Vector3 v1, Vector3 v2) : v0{ v0 }, v1{ v1 }, v2{ v2 } {}
+		Triangle() = delete;
+		Triangle(Vector3 v0, Vector3 v1, Vector3 v2) : triangle{ v0,v1,v2 } {}
 
 		/**
 		 * @brief Returns the barycenter of the @p Triangle.
 		 */
 		Vector3 barycenter() const {
-			return (v0 + v1 + v2) / 3.0f;
+			return triangle.barycenter();
 		}
 
 		/**
 		 * @brief Returns the normal to this @p Triangle.
 		 */
 		Vector3 normal() const {
-			Vector3 e1 = v1 - v0; //first edge
-			Vector3 e2 = v2 - v0; //second edge
-			return glm::normalize(glm::cross(e1, e2));
+			triangle.normal();
 		}
 
 		/**
@@ -180,10 +340,7 @@ namespace pah {
 		 * The index must be withing 0 and 3.
 		 */
 		Vector3& operator[](std::size_t i) {
-			if (i == 0) return v0;
-			if (i == 1) return v1;
-			if (i == 2) return v2;
-			throw std::out_of_range{ "Index must be 0, 1 or 2." };
+			return triangle[i];
 		}
 
 		/**
@@ -191,11 +348,32 @@ namespace pah {
 		 * The index must be withing 0 and 3.
 		 */
 		Vector3 operator[](std::size_t i) const {
-			if (i == 0) return v0;
-			if (i == 1) return v1;
-			if (i == 2) return v2;
-			throw std::out_of_range{ "Index must be 0, 1 or 2." };
+			return triangle[i];
 		}
+
+		/**
+		 * @brief Returns whether a point is inside the triangle.
+		 */
+		bool isPointInside(const Vector3& P) const {
+			return triangle.isPointInside(P);
+		}
+
+		/**
+		 * @brief Returns the area of the triangle.
+		 */
+		float computeArea() const {
+			return triangle.computeArea();
+		}
+
+		/**
+		 * @brief Returns the underlying convex hull.
+		 * 
+		 * @return .
+		 */
+		const ConvexHull3d& operator*() const {
+			return triangle;
+		}
+
 
 		/**
 		 * @brief Generates a random triangle.
@@ -275,7 +453,10 @@ namespace pah {
 			return triangles;
 		}
 
+		private:
+			ConvexHull3d triangle;
 	};
+
 
 	/**
 	 * @brief Represents the canonical 3D axes.
@@ -283,6 +464,7 @@ namespace pah {
 	enum class Axis {
 		X, Y, Z, None
 	};
+
 
 	/**
 	 * @brief Represents a plane.
@@ -301,6 +483,7 @@ namespace pah {
 		const Vector3& getNormal() const { return normal; }
 		void setNormal(Vector3 normal) { this->normal = glm::normalize(normal); }
 	};
+
 
 	/**
 	 * @brief Represents a 3D point of view.
@@ -326,6 +509,7 @@ namespace pah {
 		void setUp(Vector3 up) { this->up = glm::normalize(up); }
 	};
 
+
 	/**
 	 * @brief Represents a ray in 3D.
 	 */
@@ -343,6 +527,7 @@ namespace pah {
 		const Vector3& getDirection() const { return direction; }
 		void setDirection(Vector3 direction) { this->direction = glm::normalize(direction); }
 	};
+
 
 	namespace utilities {
 

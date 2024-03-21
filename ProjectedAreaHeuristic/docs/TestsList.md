@@ -1,0 +1,10 @@
+- maxLeafProbability: PAH quality and construction speedup
+- maxNonFallbackLevels: PAH quality and construction speedup
+- splitPlaneQualityThreshold and maxChildrenFatherHitProbabilityRation: PAH quality and construction speedup
+- octree maxLevel: PAH quality and construction speedup
+- octree conservativeApproach: problems it poses
+- Sponza scene
+- try with more than one influence area
+- try with influence area but rays that do not come from that direction: show PAH doesn't work
+- try manual big primitives splitting: PAH quality
+- post-calculate projected overlapping amount (it may explain why it doesn't work with point influence areas)

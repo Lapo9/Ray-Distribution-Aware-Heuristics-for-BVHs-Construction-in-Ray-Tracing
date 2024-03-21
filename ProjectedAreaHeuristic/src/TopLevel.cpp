@@ -23,9 +23,9 @@ void pah::TopLevel::build(const std::vector<Triangle>& triangles) {
 		unordered_set<const pah::Bvh*> containedInto; //the BVHs the triangle is contained into
 
 		//for each vertex, get the BVHs it is contained into, and add them to the set (we directly use the containedIn function, so this is polymorphic
-		containedInto.insert_range(containedIn(t.v0));
-		containedInto.insert_range(containedIn(t.v1));
-		containedInto.insert_range(containedIn(t.v2));
+		containedInto.insert_range(containedIn(t[0]));
+		containedInto.insert_range(containedIn(t[1]));
+		containedInto.insert_range(containedIn(t[2]));
 
 		//add the triangle to each BVH where it is contained into (at least one vertex)
 		for (const auto& bvh : containedInto) bvhsTriangles[bvh].push_back(&t);

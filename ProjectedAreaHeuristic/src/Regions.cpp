@@ -7,33 +7,33 @@ using namespace glm;
 using namespace pah;
 
 
-	// ======| Aabb |======
+// ======| Aabb |======
 pah::Aabb::Aabb(const vector<const Triangle*>&triangles) : min{ numeric_limits<float>::max() }, max{ -numeric_limits<float>::max() } {
-	for (const auto& t : triangles) {
-		if (t->v0.x < min.x) min.x = t->v0.x;
-		if (t->v1.x < min.x) min.x = t->v1.x;
-		if (t->v2.x < min.x) min.x = t->v2.x;
+	for (auto t : triangles) {
+		if ((*t)[0].x < min.x) min.x = (*t)[0].x;
+		if ((*t)[1].x < min.x) min.x = (*t)[1].x;
+		if ((*t)[2].x < min.x) min.x = (*t)[2].x;
 
-		if (t->v0.y < min.y) min.y = t->v0.y;
-		if (t->v1.y < min.y) min.y = t->v1.y;
-		if (t->v2.y < min.y) min.y = t->v2.y;
+		if ((*t)[0].y < min.y) min.y = (*t)[0].y;
+		if ((*t)[1].y < min.y) min.y = (*t)[1].y;
+		if ((*t)[2].y < min.y) min.y = (*t)[2].y;
 
-		if (t->v0.z < min.z) min.z = t->v0.z;
-		if (t->v1.z < min.z) min.z = t->v1.z;
-		if (t->v2.z < min.z) min.z = t->v2.z;
+		if ((*t)[0].z < min.z) min.z = (*t)[0].z;
+		if ((*t)[1].z < min.z) min.z = (*t)[1].z;
+		if ((*t)[2].z < min.z) min.z = (*t)[2].z;
 
 
-		if (t->v0.x > max.x) max.x = t->v0.x;
-		if (t->v1.x > max.x) max.x = t->v1.x;
-		if (t->v2.x > max.x) max.x = t->v2.x;
+		if ((*t)[0].x > max.x) max.x = (*t)[0].x;
+		if ((*t)[1].x > max.x) max.x = (*t)[1].x;
+		if ((*t)[2].x > max.x) max.x = (*t)[2].x;
 
-		if (t->v0.y > max.y) max.y = t->v0.y;
-		if (t->v1.y > max.y) max.y = t->v1.y;
-		if (t->v2.y > max.y) max.y = t->v2.y;
+		if ((*t)[0].y > max.y) max.y = (*t)[0].y;
+		if ((*t)[1].y > max.y) max.y = (*t)[1].y;
+		if ((*t)[2].y > max.y) max.y = (*t)[2].y;
 
-		if (t->v0.z > max.z) max.z = t->v0.z;
-		if (t->v1.z > max.z) max.z = t->v1.z;
-		if (t->v2.z > max.z) max.z = t->v2.z;
+		if ((*t)[0].z > max.z) max.z = (*t)[0].z;
+		if ((*t)[1].z > max.z) max.z = (*t)[1].z;
+		if ((*t)[2].z > max.z) max.z = (*t)[2].z;
 	}
 }
 
@@ -182,7 +182,7 @@ array<Vector3, 8> pah::Obb::getPoints() const {
 }
 
 
-	// ======| AabbForObb |======
+// ======| AabbForObb |======
 pah::AabbForObb::AabbForObb(const Vector3 & center, const Vector3 & halfSize, const Vector3 & forward) : obb{ center, halfSize, forward }, aabb{ obb.enclosingAabb() } {}
 
 pah::AabbForObb::AabbForObb(const Obb & obb) : obb{ obb }, aabb{ obb.enclosingAabb() } {}
@@ -553,6 +553,24 @@ collisionDetection::RayCollisionInfo pah::collisionDetection::areColliding(const
 	// If the plane is behind the ray origin, there is no intersection
 	if (t < 0) return { false, 0.0f };
 	return { true, t };
+}
+
+collisionDetection::RayCollisionInfo pah::collisionDetection::areColliding(const Ray& ray, const ConvexHull3d hull) {
+	using namespace glm;
+	// IMPORTANT: in the comments we always use the world triangle in place of convex hull
+	// It should help to think about this method as if the hull was always a triangle, it is then easier to generalize to any N-sided convex hull.
+
+	const auto& R = ray.getDirection(); //direction of the ray
+	const auto& N = hull.normal(); // normal to the plane where the triangle lies
+
+	// Compute the intersection between the ray and the plane the triangle is lying on.
+	auto [isCollidingWithPlane, t] = areColliding(ray, Plane{ hull[0], N });
+	if (!isCollidingWithPlane) return { false, 0.0f };
+
+	// Now, since there is a hit with the plane, we have to find out whether the point is inside the triangle
+	const auto& P = ray.getOrigin() + R * t; //coordinates of the intersection point between the ray and the plane
+	bool isInside = hull.isPointInside(P);
+	return { isInside, isInside ? t : 0.f };
 }
 
 bool collisionDetection::almostParallel(const Vector3 & lhs, const Vector3 & rhs, float threshold) {
