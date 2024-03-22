@@ -402,7 +402,7 @@ FodyWeavers.xsd
 *.drawio.dtmp
 
 # Large files
-Results/Crowd*/*
+Results/*/*
 
 # Include .obj files in exampleData folder
 !ProjectedAreaHeuristic/exampleData/*.obj

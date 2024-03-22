@@ -43,7 +43,7 @@ namespace pah::analyzerActions {
 		 */
 		static void sah(float& totalSah, ANALYZER_ACTION_PER_NODE_ARGUMENTS) {
 			float rootSa = bvh.getRoot().aabb.surfaceArea();
-			auto [sah, hitProb, sa] = bvhStrategies::computeCostSah(node, *bvh.getInfluenceArea(), rootSa);
+			auto [sah, hitProb, sa] = bvhStrategies::computeCostSah(node, bvh.getInfluenceArea(), rootSa);
 
 			//add to JSON
 			localLog["metrics"]["sah"] = sah;
@@ -63,7 +63,7 @@ namespace pah::analyzerActions {
 			if (bvh.getInfluenceArea() == nullptr) return; //it means it is a SAH BVH
 			float lastRootProjectedArea = bvh.getInfluenceArea()->getProjectedArea(bvh.getRoot().aabb);
 			
-			auto [pah, hitProb, pa] = bvhStrategies::computeCostPah(node, *bvh.getInfluenceArea(), lastRootProjectedArea);
+			auto [pah, hitProb, pa] = bvhStrategies::computeCostPah(node, bvh.getInfluenceArea(), lastRootProjectedArea);
 
 			//add to JSON
 			localLog["metrics"]["pah"] = pah;
@@ -119,12 +119,12 @@ namespace pah::analyzerActions {
 			const auto& contourPointsLeft = ConvexHull2d{ bvh.getInfluenceArea()->getProjectedHull(node.leftChild->aabb) };
 			const auto& contourPointsRight = ConvexHull2d{ bvh.getInfluenceArea()->getProjectedHull(node.rightChild->aabb) };
 
-			float childrenArea = contourPointsLeft.computeArea() + contourPointsRight.computeArea();
+			float biggestChildrenArea = glm::max(contourPointsLeft.computeArea(), contourPointsRight.computeArea());
 			float overlappingChildrenArea = overlappingArea(contourPointsLeft, contourPointsRight);
-			totalAndOverlappingArea.first += childrenArea;
+			totalAndOverlappingArea.first += biggestChildrenArea;
 			totalAndOverlappingArea.second += overlappingChildrenArea;
 
-			localLog["metrics"]["childrenOverlappingPercentage"] = overlappingChildrenArea / childrenArea;
+			localLog["metrics"]["childrenOverlappingPercentage"] = overlappingChildrenArea / biggestChildrenArea;
 		}
 	}
 

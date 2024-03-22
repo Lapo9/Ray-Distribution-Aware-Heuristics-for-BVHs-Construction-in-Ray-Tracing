@@ -77,12 +77,12 @@ int main() {
 	Bvh::Properties bvhProperties{
 	.maxLeafCost = 0.0f,
 	.maxLeafArea = 0.0f,
-	.maxLeafHitProbability = 0.001f,
+	.maxLeafHitProbability = 0.0f,
 	.maxTrianglesPerLeaf = 2,
 	.maxLevels = 100,
 	.bins = 40,
 	.maxNonFallbackLevels = 100,
-	.splitPlaneQualityThreshold = 0.3f,
+	.splitPlaneQualityThreshold = 0.9f,
 	.maxChildrenFatherHitProbabilityRatio = 1.3f
 	};
 
@@ -98,7 +98,7 @@ int main() {
 	};
 
 	//fallback BVH used by most top level structures
-	Bvh fallbackBvh{ bvhProperties, bvhStrategies::computeCostSah, bvhStrategies::chooseSplittingPlanesLongest<0.5f>, bvhStrategies::shouldStopThresholdOrLevel, "fallback" };
+	Bvh fallbackBvh{ bvhProperties, bvhStrategies::computeCostSah, bvhStrategies::chooseSplittingPlanesLongest<0.f>, bvhStrategies::shouldStopThresholdOrLevel, "fallback" };
 
 
 	// Filter test scenes to run
@@ -106,15 +106,15 @@ int main() {
 	constexpr bool ALL = false;
 
 	constexpr bool PLANE_FULL = ALL || true;
-	constexpr bool PLANE_FULL_LONGEST = ALL || false;
+	constexpr bool PLANE_FULL_LONGEST = ALL || true;
 	constexpr bool POINT_FULL = ALL || false;
 	constexpr bool POINT_FULL_LONGEST = ALL || false;
 
-	constexpr bool WOOD_SCENE = ALL || false;
-	constexpr bool SUZANNE_SCENE = ALL || true;
+	constexpr bool WOOD_SCENE = ALL || true;
+	constexpr bool SUZANNE_SCENE = ALL || false;
 	constexpr bool COTTAGE_SCENE = ALL || false;
 	constexpr bool COTTAGE_WALLS_SCENE = ALL || false;
-	constexpr bool CROWD_SCENE = ALL || false;
+	constexpr bool CROWD_SCENE = ALL || true;
 	constexpr bool RANDOM100_SCENE = ALL || false;
 	constexpr bool RANDOM1000_SCENE = ALL || false;
 
@@ -122,6 +122,7 @@ int main() {
 
 
 	// PLANE FULL PARALLEL
+	bvhProperties.splitPlaneQualityThreshold = 0.1f;
 	{
 		// === Wood scene: 1 plane full influence area ===
 		if constexpr (PLANE_FULL and_or WOOD_SCENE) {
@@ -426,6 +427,7 @@ int main() {
 	};
 
 	// PLANE FULL PARALLEL LONGEST
+	bvhProperties.splitPlaneQualityThreshold = 0.9f;
 	{
 		// === Wood scene: 1 plane full influence area longest split ===
 		if constexpr (PLANE_FULL_LONGEST and_or WOOD_SCENE) {
@@ -730,6 +732,7 @@ int main() {
 	};
 
 	// POINT FULL PARALLEL
+	bvhProperties.splitPlaneQualityThreshold = 0.1f;
 	{
 		// === Wood scene: 1 point full influence area ===
 		if constexpr (POINT_FULL and_or WOOD_SCENE) {

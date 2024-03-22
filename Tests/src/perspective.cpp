@@ -27,4 +27,34 @@ namespace perspective {
 		auto area2Auto = projection::perspective::computeProjectedArea(aabb2, pov2);
 		EXPECT_EQ(area2, area2Auto);
 	}
+
+	TEST(Overlapping, AabbsOverlapping) {
+		using namespace pah;
+
+		Aabb aabb1{ {-1,-1,-1},{1,1,1} };
+		Aabb aabb2{ {2,-1,-1},{3,1,1} };
+
+		Plane facingRight{ {-2,0,0},{1,0,0} };
+		Plane facingRightFwd{ {-2,0,-2},{1,0,1} };
+
+		auto contourPoints1Right = projection::orthographic::findContourPoints(aabb1, facingRight.getNormal());
+		auto contourPoints2Right = projection::orthographic::findContourPoints(aabb2, facingRight.getNormal());
+		ConvexHull2d contourPoints1RightProj{ projection::orthographic::projectPoints(contourPoints1Right, facingRight) };
+		ConvexHull2d contourPoints2RightProj{ projection::orthographic::projectPoints(contourPoints2Right, facingRight) };
+
+		auto contourPoints1RightFwd = projection::orthographic::findContourPoints(aabb1, facingRightFwd.getNormal());
+		auto contourPoints2RightFwd = projection::orthographic::findContourPoints(aabb2, facingRightFwd.getNormal());
+		ConvexHull2d contourPoints1RightFwdProj{ projection::orthographic::projectPoints(contourPoints1RightFwd, facingRightFwd) };
+		ConvexHull2d contourPoints2RightFwdProj{ projection::orthographic::projectPoints(contourPoints2RightFwd, facingRightFwd) };
+
+		float overlappingAreaRight = overlappingArea(contourPoints1RightProj, contourPoints2RightProj);
+		float areaRight1 = contourPoints1RightProj.computeArea();
+		float areaRight2 = contourPoints2RightProj.computeArea();
+
+		float overlappingAreaRightFwd = overlappingArea(contourPoints1RightFwdProj, contourPoints2RightFwdProj);
+		float areaRightFwd1 = contourPoints1RightFwdProj.computeArea();
+		float areaRightFwd2 = contourPoints2RightFwdProj.computeArea();
+
+		int a = 1;
+	}
 }

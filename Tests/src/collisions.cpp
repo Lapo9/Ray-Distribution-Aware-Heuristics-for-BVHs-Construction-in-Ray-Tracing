@@ -11,17 +11,17 @@ namespace collisions {
 
 		Triangle t1{ Vector3{1,1,1}, Vector3{2,2,2}, Vector3{1,2,3} };
 		Ray r1{ Vector3{2,-1,0}, Vector3{-0.8f,3.7f,2.9f} };
-		auto res1 = collisionDetection::areColliding(r1, t1);
+		auto res1 = collisionDetection::areColliding(r1, *t1);
 		EXPECT_TRUE(res1.hit) << "Ray r1 should be colliding with Triangle t1.";
 		EXPECT_NEAR(res1.distance, 3.599f, TOLERANCE) << "Collision distance of Ray r1 and Triangle t1 should be 3.599.";
 
 		Triangle t2{ Vector3{2,1,-2}, Vector3{-1,2,0}, Vector3{1,1,3} };
 		Ray r2{ Vector3{-2,1,1}, Vector3{3.2f,0.9f,-1.4f} };
-		auto res2 = collisionDetection::areColliding(r2, t2);
+		auto res2 = collisionDetection::areColliding(r2, *t2);
 		EXPECT_TRUE(res2.hit) << "Ray r2 should be colliding with Triangle t2.";
 		EXPECT_NEAR(res2.distance, 2.331f, TOLERANCE) << "Collision distance of Ray r2 and Triangle t2 should be 2.331.";		
 		
-		auto res3 = collisionDetection::areColliding(r2, t1);
+		auto res3 = collisionDetection::areColliding(r2, *t1);
 		EXPECT_FALSE(res3.hit) << "Ray r2 should not be colliding with Triangle t1.";
 	}
 
@@ -31,7 +31,7 @@ namespace collisions {
 
 		Triangle t1{ Vector3{1,1,1}, Vector3{2,2,2}, Vector3{1,2,3} };
 		Ray r1{ Vector3{2,-1,0}, Vector3{0.8f,-3.7f,-2.9f} };
-		auto res1 = collisionDetection::areColliding(r1, t1);
+		auto res1 = collisionDetection::areColliding(r1, *t1);
 		EXPECT_FALSE(res1.hit) << "Ray r1 should not be colliding with Triangle t1.";
 	}
 
@@ -41,12 +41,12 @@ namespace collisions {
 
 		Triangle t1{ Vector3{1,1,1}, Vector3{2,2,2}, Vector3{1,2,3} };
 		Ray r1{ Vector3{2,-1,0}, Vector3{1,1,1} };
-		auto res1 = collisionDetection::areColliding(r1, t1);
+		auto res1 = collisionDetection::areColliding(r1, *t1);
 		EXPECT_FALSE(res1.hit) << "Ray r1 should not be colliding with Triangle t1.";
 
 		Triangle t2{ Vector3{1,1,1}, Vector3{2,2,1}, Vector3{1,2,1} };
 		Ray r2{ Vector3{1,0,1}, Vector3{0,1,0} };
-		auto res2 = collisionDetection::areColliding(r2, t2);
+		auto res2 = collisionDetection::areColliding(r2, *t2);
 		EXPECT_FALSE(res2.hit) << "Ray r2 should not be colliding with Triangle t2.";
 	}
 

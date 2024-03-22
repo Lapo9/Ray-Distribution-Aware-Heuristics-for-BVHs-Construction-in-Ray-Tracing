@@ -220,8 +220,8 @@ namespace pah {
 		};
 
 		//custom alias
-		using ComputeCostReturnType = struct { float cost, hitProbability, area; };		using ComputeCostType = ComputeCostReturnType(const Node&, const InfluenceArea&, float rootMetric);
-		using ChooseSplittingPlanesReturnType = std::vector<std::pair<Axis, float>>;	using ChooseSplittingPlanesType = ChooseSplittingPlanesReturnType(const Node&, const InfluenceArea&, Axis father, std::mt19937& rng);
+		using ComputeCostReturnType = struct { float cost, hitProbability, area; };		using ComputeCostType = ComputeCostReturnType(const Node&, const InfluenceArea*, float rootMetric);
+		using ChooseSplittingPlanesReturnType = std::vector<std::pair<Axis, float>>;	using ChooseSplittingPlanesType = ChooseSplittingPlanesReturnType(const Node&, const InfluenceArea*, Axis father, std::mt19937& rng);
 		using ShouldStopReturnType = bool;												using ShouldStopType = ShouldStopReturnType(const Node&, const Properties&, int currentLevel, const ComputeCostReturnType& nodeCost);
 
 
@@ -275,8 +275,8 @@ namespace pah {
 		void splitNode(Node& node, Axis fatherSplittingAxis, float fatherHitProbability, int currentLevel);
 
 		//simple wrappers for the custom functions. We use wrappers because there may be some common actions to perform before (e.g. time logging)
-		ComputeCostReturnType computeCostWrapper(const Node& parent, const Node& node, const InfluenceArea& influenceArea, float rootArea, int level, bool forceSah = false);
-		ChooseSplittingPlanesReturnType chooseSplittingPlanesWrapper(const Node& node, const InfluenceArea& influenceArea, Axis axis, std::mt19937& rng, int level, bool forceSah = false);
+		ComputeCostReturnType computeCostWrapper(const Node& parent, const Node& node, const InfluenceArea* influenceArea, float rootArea, int level, bool forceSah = false);
+		ChooseSplittingPlanesReturnType chooseSplittingPlanesWrapper(const Node& node, const InfluenceArea* influenceArea, Axis axis, std::mt19937& rng, int level, bool forceSah = false);
 		ShouldStopReturnType shouldStopWrapper(const Node& parent, const Node& node, const Properties& properties, int currentLevel, const ComputeCostReturnType& nodeCost, int level, bool forceSah = false);
 
 		/**
@@ -323,7 +323,7 @@ namespace pah {
 		/**
 		 * @brief Computes the surface area heuristic of the specified node of a @p Bvh whose root has surface area @p rootSurfaceArea.
 		 */
-		static Bvh::ComputeCostReturnType computeCostSah(const Bvh::Node& node, const InfluenceArea&, float rootArea) {
+		static Bvh::ComputeCostReturnType computeCostSah(const Bvh::Node& node, const InfluenceArea*, float rootArea) {
 			//this function is called with rootArea < 0 when we want to initialize it
 			if (rootArea < 0) return { node.aabb.surfaceArea(), node.aabb.surfaceArea() };
 
@@ -336,11 +336,11 @@ namespace pah {
 		/**
 		 * @brief Computes the projected area heuristic of the specified node of a @p Bvh whose root has surface area @p rootSurfaceArea.
 		 */
-		static Bvh::ComputeCostReturnType computeCostPah(const Bvh::Node& node, const InfluenceArea& influenceArea, float rootProjectedArea) {
+		static Bvh::ComputeCostReturnType computeCostPah(const Bvh::Node& node, const InfluenceArea* influenceArea, float rootProjectedArea) {
 			//this function is called with rootProjectedArea < 0 when we want to initialize it
-			if (rootProjectedArea < 0) return { influenceArea.getProjectedArea(node.aabb), influenceArea.getProjectedArea(node.aabb) };
+			if (rootProjectedArea < 0) return { influenceArea->getProjectedArea(node.aabb), influenceArea->getProjectedArea(node.aabb) };
 
-			float projectedArea = influenceArea.getProjectedArea(node.aabb);
+			float projectedArea = influenceArea->getProjectedArea(node.aabb);
 			float hitProbability = projectedArea / rootProjectedArea;
 			float cost = node.isLeaf() ? 1.2f : 1.0f;
 			return { hitProbability * node.triangles.size() * cost, hitProbability, projectedArea };
@@ -351,8 +351,8 @@ namespace pah {
 		 * Axis are sorted from longest to shortest. If an axis is too short, it is not incuded.
 		 * The function returns whether it is worth it to try the corresponding axis, given the results obtained with the previous axis.
 		 */
-		template<float qualityThreshold = 0.33f>
-		static Bvh::ChooseSplittingPlanesReturnType chooseSplittingPlanesLongest(const Bvh::Node& node, const InfluenceArea&, Axis, std::mt19937&) {
+		template<float qualityThreshold = 0.f>
+		static Bvh::ChooseSplittingPlanesReturnType chooseSplittingPlanesLongest(const Bvh::Node& node, const InfluenceArea*, Axis, std::mt19937&) {
 			using namespace std;
 			array<pair<float, Axis>, 3> axisLengths{ tuple{node.aabb.size().x, Axis::X}, {node.aabb.size().y, Axis::Y} , {node.aabb.size().z, Axis::Z} }; //basically a dictionary<length, Axis>
 			ranges::sort(axisLengths, [](auto a, auto b) { return a.first > b.first; }); //sort based on axis length
@@ -381,11 +381,11 @@ namespace pah {
 		 * @tparam maxHitProbabilityRatioWithFather If, after a plane split, the ratio between the sum of the children hit probabilities and the father node hit probability is bigger than this value, a new split will be tried. (e.g. children = 5, father = 10, max = 0.9 ==> not tried because 5/10 < 0.9).
 		 * @tparam percentageMargin The margin, in percent points, between axis directions to determine if a direction is "clear". e.g. If the rays have direction <-0.66, 0, 0.75> and the margin is 10%, then the main direction is not clear, because |-0.66|/(|-0.66|+|0.75|) = 47%, and |0.75|/(|-0.66|+|0.75|) = 53% and 53%-47% = 6% < 10%
 		 */
-		static Bvh::ChooseSplittingPlanesReturnType chooseSplittingPlanesFacing(const Bvh::Node& node, const InfluenceArea& influenceArea, Axis, std::mt19937& rng) {
+		static Bvh::ChooseSplittingPlanesReturnType chooseSplittingPlanesFacing(const Bvh::Node& node, const InfluenceArea* influenceArea, Axis, std::mt19937& rng) {
 			using namespace std;
 			using namespace utilities;
 
-			Vector3 dir = influenceArea.getRayDirection(node.aabb); //TODO this will not work for point influence areas, we need to think about them
+			Vector3 dir = influenceArea->getRayDirection(node.aabb); //TODO this will not work for point influence areas, we need to think about them
 			float xAbs = abs(dir.x), yAbs = abs(dir.y), zAbs = abs(dir.z);
 			Vector3 percs{ xAbs / (xAbs + yAbs + zAbs), yAbs / (xAbs + yAbs + zAbs), zAbs / (xAbs + yAbs + zAbs) };
 

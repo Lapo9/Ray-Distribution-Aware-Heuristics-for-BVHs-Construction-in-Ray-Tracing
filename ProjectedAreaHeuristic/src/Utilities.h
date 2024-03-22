@@ -123,7 +123,9 @@ namespace pah {
 			for (std::size_t i = 0; i < M - 1; ++i) {
 				edge = vertices[i + 1] - vertices[i]; //vector representing a triangle edge
 				p = P - vertices[i]; //vector from the vertex of the triangle to the intersection point
-				if (cross2d(edge, p) * signum <= 0) return false;
+				float cross = cross2d(edge, p);
+				signum = signum == 0 ? cross : signum; //if the signum we calculated before the loop was (very unfortunately) 0, we get the "base" signum here
+				if (cross * signum < 0) return false;
 			}
 
 			return true;
