@@ -38,26 +38,37 @@ namespace pah {
 		 * 
 		 */
 		json build(bool analyze = true) {
+			std::string name{}; for (int i = outputFolderPath.length() - 1; i >= 0 && outputFolderPath[i] != '/'; --i) name = outputFolderPath[i] + name;
+
+			std::cout << "- Started building " + name + " ..." << std::endl;
 			topLevel->build(triangles);
-			if(analyze) return topLevelAnalyzer->analyze(*topLevel, outputFolderPath + "/ConstructionAnalysis.json");
-			return json{};
+			json res{};
+			if(analyze) res = topLevelAnalyzer->analyze(*topLevel, outputFolderPath + "/ConstructionAnalysis.json");
+			std::cout << "+ " + name + " built" << std::endl;
+			return res;
 		}
 
 		/**
 		 * @brief Traverses the TopLevel structure and the fallback Bvh alone, and returns the traversal results.
 		 */
 		std::pair<json, json> traverse() {
+			std::string name{}; for (int i = outputFolderPath.length() - 1; i >= 0 && outputFolderPath[i] != '/'; --i) name = outputFolderPath[i] + name;
+
+			std::cout << "- Started traversing top level " + name + " ..." << std::endl;
 			auto topLevelResults = std::ranges::fold_left(rayCasters, CumulativeRayCasterResults{}, [this](auto res, auto rayCaster) { return res + rayCaster->castRays(*topLevel); });
 			auto topLevelResultsJson = json(topLevelResults);
 			std::ofstream topLevelResultsFile{ outputFolderPath + "/TopLevelTraversalResults.json" };
 			topLevelResultsFile << std::setw(2) << topLevelResultsJson;
 			topLevelResultsFile.close();
+			std::cout << "+ " + name + "top level traversed" << std::endl;
 
+			std::cout << "- Started traversing fallback BVH " + name + " ..." << std::endl;
 			auto fallbackSahResults = std::ranges::fold_left(rayCasters, CumulativeRayCasterResults{}, [this](auto res, auto rayCaster) { return res + rayCaster->castRays(topLevel->getFallbackBvh()); });
 			auto fallbackSahResultsJson = json(fallbackSahResults);
 			std::ofstream fallbackSahResultsFile{ outputFolderPath + "/FallbackSahTraversalResults.json" };
 			fallbackSahResultsFile << std::setw(2) << fallbackSahResultsJson;
 			fallbackSahResultsFile.close();
+			std::cout << "+ " + name + "fallback BVH traversed" << std::endl << std::endl;
 
 			return { topLevelResults, fallbackSahResults };
 		}

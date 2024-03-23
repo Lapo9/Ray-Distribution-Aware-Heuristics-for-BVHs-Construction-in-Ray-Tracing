@@ -36,6 +36,7 @@ int main() {
 		ACCESSOR("SAH cost",							AT::FALLBACK,["cost"]["traversalCostAveragePerRay"]),
 		ACCESSOR("SAH intersections",					AT::FALLBACK,["fallback"]["intersectionTests"]["intersectionTestsNonFallbackAveragePerRay"]),
 		ACCESSOR("Overlapping %",						AT::TOP_LEVEL,["bvhs"].at(0)["globalInfo"]["siblingsOverlappingPercentage"]),
+		ACCESSOR("Overlapping % avg",					AT::TOP_LEVEL,["bvhs"].at(0)["globalInfo"]["siblingsOverlappingPercentageAverage"]),
 		ACCESSOR("Max level PAH",						AT::TOP_LEVEL,["bvhs"].at(0)["globalInfo"]["maxLevel"]),
 		ACCESSOR("Max leaf cost",						AT::TOP_LEVEL,["bvhs"].at(0)["globalInfo"]["properties"]["maxLeafCost"]),
 		ACCESSOR("Max leaf area",						AT::TOP_LEVEL,["bvhs"].at(0)["globalInfo"]["properties"]["maxLeafArea"]),
@@ -83,7 +84,7 @@ int main() {
 	.bins = 40,
 	.maxNonFallbackLevels = 100,
 	.splitPlaneQualityThreshold = 0.9f,
-	.maxChildrenFatherHitProbabilityRatio = 1.3f
+	.maxChildrenFatherHitProbabilityRatio = 1.9f
 	};
 
 	//top level structure properties used in most scenes
@@ -107,14 +108,14 @@ int main() {
 
 	constexpr bool PLANE_FULL = ALL || true;
 	constexpr bool PLANE_FULL_LONGEST = ALL || true;
-	constexpr bool POINT_FULL = ALL || false;
+	constexpr bool POINT_FULL = ALL || true;
 	constexpr bool POINT_FULL_LONGEST = ALL || false;
 
-	constexpr bool WOOD_SCENE = ALL || true;
-	constexpr bool SUZANNE_SCENE = ALL || false;
-	constexpr bool COTTAGE_SCENE = ALL || false;
+	constexpr bool WOOD_SCENE = ALL || false;
+	constexpr bool SUZANNE_SCENE = ALL || true;
+	constexpr bool COTTAGE_SCENE = ALL || true;
 	constexpr bool COTTAGE_WALLS_SCENE = ALL || false;
-	constexpr bool CROWD_SCENE = ALL || true;
+	constexpr bool CROWD_SCENE = ALL || false;
 	constexpr bool RANDOM100_SCENE = ALL || false;
 	constexpr bool RANDOM1000_SCENE = ALL || false;
 
@@ -122,7 +123,7 @@ int main() {
 
 
 	// PLANE FULL PARALLEL
-	bvhProperties.splitPlaneQualityThreshold = 0.1f;
+	bvhProperties.splitPlaneQualityThreshold = 0.4f;
 	{
 		// === Wood scene: 1 plane full influence area ===
 		if constexpr (PLANE_FULL and_or WOOD_SCENE) {
@@ -732,7 +733,7 @@ int main() {
 	};
 
 	// POINT FULL PARALLEL
-	bvhProperties.splitPlaneQualityThreshold = 0.1f;
+	bvhProperties.splitPlaneQualityThreshold = 0.4f;
 	{
 		// === Wood scene: 1 point full influence area ===
 		if constexpr (POINT_FULL and_or WOOD_SCENE) {

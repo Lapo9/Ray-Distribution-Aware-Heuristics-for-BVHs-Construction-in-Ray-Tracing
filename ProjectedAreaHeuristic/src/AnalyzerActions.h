@@ -114,17 +114,20 @@ namespace pah::analyzerActions {
 		/**
 		 * @brief Computes the percentage of the overlapping area between the 2 children.
 		 */
-		static void siblingsOverlapping(std::pair<float,float>& totalAndOverlappingArea, ANALYZER_ACTION_PER_NODE_ARGUMENTS) {
+		static void siblingsOverlapping(std::tuple<float,float,float,int>& totalAndOverlappingArea, ANALYZER_ACTION_PER_NODE_ARGUMENTS) {
 			if (node.isLeaf() || !bvh.getInfluenceArea()) return;
 			const auto& contourPointsLeft = ConvexHull2d{ bvh.getInfluenceArea()->getProjectedHull(node.leftChild->aabb) };
 			const auto& contourPointsRight = ConvexHull2d{ bvh.getInfluenceArea()->getProjectedHull(node.rightChild->aabb) };
 
-			float biggestChildrenArea = glm::max(contourPointsLeft.computeArea(), contourPointsRight.computeArea());
+			float smallestChildrenArea = glm::min(contourPointsLeft.computeArea(), contourPointsRight.computeArea());
 			float overlappingChildrenArea = overlappingArea(contourPointsLeft, contourPointsRight);
-			totalAndOverlappingArea.first += biggestChildrenArea;
-			totalAndOverlappingArea.second += overlappingChildrenArea;
+			float overlappingPercentage = smallestChildrenArea == 0 ? 0.f : overlappingChildrenArea / smallestChildrenArea;
+			get<0>(totalAndOverlappingArea) += smallestChildrenArea;
+			get<1>(totalAndOverlappingArea) += overlappingChildrenArea;
+			get<2>(totalAndOverlappingArea) += overlappingPercentage;
+			get<3>(totalAndOverlappingArea) += overlappingPercentage > 0.8f ? 1 : 0;
 
-			localLog["metrics"]["childrenOverlappingPercentage"] = overlappingChildrenArea / biggestChildrenArea;
+			localLog["metrics"]["childrenOverlappingPercentage"] = overlappingPercentage;
 		}
 	}
 
@@ -196,8 +199,9 @@ namespace pah::analyzerActions {
 		/**
 		 * @brief Computes the total percentage of overlapping area among siblings.
 		 */
-		static void siblingsOverlapping(std::pair<float, float>& totalAndOverlappingArea, ANALYZER_ACTION_FINAL_ARGUMENTS) {
-			log["globalInfo"]["siblingsOverlappingPercentage"] = totalAndOverlappingArea.second / totalAndOverlappingArea.first;
+		static void siblingsOverlapping(std::tuple<float,float,float,int>& totalAndOverlappingArea, ANALYZER_ACTION_FINAL_ARGUMENTS) {
+			log["globalInfo"]["siblingsOverlappingPercentage"] = get<1>(totalAndOverlappingArea) / get<0>(totalAndOverlappingArea);
+			log["globalInfo"]["siblingsOverlappingPercentageAverage"] = get<3>(totalAndOverlappingArea);
 		}
 	}
 }

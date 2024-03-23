@@ -174,8 +174,8 @@ namespace pah {
 				Vector2 res{ (B2 * C1 - B1 * C2) / det, (A1 * C2 - A2 * C1) / det };
 
 				//is the intersection point inside the segment?
-				bool onSegmA = fmin(a1.x, a2.x) <= res.x && fmax(a2.x, a2.x) >= res.x && fmin(a1.y, a2.y) <= res.y && fmax(a2.y, a2.y) >= res.y;
-				bool onSegmB = fmin(b1.x, b2.x) <= res.x && fmax(b2.x, b2.x) >= res.x && fmin(b1.y, b2.y) <= res.y && fmax(b2.y, b2.y) >= res.y;
+				bool onSegmA = fmin(a1.x, a2.x) <= res.x + TOLERANCE && fmax(a1.x, a2.x) >= res.x - TOLERANCE && fmin(a1.y, a2.y) <= res.y + TOLERANCE && fmax(a1.y, a2.y) >= res.y - TOLERANCE;
+				bool onSegmB = fmin(b1.x, b2.x) <= res.x + TOLERANCE && fmax(b1.x, b2.x) >= res.x - TOLERANCE && fmin(b1.y, b2.y) <= res.y + TOLERANCE && fmax(b1.y, b2.y) >= res.y - TOLERANCE;
 				return { onSegmA && onSegmB, res };
 				};
 
