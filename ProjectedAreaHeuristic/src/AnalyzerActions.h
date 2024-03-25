@@ -114,8 +114,9 @@ namespace pah::analyzerActions {
 		/**
 		 * @brief Computes the percentage of the overlapping area between the 2 children.
 		 */
+		template<int maxLevelToConsider>
 		static void siblingsOverlapping(std::tuple<float,float,float,int>& totalAndOverlappingArea, ANALYZER_ACTION_PER_NODE_ARGUMENTS) {
-			if (node.isLeaf() || !bvh.getInfluenceArea()) return;
+			if (node.isLeaf() || !bvh.getInfluenceArea() || currentLevel > maxLevelToConsider) return;
 			const auto& contourPointsLeft = ConvexHull2d{ bvh.getInfluenceArea()->getProjectedHull(node.leftChild->aabb) };
 			const auto& contourPointsRight = ConvexHull2d{ bvh.getInfluenceArea()->getProjectedHull(node.rightChild->aabb) };
 

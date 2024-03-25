@@ -13,6 +13,7 @@
 #include "settings.h"
 
 namespace pah {
+
 	/**
 	 * @brief A BVH is a bounding volume hierarchy.
 	 */
@@ -239,6 +240,19 @@ namespace pah {
 		}
 
 		/**
+		 * @brief Changes the fallback compute cost strategy.
+		 */
+		void setFallbackComputeCostStrategy(ComputeCostType computeCostFallback);
+		/**
+		 * @brief Changes the fallback choose splitting plane strategy.
+		 */
+		void setFallbackChooseSplittingPlaneStrategy(ChooseSplittingPlanesType chooseSplittingPlaneFallback);
+		/**
+		 * @brief Changes the fallback should stop strategy.
+		 */
+		void setFallbackShouldStopStrategy(ShouldStopType shouldStopFallback);
+
+		/**
 		 * @brief Constructs the @p Bvh on a set of triangles. The seed for the random operations during the construction is random.
 		 * 
 		 * @param splitPlaneQualityThreshold How low the quality of the split plane can be before falling back on the standars SAH methods to compute the cost and splits. The value can be between 0 (bad) and 1 (good).
@@ -304,10 +318,13 @@ namespace pah {
 
 		//customizable functions
 		std::function<ComputeCostType> computeCost;
+		std::function<ComputeCostType> computeCostFallback;
 		//the idea is that this function returns a list of suitable axis to try to subdivide the AABB into, and a set of corresponding predicates.
 		//these predicates take into account the "quality" of the axis, and the results obtained from previous axis; and they decide whether is it worth it to try the next axis
 		std::function<ChooseSplittingPlanesType> chooseSplittingPlanes;
+		std::function<ChooseSplittingPlanesType> chooseSplittingPlanesFallback;
 		std::function<ShouldStopType> shouldStop;
+		std::function<ShouldStopType> shouldStopFallback;
 
 		std::mt19937 rng; //random number generator
 		INFO(DurationMs totalBuildTime;); //total time of the last build
@@ -315,9 +332,10 @@ namespace pah {
 	};
 
 
+
 	/**
-	 * @brief Functions that can be plugged in the @p Bvh to decide how to build it.
-	 */
+ * @brief Functions that can be plugged in the @p Bvh to decide how to build it.
+ */
 	namespace bvhStrategies {
 
 		/**
@@ -345,6 +363,7 @@ namespace pah {
 			float cost = node.isLeaf() ? 1.2f : 1.0f;
 			return { hitProbability * node.triangles.size() * cost, hitProbability, projectedArea };
 		}
+
 
 		/**
 		 * @brief Given the @p Aabb, it returns an array where each element contains an axis and a function to evaluate.
@@ -389,7 +408,7 @@ namespace pah {
 			float xAbs = abs(dir.x), yAbs = abs(dir.y), zAbs = abs(dir.z);
 			Vector3 percs{ xAbs / (xAbs + yAbs + zAbs), yAbs / (xAbs + yAbs + zAbs), zAbs / (xAbs + yAbs + zAbs) };
 
-			vector<pair<Axis, float>> result {
+			vector<pair<Axis, float>> result{
 				{Axis::X, pow(1.f - percs[0], 2)},
 				{Axis::Y, pow(1.f - percs[1], 2)},
 				{Axis::Z, pow(1.f - percs[2], 2)}
@@ -399,13 +418,12 @@ namespace pah {
 		}
 
 
-
 		/**
 		 * @brief Returns true if the max level has been passed or if the cost of the leaf is low enough.
 		 */
 		static Bvh::ShouldStopReturnType shouldStopThresholdOrLevel(const Bvh::Node& node, const Bvh::Properties& properties, int currentLevel, const Bvh::ComputeCostReturnType& nodeCost) {
-			return currentLevel > properties.maxLevels || 
-				nodeCost.cost < properties.maxLeafCost  || 
+			return currentLevel > properties.maxLevels ||
+				nodeCost.cost < properties.maxLeafCost ||
 				nodeCost.hitProbability < properties.maxLeafHitProbability ||
 				nodeCost.area < properties.maxLeafArea ||
 				node.triangles.size() < properties.maxTrianglesPerLeaf;

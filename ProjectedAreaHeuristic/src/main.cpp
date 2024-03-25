@@ -70,7 +70,7 @@ int main() {
 		MAKE_ACTIONS_PAIR(levelCount),
 		MAKE_ACTIONS_PAIR(triangles),
 		MAKE_ACTIONS_PAIR(influenceArea),
-		MAKE_ACTIONS_PAIR(siblingsOverlapping),
+		std::pair{ std::function{ analyzerActions::perNode::siblingsOverlapping<4> }, std::function{ analyzerActions::finals::siblingsOverlapping }},
 		MAKE_ACTIONS_PAIR(timeMeasurement)
 	};
 
@@ -84,7 +84,7 @@ int main() {
 	.bins = 40,
 	.maxNonFallbackLevels = 100,
 	.splitPlaneQualityThreshold = 0.9f,
-	.maxChildrenFatherHitProbabilityRatio = 1.9f
+	.maxChildrenFatherHitProbabilityRatio = 1.3f
 	};
 
 	//top level structure properties used in most scenes
@@ -100,6 +100,7 @@ int main() {
 
 	//fallback BVH used by most top level structures
 	Bvh fallbackBvh{ bvhProperties, bvhStrategies::computeCostSah, bvhStrategies::chooseSplittingPlanesLongest<0.f>, bvhStrategies::shouldStopThresholdOrLevel, "fallback" };
+	fallbackBvh.setFallbackComputeCostStrategy(bvhStrategies::computeCostSah);
 
 
 	// Filter test scenes to run
@@ -123,7 +124,7 @@ int main() {
 
 
 	// PLANE FULL PARALLEL
-	bvhProperties.splitPlaneQualityThreshold = 0.4f;
+	bvhProperties.splitPlaneQualityThreshold = 0.4;
 	{
 		// === Wood scene: 1 plane full influence area ===
 		if constexpr (PLANE_FULL and_or WOOD_SCENE) {

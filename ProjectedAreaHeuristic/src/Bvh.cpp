@@ -11,12 +11,14 @@ using namespace pah::utilities;
 // ======| Bvh |======
 pah::Bvh::Bvh(const Properties& properties, const InfluenceArea& influenceArea, ComputeCostType computeCost, ChooseSplittingPlanesType chooseSplittingPlanes, ShouldStopType shouldStop, std::string name)
 	: name{ name }, properties {properties}, influenceArea{ &influenceArea }, 
-	computeCost{ computeCost }, chooseSplittingPlanes{ chooseSplittingPlanes }, shouldStop{ shouldStop } {
+	computeCost{ computeCost }, chooseSplittingPlanes{ chooseSplittingPlanes }, shouldStop{ shouldStop },
+	computeCostFallback{ DEFAULT_BVH_FALLBACK_STRATEGY_COMPUTE_COST }, chooseSplittingPlanesFallback{ DEFAULT_BVH_FALLBACK_STRATEGY_SPLITTING_PLANE }, shouldStopFallback{ DEFAULT_BVH_FALLBACK_STRATEGY_SHOULD_STOP } {
 }
 
 pah::Bvh::Bvh(const Properties& properties, ComputeCostType computeCost, ChooseSplittingPlanesType chooseSplittingPlanes, ShouldStopType shouldStop, std::string name)
 	: name{ name }, properties { properties }, 
-	influenceArea{ nullptr }, computeCost{ computeCost }, chooseSplittingPlanes{ chooseSplittingPlanes }, shouldStop{ shouldStop } {
+	influenceArea{ nullptr }, computeCost{ computeCost }, chooseSplittingPlanes{ chooseSplittingPlanes }, shouldStop{ shouldStop },
+	computeCostFallback{ DEFAULT_BVH_FALLBACK_STRATEGY_COMPUTE_COST }, chooseSplittingPlanesFallback{ DEFAULT_BVH_FALLBACK_STRATEGY_SPLITTING_PLANE }, shouldStopFallback{ DEFAULT_BVH_FALLBACK_STRATEGY_SHOULD_STOP } {
 }
 
 void pah::Bvh::build(const std::vector<Triangle>& triangles) {
@@ -103,14 +105,14 @@ void pah::Bvh::splitNode(Node& node, Axis fatherSplittingAxis, float fatherHitPr
 	TIME(TimeLogger timeLoggerSplitting{ [&timingInfo = node.nodeTimingInfo](DurationMs duration) { timingInfo.logSplittingTot(duration); } };);
 	//try to split for each axis provided by chooseSplittingPlanes
 	for (auto [axis, quality] : splittingPlanes) {
-		bool forceSah = false; // whether to use the standard SAH strategies in place of the user selected ones
+		bool forceFallback = false; // whether to use the standard SAH strategies in place of the user selected ones
 		//if the quality of this split plane is too low...
 		if (quality < properties.splitPlaneQualityThreshold) {
 			// ...and we haven't already found a satisfactory split, then fallback to longest + SAH strategy (only use the best SAH split plane)
 			if ((bestLeftCostSoFar.hitProbability + bestRightCostSoFar.hitProbability) / fatherHitProbability <= properties.maxChildrenFatherHitProbabilityRatio) break;
 
-			forceSah = true;
-			Axis sahAxis = chooseSplittingPlanesWrapper(node, influenceArea, fatherSplittingAxis, rng, currentLevel, forceSah)[influenceArea ? 0 : 1].first; // if there is no influence area, it means we've already used the longest option, so try a different one
+			forceFallback = true;
+			Axis sahAxis = chooseSplittingPlanesWrapper(node, influenceArea, fatherSplittingAxis, rng, currentLevel, forceFallback)[influenceArea ? 0 : 1].first; // if there is no influence area, it means we've already used the longest option, so try a different one
 			axis = sahAxis;
 			bestLeftCostSoFar = { MAX,MAX,MAX }; bestRightCostSoFar = { MAX,MAX,MAX };
 		}
@@ -125,8 +127,8 @@ void pah::Bvh::splitNode(Node& node, Axis fatherSplittingAxis, float fatherHitPr
 			Node left = { leftTriangles }, right = { rightTriangles };
 			TIME(timeLoggerNodes.stop(););
 
-			auto costLeft = computeCostWrapper(node, left, influenceArea, rootMetric, currentLevel, forceSah);
-			auto costRight = computeCostWrapper(node, right, influenceArea, rootMetric, currentLevel, forceSah);
+			auto costLeft = computeCostWrapper(node, left, influenceArea, rootMetric, currentLevel, forceFallback);
+			auto costRight = computeCostWrapper(node, right, influenceArea, rootMetric, currentLevel, forceFallback);
 
 			//update best split (also check that we have triangles on both sides, else we might get stuck)
 			if (costLeft.cost + costRight.cost < bestLeftCostSoFar.cost + bestRightCostSoFar.cost) {
@@ -138,7 +140,7 @@ void pah::Bvh::splitNode(Node& node, Axis fatherSplittingAxis, float fatherHitPr
 				bestRight = std::move(right);
 			}
 		}
-		if (forceSah) break; //if it was forced to use SAH, it means that the splitting plane quality was low. Therefore it is useless to keep trying (since planes are sorted by their quality).
+		if (forceFallback) break; //if it was forced to use SAH, it means that the splitting plane quality was low. Therefore it is useless to keep trying (since planes are sorted by their quality).
 	}
 	TIME(timeLoggerSplitting.stop();); //log the time it took to split this node
 
@@ -175,27 +177,39 @@ const pah::Bvh::Properties pah::Bvh::getProperties() const {
 	return properties;
 }
 
-pah::Bvh::ComputeCostReturnType pah::Bvh::computeCostWrapper(const Node& parent, const Node& node, const InfluenceArea* influenceArea, float rootArea, int level, bool forceSah) {
+pah::Bvh::ComputeCostReturnType pah::Bvh::computeCostWrapper(const Node& parent, const Node& node, const InfluenceArea* influenceArea, float rootArea, int level, bool forceDefault) {
 	//the final action simply adds the measured time to the total compute cost time, and increases the compute cost counter
 	TIME(TimeLogger timeLogger{ [&timingInfo = parent.nodeTimingInfo](auto duration) { timingInfo.logComputeCost(duration); } };);
-	if (forceSah || level > properties.maxNonFallbackLevels) return bvhStrategies::computeCostSah(node, influenceArea, rootArea);
+	if (forceDefault || level > properties.maxNonFallbackLevels) return computeCostFallback(node, influenceArea, rootArea);
 	return computeCost(node, influenceArea, rootArea);
 	//here timeLogger will be destroyed, and it will log (by calling finalAction)
 }
 
-pah::Bvh::ChooseSplittingPlanesReturnType pah::Bvh::chooseSplittingPlanesWrapper(const Node& node, const InfluenceArea* influenceArea, Axis axis, mt19937& rng, int level, bool forceSah) {
+pah::Bvh::ChooseSplittingPlanesReturnType pah::Bvh::chooseSplittingPlanesWrapper(const Node& node, const InfluenceArea* influenceArea, Axis axis, mt19937& rng, int level, bool forceDefault) {
 	//the final action simply adds the measured time to the total choose splitting plane time, and increases the choose splitting plane counter
 	TIME(TimeLogger timeLogger{ [&timingInfo = node.nodeTimingInfo](auto duration) { timingInfo.logChooseSplittingPlanes(duration); } };);
-	if (forceSah || level > properties.maxNonFallbackLevels) return bvhStrategies::chooseSplittingPlanesLongest(node, influenceArea, axis, rng);
+	if (forceDefault || level > properties.maxNonFallbackLevels) return chooseSplittingPlanesFallback(node, influenceArea, axis, rng);
 	return chooseSplittingPlanes(node, influenceArea, axis, rng);
 	//here timeLogger will be destroyed, and it will log (by calling finalAction)
 }
 
-pah::Bvh::ShouldStopReturnType pah::Bvh::shouldStopWrapper(const Node& parent, const Node& node, const Properties& properties, int currentLevel, const ComputeCostReturnType& nodeCost, int level, bool forceSah) {
+pah::Bvh::ShouldStopReturnType pah::Bvh::shouldStopWrapper(const Node& parent, const Node& node, const Properties& properties, int currentLevel, const ComputeCostReturnType& nodeCost, int level, bool forceDefault) {
 	//the final action simply adds the measured time to the total should stop time, and increases the should stop counter
 	TIME(TimeLogger timeLogger{ [&timingInfo = parent.nodeTimingInfo](auto duration) { timingInfo.logShouldStop(duration); } };);
-	if (forceSah || level > properties.maxNonFallbackLevels) return bvhStrategies::shouldStopThresholdOrLevel(node, properties, currentLevel, nodeCost);
+	if (forceDefault || level > properties.maxNonFallbackLevels) return shouldStopFallback(node, properties, currentLevel, nodeCost);
 	return shouldStop(node, properties, currentLevel, nodeCost);
 	//here timeLogger will be destroyed, and it will log (by calling finalAction)
 }
 
+
+void pah::Bvh::setFallbackComputeCostStrategy(ComputeCostType computeCostFallback) {
+	this->computeCostFallback = computeCostFallback;
+}
+
+void pah::Bvh::setFallbackChooseSplittingPlaneStrategy(ChooseSplittingPlanesType chooseSplittingPlaneFallback) {
+	this->chooseSplittingPlanesFallback = chooseSplittingPlanesFallback;
+}
+
+void pah::Bvh::setFallbackShouldStopStrategy(ShouldStopType shouldStopFallback) {
+	this->shouldStopFallback = shouldStopFallback;
+}
