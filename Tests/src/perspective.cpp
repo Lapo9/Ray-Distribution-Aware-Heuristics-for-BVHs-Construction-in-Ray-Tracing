@@ -2,6 +2,8 @@
 
 #include "../../ProjectedAreaHeuristic/src/Utilities.h"
 #include "../../ProjectedAreaHeuristic/src/Regions.h"
+#include "../../ProjectedAreaHeuristic/src/InfluenceArea.h"
+#include "../../ProjectedAreaHeuristic/src/InfluenceArea.cpp"
 #include "../../ProjectedAreaHeuristic/src/Projections.h"
 
 
@@ -54,6 +56,28 @@ namespace perspective {
 		float overlappingAreaRightFwd = overlappingArea(contourPoints1RightFwdProj, contourPoints2RightFwdProj);
 		float areaRightFwd1 = contourPoints1RightFwdProj.computeArea();
 		float areaRightFwd2 = contourPoints2RightFwdProj.computeArea();
+	}
+
+
+	TEST(OrthographicArea, OrthographicAreaFast) {
+		using namespace pah;
+
+		Aabb aabb1{ {-1,-1,-1},{1,1,1} };
+		Plane facingRightFwd{ {-2,0,-2},{1,0,1} };
+
+		float area = projection::orthographic::computeProjectedArea(aabb1, facingRightFwd);
+		float areaFast = projection::orthographic::computeProjectedAreaFast(aabb1, facingRightFwd);
+	}
+
+
+	TEST(ProjectionPlaneArea, VerifyProjectionPlaneArea) {
+		using namespace pah;
+
+		PointInfluenceArea pointInfluenceArea{ Pov{{0,0,0}, {1,0,0}, 90, 60}, 1000, 1, 100 };
+		Aabb aabb{ {2,-1.16,-2}, {3,1.16,2} };
+		float area = pointInfluenceArea.getProjectionPlaneArea();
+		float aabbArea = pointInfluenceArea.getProjectedArea(aabb);
+		auto aabbHull = pointInfluenceArea.getProjectedHull(aabb);
 
 		int a = 1;
 	}

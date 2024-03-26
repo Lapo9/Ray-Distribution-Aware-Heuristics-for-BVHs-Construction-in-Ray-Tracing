@@ -342,12 +342,12 @@ namespace pah {
 		 * @brief Computes the surface area heuristic of the specified node of a @p Bvh whose root has surface area @p rootSurfaceArea.
 		 */
 		static Bvh::ComputeCostReturnType computeCostSah(const Bvh::Node& node, const InfluenceArea*, float rootArea) {
+			float cost = node.isLeaf() ? LEAF_COST : NODE_COST;
 			//this function is called with rootArea < 0 when we want to initialize it
-			if (rootArea < 0) return { node.aabb.surfaceArea(), node.aabb.surfaceArea() };
+			if (rootArea < 0) return { node.aabb.surfaceArea() * node.triangles.size() * cost, 1, node.aabb.surfaceArea()};
 
 			float surfaceArea = node.aabb.surfaceArea();
 			float hitProbability = surfaceArea / rootArea;
-			float cost = node.isLeaf() ? LEAF_COST : NODE_COST;
 			return { hitProbability * node.triangles.size() * cost, hitProbability, surfaceArea };
 		}
 
@@ -355,12 +355,13 @@ namespace pah {
 		 * @brief Computes the projected area heuristic of the specified node of a @p Bvh whose root has surface area @p rootSurfaceArea.
 		 */
 		static Bvh::ComputeCostReturnType computeCostPah(const Bvh::Node& node, const InfluenceArea* influenceArea, float rootProjectedArea) {
+			float cost = node.isLeaf() ? LEAF_COST : NODE_COST;
 			//this function is called with rootProjectedArea < 0 when we want to initialize it
-			if (rootProjectedArea < 0) return { influenceArea->getProjectedArea(node.aabb), influenceArea->getProjectedArea(node.aabb) };
+			//TODO test if this work (maybe let the user choose)
+			if (rootProjectedArea < 0) return { influenceArea->getProjectionPlaneArea() * node.triangles.size() * cost, 1, influenceArea->getProjectionPlaneArea() };
 
 			float projectedArea = influenceArea->getProjectedArea(node.aabb);
-			float hitProbability = projectedArea / rootProjectedArea;
-			float cost = node.isLeaf() ? 1.2f : 1.0f;
+			float hitProbability = glm::min(projectedArea / rootProjectedArea, 1.f);
 			return { hitProbability * node.triangles.size() * cost, hitProbability, projectedArea };
 		}
 

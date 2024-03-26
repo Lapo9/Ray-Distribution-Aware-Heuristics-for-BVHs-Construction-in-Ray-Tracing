@@ -44,7 +44,8 @@ void pah::Bvh::build(const std::vector<const Triangle*>& triangles, unsigned int
 	rng = mt19937{ seed }; //initialize random number generator
 	//from an array of triangles, to an array to pointers
 	root = { triangles }; //initizalize root
-	rootMetric = computeCost(root, influenceArea, -1).cost; //initialize the root metric (generally its area/projected area)
+	rootMetric = computeCost(root, influenceArea, -1).area; //initialize the root metric (generally its area/projected area)
+	
 	splitNode(root, Axis::X, std::numeric_limits<float>::max(), 1);
 }
 

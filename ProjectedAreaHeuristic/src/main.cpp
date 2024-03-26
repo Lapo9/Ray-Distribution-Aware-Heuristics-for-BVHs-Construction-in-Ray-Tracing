@@ -109,12 +109,12 @@ int main() {
 
 	constexpr bool PLANE_FULL = ALL || true;
 	constexpr bool PLANE_FULL_LONGEST = ALL || true;
-	constexpr bool POINT_FULL = ALL || true;
+	constexpr bool POINT_FULL = ALL || false;
 	constexpr bool POINT_FULL_LONGEST = ALL || false;
 
 	constexpr bool WOOD_SCENE = ALL || false;
 	constexpr bool SUZANNE_SCENE = ALL || true;
-	constexpr bool COTTAGE_SCENE = ALL || true;
+	constexpr bool COTTAGE_SCENE = ALL || false;
 	constexpr bool COTTAGE_WALLS_SCENE = ALL || false;
 	constexpr bool CROWD_SCENE = ALL || false;
 	constexpr bool RANDOM100_SCENE = ALL || false;
@@ -203,7 +203,7 @@ int main() {
 
 			// === Suzanne scene: 1 plane influence area oblique covering all the scene. 1 ray caster relative to the influence area. ===
 			{
-				PlaneInfluenceArea influenceAreaPlaneFullOblique{ Plane{{1,-.5,2}, {-.45,.3,-1}}, {.9,.9}, 10, 10000 };
+				PlaneInfluenceArea influenceAreaPlaneFullOblique{ Plane{{1,-.5,2}, {-.45,.3,-1}}, {2,1.5}, 10, 10000 };
 				PlaneRayCaster rayCasterPlaneFullOblique{ influenceAreaPlaneFullOblique }; rayCasterPlaneFullOblique.generateRays(rng, 1000, true);
 				Bvh bvhPlaneFullOblique{ bvhProperties, influenceAreaPlaneFullOblique, bvhStrategies::computeCostPah, bvhStrategies::chooseSplittingPlanesFacing, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
 				TopLevelOctree topLevel{ topLevelProperties, octreeProperties, fallbackBvh, std::move(bvhPlaneFullOblique) };

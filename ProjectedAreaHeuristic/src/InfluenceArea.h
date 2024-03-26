@@ -40,6 +40,16 @@ namespace pah {
 		virtual Vector3 getRayDirection(const Aabb& aabb) const = 0;
 
 		/**
+		 * @brief Returns the area of the near plane (i.e. the 2D region where geometry is projected).
+		 */
+		virtual float getProjectionPlaneArea() const = 0;
+
+		/**
+		 * @brief Returns the 4 points that delimit the projection area.
+		 */
+		virtual std::vector<Vector2> getProjectionPlaneHull() const = 0;
+
+		/**
 		 * @brief Returns whether a direction is "affine" to this influence area.
 		 */
 		virtual bool isDirectionAffine(const Ray& ray, float tolerance) const = 0;
@@ -68,6 +78,8 @@ namespace pah {
 		std::vector<Vector2> getProjectedHull(const Aabb& aabb) const override;
 		float getInfluence(const Aabb& aabb) const override;
 		Vector3 getRayDirection(const Aabb& aabb) const override;
+		float getProjectionPlaneArea() const override;
+		std::vector<Vector2> getProjectionPlaneHull() const override;
 		bool isDirectionAffine(const Ray& ray, float tolerance) const override;
 		std::vector<std::tuple<Axis, std::function<bool(float bestCostSoFar)>>> bestSplittingPlanes() const override;
 
@@ -94,6 +106,8 @@ namespace pah {
 		std::vector<Vector2> getProjectedHull(const Aabb& aabb) const override;
 		float getInfluence(const Aabb& aabb) const override;
 		Vector3 getRayDirection(const Aabb& aabb) const override;
+		float getProjectionPlaneArea() const override;
+		std::vector<Vector2> getProjectionPlaneHull() const override;
 		bool isDirectionAffine(const Ray& ray, float tolerance) const override;
 		std::vector<std::tuple<Axis, std::function<bool(float bestCostSoFar)>>> bestSplittingPlanes() const override;
 
@@ -105,5 +119,6 @@ namespace pah {
 		float density;
 		Pov pov;
 		float nearPlane, farPlane;
+		float projectionPlaneArea;
 	};
 }

@@ -17,7 +17,8 @@ const pah::Region& pah::InfluenceArea::getBvhRegion() const {
 // ======| PlaneInfluenceArea |======
 pah::PlaneInfluenceArea::PlaneInfluenceArea(Plane plane, Vector2 size, float forwardSize, float density)
 	: InfluenceArea{ make_unique<AabbForObb>(plane.getPoint() + plane.getNormal() * (forwardSize / 2.0f), Vector3{size.x, size.y, forwardSize / 2.0f}, plane.getNormal()) },
-	viewMatrix{ projection::computeViewMatrix(plane.getPoint(), plane.getNormal()) }, plane{ plane }, size{ size }, density{ density }, farPlane{ forwardSize } {
+	viewMatrix{ projection::computeViewMatrix(plane.getPoint(), plane.getNormal()) }, 
+	plane{ plane }, size{ size }, density{ density }, farPlane{ forwardSize } {
 }
 
 float pah::PlaneInfluenceArea::getProjectedArea(const Aabb& aabb) const {
@@ -35,6 +36,14 @@ float pah::PlaneInfluenceArea::getInfluence(const Aabb& aabb) const {
 
 Vector3 pah::PlaneInfluenceArea::getRayDirection(const Aabb& aabb) const {
 	return plane.getNormal();
+}
+
+float pah::PlaneInfluenceArea::getProjectionPlaneArea() const {
+	return size.x * size.y * 4;
+}
+
+std::vector<Vector2> pah::PlaneInfluenceArea::getProjectionPlaneHull() const {
+	return std::vector<Vector2>();
 }
 
 bool pah::PlaneInfluenceArea::isDirectionAffine(const Ray& ray, float tolerance) const {
@@ -66,7 +75,11 @@ float pah::PlaneInfluenceArea::getDensity() const {
 
 // Look at the comment of PointInfluenceArea::planePatch to understand how we built it. The order of the point is such that it creates a counterclockwise rectangle.
 pah::PointInfluenceArea::PointInfluenceArea(Pov pov, float far, float near, float density)
-	: InfluenceArea{ make_unique<Frustum>(pov, far, near) }, pov{ pov }, density{ density }, nearPlane{ near }, farPlane{ far } {}
+	: InfluenceArea{ make_unique<Frustum>(pov, far, near) }, pov{ pov }, density{ density }, nearPlane{ near }, farPlane{ far } {
+	float width = glm::tan(glm::radians(pov.fovX / 2)) * near * 2;
+	float height = glm::tan(glm::radians(pov.fovY / 2)) * near * 2;
+	projectionPlaneArea = width * height;
+}
 
 float pah::PointInfluenceArea::getProjectedArea(const Aabb& aabb) const
 {
@@ -88,6 +101,14 @@ float pah::PointInfluenceArea::getInfluence(const Aabb& aabb) const{
 
 Vector3 pah::PointInfluenceArea::getRayDirection(const Aabb& aabb) const{
 	return aabb.center() - pov.position;
+}
+
+float pah::PointInfluenceArea::getProjectionPlaneArea() const {
+	return projectionPlaneArea;
+}
+
+std::vector<Vector2> pah::PointInfluenceArea::getProjectionPlaneHull() const {
+	return std::vector<Vector2>();
 }
 
 bool pah::PointInfluenceArea::isDirectionAffine(const Ray& ray, float tolerance) const {

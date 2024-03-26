@@ -24,3 +24,5 @@
 #define DEFAULT_BVH_FALLBACK_STRATEGY_COMPUTE_COST bvhStrategies::computeCostSah
 #define DEFAULT_BVH_FALLBACK_STRATEGY_SPLITTING_PLANE bvhStrategies::chooseSplittingPlanesLongest<0.f>
 #define DEFAULT_BVH_FALLBACK_STRATEGY_SHOULD_STOP bvhStrategies::shouldStopThresholdOrLevel
+
+#define FAST_ORTHOGRAPHIC_PROJECTIONS 1 /**< If true, the orthographic projections will project the points to the coordinate system of the projection plane, not to the canonical view volume (i.e. {[-1,-1], [1,1]}).  */

@@ -61,9 +61,10 @@ namespace pah::analyzerActions {
 		 */
 		static void pah(float& totalPah, ANALYZER_ACTION_PER_NODE_ARGUMENTS) {
 			if (bvh.getInfluenceArea() == nullptr) return; //it means it is a SAH BVH
-			float lastRootProjectedArea = bvh.getInfluenceArea()->getProjectedArea(bvh.getRoot().aabb);
+			//TODO float fullProjectionArea = bvh.getInfluenceArea()->getProjectedArea(bvh.getRoot().aabb);
+			float fullProjectionArea = bvh.getInfluenceArea()->getProjectionPlaneArea();
 			
-			auto [pah, hitProb, pa] = bvhStrategies::computeCostPah(node, bvh.getInfluenceArea(), lastRootProjectedArea);
+			auto [pah, hitProb, pa] = bvhStrategies::computeCostPah(node, bvh.getInfluenceArea(), fullProjectionArea);
 
 			//add to JSON
 			localLog["metrics"]["pah"] = pah;
