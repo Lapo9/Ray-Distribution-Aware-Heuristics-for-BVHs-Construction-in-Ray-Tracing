@@ -352,7 +352,7 @@ namespace pah {
 		}
 
 		/**
-		 * @brief Computes the projected area heuristic of the specified node of a @p Bvh whose root has surface area @p rootSurfaceArea.
+		 * @brief Computes the projected area heuristic of the specified node of a @p Bvh whose @p InfluenceArea has @p rootSurfaceArea.
 		 */
 		static Bvh::ComputeCostReturnType computeCostPah(const Bvh::Node& node, const InfluenceArea* influenceArea, float rootProjectedArea) {
 			float cost = node.isLeaf() ? LEAF_COST : NODE_COST;
@@ -361,6 +361,20 @@ namespace pah {
 			if (rootProjectedArea < 0) return { influenceArea->getProjectionPlaneArea() * node.triangles.size() * cost, 1, influenceArea->getProjectionPlaneArea() };
 
 			float projectedArea = influenceArea->getProjectedArea(node.aabb);
+			float hitProbability = glm::min(projectedArea / rootProjectedArea, 1.f);
+			return { hitProbability * node.triangles.size() * cost, hitProbability, projectedArea };
+		}
+
+		/**
+		 * @brief Computes the projected area heuristic of the specified node of a @p Bvh whose @p InfluenceArea has surface area @p rootSurfaceArea.
+		 * It uses culling to compute the area of the node that is actually inside the @p InfluenceArea projection plane.
+		 */
+		static Bvh::ComputeCostReturnType computeCostPahWithCulling(const Bvh::Node& node, const InfluenceArea* influenceArea, float rootProjectedArea) {
+			float cost = node.isLeaf() ? LEAF_COST : NODE_COST;
+			//this function is called with rootProjectedArea < 0 when we want to initialize it
+			if (rootProjectedArea < 0) return { influenceArea->getProjectionPlaneArea() * node.triangles.size() * cost, 1, influenceArea->getProjectionPlaneArea() };
+
+			float projectedArea = overlappingArea(ConvexHull2d{ influenceArea->getProjectedHull(node.aabb) }, ConvexHull2d{ influenceArea->getProjectionPlaneHull() });
 			float hitProbability = glm::min(projectedArea / rootProjectedArea, 1.f);
 			return { hitProbability * node.triangles.size() * cost, hitProbability, projectedArea };
 		}

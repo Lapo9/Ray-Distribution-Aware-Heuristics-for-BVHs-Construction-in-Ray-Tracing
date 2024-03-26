@@ -15,14 +15,15 @@ const pah::Region& pah::InfluenceArea::getBvhRegion() const {
 
 
 // ======| PlaneInfluenceArea |======
-pah::PlaneInfluenceArea::PlaneInfluenceArea(Plane plane, Vector2 size, float forwardSize, float density)
-	: InfluenceArea{ make_unique<AabbForObb>(plane.getPoint() + plane.getNormal() * (forwardSize / 2.0f), Vector3{size.x, size.y, forwardSize / 2.0f}, plane.getNormal()) },
-	viewMatrix{ projection::computeViewMatrix(plane.getPoint(), plane.getNormal()) }, 
-	plane{ plane }, size{ size }, density{ density }, farPlane{ forwardSize } {
+pah::PlaneInfluenceArea::PlaneInfluenceArea(Plane plane, float forwardSize, float density)
+	: InfluenceArea{ make_unique<AabbForObb>(plane.getPoint() + plane.getNormal() * (forwardSize / 2.0f), Vector3{plane.width, plane.height, forwardSize / 2.0f}, plane.getNormal()) },
+	viewProjectionMatrix{ projection::computeViewMatrix(plane.getPoint(), plane.getNormal()) },
+	plane{ plane }, density{ density }, farPlane{ forwardSize } {
+	if constexpr (!FAST_ORTHOGRAPHIC_PROJECTIONS) viewProjectionMatrix *= projection::computeOrthographicMatrix(-plane.width, plane.width, -plane.height, plane.height);
 }
 
 float pah::PlaneInfluenceArea::getProjectedArea(const Aabb& aabb) const {
-	return projection::orthographic::computeProjectedArea(aabb, viewMatrix);
+	return projection::orthographic::computeProjectedArea(aabb, viewProjectionMatrix);
 }
 
 std::vector<Vector2> pah::PlaneInfluenceArea::getProjectedHull(const Aabb& aabb) const {
@@ -39,11 +40,13 @@ Vector3 pah::PlaneInfluenceArea::getRayDirection(const Aabb& aabb) const {
 }
 
 float pah::PlaneInfluenceArea::getProjectionPlaneArea() const {
-	return size.x * size.y * 4;
+	if constexpr (!FAST_ORTHOGRAPHIC_PROJECTIONS) return 4; //since we project to the canonical view volume, the projected area of an object completely filling the view is always (1-(-1)) * (1-(-1)) = 4
+	else return plane.width * plane.height * 4;
 }
 
 std::vector<Vector2> pah::PlaneInfluenceArea::getProjectionPlaneHull() const {
-	return std::vector<Vector2>();
+	if constexpr (!FAST_ORTHOGRAPHIC_PROJECTIONS) return { {-1,-1},{1,-1},{1,1},{-1,1} };
+	return { {-plane.width,-plane.height}, {plane.width,-plane.height}, {plane.width,plane.height}, {-plane.width,plane.height} };
 }
 
 bool pah::PlaneInfluenceArea::isDirectionAffine(const Ray& ray, float tolerance) const {
@@ -59,7 +62,7 @@ const pah::Plane& pah::PlaneInfluenceArea::getPlane() const {
 }
 
 const pah::Vector2& pah::PlaneInfluenceArea::getSize() const {
-	return size;
+	return { plane.width, plane.height };
 }
 
 float pah::PlaneInfluenceArea::getFar() const {
@@ -76,9 +79,6 @@ float pah::PlaneInfluenceArea::getDensity() const {
 // Look at the comment of PointInfluenceArea::planePatch to understand how we built it. The order of the point is such that it creates a counterclockwise rectangle.
 pah::PointInfluenceArea::PointInfluenceArea(Pov pov, float far, float near, float density)
 	: InfluenceArea{ make_unique<Frustum>(pov, far, near) }, pov{ pov }, density{ density }, nearPlane{ near }, farPlane{ far } {
-	float width = glm::tan(glm::radians(pov.fovX / 2)) * near * 2;
-	float height = glm::tan(glm::radians(pov.fovY / 2)) * near * 2;
-	projectionPlaneArea = width * height;
 }
 
 float pah::PointInfluenceArea::getProjectedArea(const Aabb& aabb) const
@@ -104,11 +104,11 @@ Vector3 pah::PointInfluenceArea::getRayDirection(const Aabb& aabb) const{
 }
 
 float pah::PointInfluenceArea::getProjectionPlaneArea() const {
-	return projectionPlaneArea;
+	return 4; //since we project to the canonical view volume, the projected area of an object completely filling the view is always (1-(-1)) * (1-(-1)) = 4
 }
 
 std::vector<Vector2> pah::PointInfluenceArea::getProjectionPlaneHull() const {
-	return std::vector<Vector2>();
+	return { {-1,-1},{1,-1},{1,1},{-1,1} };
 }
 
 bool pah::PointInfluenceArea::isDirectionAffine(const Ray& ray, float tolerance) const {

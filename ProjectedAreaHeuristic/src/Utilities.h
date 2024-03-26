@@ -477,8 +477,11 @@ namespace pah {
 		Vector3 point;
 
 	public:
+		float width;
+		float height;
+
 		Plane() : point{}, normal{ 0,0,1 } {}
-		Plane(Vector3 point, Vector3 normal) : point{ point }, normal{ glm::normalize(normal) } {}
+		Plane(Vector3 point, Vector3 normal, float width = 0, float height = 0) : point{ point }, normal{ glm::normalize(normal) }, width{ width }, height{ height } {}
 
 		const Vector3& getPoint() const { return point; }
 		void setPoint(Vector3 point) { this->point = point; }

@@ -56,6 +56,12 @@ namespace perspective {
 		float overlappingAreaRightFwd = overlappingArea(contourPoints1RightFwdProj, contourPoints2RightFwdProj);
 		float areaRightFwd1 = contourPoints1RightFwdProj.computeArea();
 		float areaRightFwd2 = contourPoints2RightFwdProj.computeArea();
+
+		ConvexHull2d internalHull{ {{-1,-1},{1,-1},{1,1},{-1,1}} };
+		ConvexHull2d externalHull{ {{-2,-2},{2,-2},{2,2},{-2,2}} };
+		float overlappingAreaInternal = overlappingArea(internalHull, externalHull);
+
+		int a = 1;
 	}
 
 
@@ -66,18 +72,20 @@ namespace perspective {
 		Plane facingRightFwd{ {-2,0,-2},{1,0,1} };
 
 		float area = projection::orthographic::computeProjectedArea(aabb1, facingRightFwd);
-		float areaFast = projection::orthographic::computeProjectedAreaFast(aabb1, facingRightFwd);
 	}
 
 
 	TEST(ProjectionPlaneArea, VerifyProjectionPlaneArea) {
 		using namespace pah;
 
-		PointInfluenceArea pointInfluenceArea{ Pov{{0,0,0}, {1,0,0}, 90, 60}, 1000, 1, 100 };
+		PointInfluenceArea pointInfluenceArea{ Pov{{0,0,0}, {-1,0,-1}, 90, 60}, 1000, 1, 100 };
 		Aabb aabb{ {2,-1.16,-2}, {3,1.16,2} };
 		float area = pointInfluenceArea.getProjectionPlaneArea();
 		float aabbArea = pointInfluenceArea.getProjectedArea(aabb);
 		auto aabbHull = pointInfluenceArea.getProjectedHull(aabb);
+
+		Vector3 p{ -1,0,-1 };
+		Vector2 pp = projection::orthographic::projectPoint(p, Plane{ {0,0,0}, {-1,0,-1}, 1,1 });
 
 		int a = 1;
 	}

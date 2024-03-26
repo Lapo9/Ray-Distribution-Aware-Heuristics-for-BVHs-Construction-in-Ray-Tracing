@@ -72,7 +72,7 @@ namespace pah {
 	 */
 	class PlaneInfluenceArea : public InfluenceArea {
 	public:
-		PlaneInfluenceArea(Plane plane, Vector2 size, float forwardSize, float density);
+		PlaneInfluenceArea(Plane plane, float forwardSize, float density);
 
 		float getProjectedArea(const Aabb& aabb) const override;
 		std::vector<Vector2> getProjectedHull(const Aabb& aabb) const override;
@@ -91,10 +91,9 @@ namespace pah {
 
 	private:
 		Plane plane;
-		Vector2 size;
 		float farPlane;
 		float density;
-		Matrix4 viewMatrix; //stores the view matrix for this plane, so that we can avoid calculating it each time
+		Matrix4 viewProjectionMatrix; //stores the view matrix for this plane, so that we can avoid calculating it each time
 	};
 
 
@@ -119,6 +118,5 @@ namespace pah {
 		float density;
 		Pov pov;
 		float nearPlane, farPlane;
-		float projectionPlaneArea;
 	};
 }

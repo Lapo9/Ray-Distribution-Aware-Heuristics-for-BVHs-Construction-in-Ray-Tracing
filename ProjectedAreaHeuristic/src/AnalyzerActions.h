@@ -64,7 +64,7 @@ namespace pah::analyzerActions {
 			//TODO float fullProjectionArea = bvh.getInfluenceArea()->getProjectedArea(bvh.getRoot().aabb);
 			float fullProjectionArea = bvh.getInfluenceArea()->getProjectionPlaneArea();
 			
-			auto [pah, hitProb, pa] = bvhStrategies::computeCostPah(node, bvh.getInfluenceArea(), fullProjectionArea);
+			auto [pah, hitProb, pa] = PAH_STRATEGY(node, bvh.getInfluenceArea(), fullProjectionArea);
 
 			//add to JSON
 			localLog["metrics"]["pah"] = pah;
@@ -127,7 +127,7 @@ namespace pah::analyzerActions {
 			get<0>(totalAndOverlappingArea) += smallestChildrenArea;
 			get<1>(totalAndOverlappingArea) += overlappingChildrenArea;
 			get<2>(totalAndOverlappingArea) += overlappingPercentage;
-			get<3>(totalAndOverlappingArea) += overlappingPercentage > 0.8f ? 1 : 0;
+			get<3>(totalAndOverlappingArea)++;
 
 			localLog["metrics"]["childrenOverlappingPercentage"] = overlappingPercentage;
 		}
@@ -203,7 +203,7 @@ namespace pah::analyzerActions {
 		 */
 		static void siblingsOverlapping(std::tuple<float,float,float,int>& totalAndOverlappingArea, ANALYZER_ACTION_FINAL_ARGUMENTS) {
 			log["globalInfo"]["siblingsOverlappingPercentage"] = get<1>(totalAndOverlappingArea) / get<0>(totalAndOverlappingArea);
-			log["globalInfo"]["siblingsOverlappingPercentageAverage"] = get<3>(totalAndOverlappingArea);
+			log["globalInfo"]["siblingsOverlappingPercentageAverage"] = get<2>(totalAndOverlappingArea) / get<3>(totalAndOverlappingArea);
 		}
 	}
 }

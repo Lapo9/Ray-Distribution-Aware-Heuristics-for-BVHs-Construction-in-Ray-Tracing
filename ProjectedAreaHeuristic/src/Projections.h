@@ -235,32 +235,38 @@ namespace pah::projection {
 	 */
 	namespace orthographic {
 
-		static Vector2 projectPoint(Vector4 point, const Matrix4& viewMatrix) {
-			return viewMatrix * point;
+		static Vector2 projectPoint(Vector4 point, const Matrix4& viewProjectionMatrix) {
+			return viewProjectionMatrix * point;
 		}
 
 		/**
 		 * @brief Given a plane, projects the point to it.
 		 */
 		static Vector2 projectPoint(Vector4 point, Plane plane) {
-			return projectPoint(point, computeViewMatrix(plane.getPoint(), plane.getNormal()));
+			if constexpr (!FAST_ORTHOGRAPHIC_PROJECTIONS) return projectPoint(point, computeOrthographicMatrix(-plane.width, plane.width, -plane.height, plane.height) * computeViewMatrix(plane.getPoint(), plane.getNormal()));
+			else return projectPoint(point, computeViewMatrix(plane.getPoint(), plane.getNormal()));
 		}
 
 		/**
 		 * @brief Given a plane, projects the point to it. 1.0 is appended as w component of the point.
 		 */
 		static Vector2 projectPoint(Vector3 point, Plane plane) {
-			return projectPoint(Vector4{ point, 1.0f }, plane);
+			if constexpr (!FAST_ORTHOGRAPHIC_PROJECTIONS) return projectPoint(Vector4{ point, 1.0f }, plane);
+			else {
+				Vector3 distFromOrig = point - plane.getPoint();
+				float distFromPlane = glm::dot(distFromOrig, plane.getNormal());
+				return point - distFromPlane * plane.getNormal();
+			}
 		}
 
-		static Vector2 projectPoint(Vector3 point, const Matrix4& viewMatrix) {
-			return projectPoint(Vector4{ point, 1.0f }, viewMatrix);
+		static Vector2 projectPoint(Vector3 point, const Matrix4& viewProjectionMatrix) {
+			return projectPoint(Vector4{ point, 1.0f }, viewProjectionMatrix);
 		}
 
-		static std::vector<Vector2> projectPoints(const std::vector<Vector3>& points, const Matrix4& viewMatrix) {
+		static std::vector<Vector2> projectPoints(const std::vector<Vector3>& points, const Matrix4& viewProjectionMatrix) {
 			std::vector<Vector2> projectedPoints;
 			for (int i = 0; i < points.size(); ++i) {
-				projectedPoints.emplace_back(projectPoint(points[i], viewMatrix));
+				projectedPoints.emplace_back(projectPoint(points[i], viewProjectionMatrix));
 			}
 			return projectedPoints;
 		}
@@ -269,8 +275,11 @@ namespace pah::projection {
 		 * @brief Projects the given points to the specified plane.
 		 */
 		static std::vector<Vector2> projectPoints(const std::vector<Vector3>& points, Plane plane) {
-			auto viewMatrix = computeViewMatrix(plane.getPoint(), plane.getNormal());
-			return projectPoints(points, viewMatrix);
+			std::vector<Vector2> projectedPoints;
+			for (int i = 0; i < points.size(); ++i) {
+				projectedPoints.emplace_back(projectPoint(points[i], plane));
+			}
+			return projectedPoints;
 		}
 
 		/**
@@ -307,10 +316,10 @@ namespace pah::projection {
 			return projection::findContourPoints(aabb, findHullTableIndex(viewDirection));
 		}
 
-		static float computeProjectedArea(const Aabb& aabb, const Matrix4& viewMatrix) {
+		static float computeProjectedArea(const Aabb& aabb, const Matrix4& viewProjectionMatrix) {
 			auto points = aabb.getPoints();
 			std::vector<Vector3> keyPoints = { points[3], points[1], points[2], points[7] };
-			auto projectedPoints = projectPoints(keyPoints, viewMatrix);
+			auto projectedPoints = projectPoints(keyPoints, viewProjectionMatrix);
 
 			Vector3 side1 = Vector3{ projectedPoints[0] - projectedPoints[1], 0.0f };
 			Vector3 side2 = Vector3{ projectedPoints[0] - projectedPoints[2], 0.0f };
@@ -335,25 +344,21 @@ namespace pah::projection {
 		 * @brief Given an @p Aabb and a plane, it returns the area the @p Aabb projects on the plane.
 		 */
 		static float computeProjectedArea(const Aabb& aabb, Plane plane) {
-			auto viewMatrix = computeViewMatrix(plane.getPoint(), plane.getNormal());
-			return computeProjectedArea(aabb, viewMatrix);
-		}
-
-		// TODO perform tests with this algorithm
-		static float computeProjectedAreaFast(const Aabb& aabb, Plane plane) {
 			auto points = aabb.getPoints();
 			std::vector<Vector3> keyPoints = { points[3], points[1], points[2], points[7] };
-			auto projectOnPlane = [&plane](const Vector3& p) {
-				Vector3 distFromOrig = p - plane.getPoint();
-				float distFromPlane = glm::dot(distFromOrig, plane.getNormal());
-				return p - distFromPlane * plane.getNormal();
-				};
-			keyPoints = keyPoints | std::views::transform(projectOnPlane) | std::ranges::to<std::vector>();
+			auto projectedPoints = projectPoints(keyPoints, plane);
 
-			// see computeProjectedArea from now on for comments
-			Vector3 side1 = Vector3{ keyPoints[0] - keyPoints[1] };
-			Vector3 side2 = Vector3{ keyPoints[0] - keyPoints[2] };
-			Vector3 side3 = Vector3{ keyPoints[0] - keyPoints[3] };
+			Vector3 side1 = Vector3{ projectedPoints[0] - projectedPoints[1], 0.0f };
+			Vector3 side2 = Vector3{ projectedPoints[0] - projectedPoints[2], 0.0f };
+			Vector3 side3 = Vector3{ projectedPoints[0] - projectedPoints[3], 0.0f };
+
+			//  2_______________                                                                                           _______________
+			//  |\              \                                                                                         |               \
+			//  | \______________\7                                                                                       |                \
+			//  | 3|             |   ==> We have 3 parallelograms, the sum of their areas is the area of the polygon ==>  |                |
+			//   \ |             |                                                                                         \               |
+			//    \|_____________|                                                                                          \______________|
+			//     1
 
 			float area1 = glm::length(glm::cross(side1, side2));
 			float area2 = glm::length(glm::cross(side2, side3));
