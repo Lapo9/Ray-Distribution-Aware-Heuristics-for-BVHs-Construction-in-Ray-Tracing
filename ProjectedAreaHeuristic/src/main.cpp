@@ -36,7 +36,7 @@ int main() {
 		ACCESSOR("SAH cost",							AT::FALLBACK,["cost"]["traversalCostAveragePerRay"]),
 		ACCESSOR("SAH intersections",					AT::FALLBACK,["fallback"]["intersectionTests"]["intersectionTestsNonFallbackAveragePerRay"]),
 		ACCESSOR("Overlapping %",						AT::TOP_LEVEL,["bvhs"].at(0)["globalInfo"]["siblingsOverlappingPercentage"]),
-		ACCESSOR("Overlapping % avg",					AT::TOP_LEVEL,["bvhs"].at(0)["globalInfo"]["siblingsOverlappingPercentageAverage"]),
+		ACCESSOR("Overlapping % culled",				AT::TOP_LEVEL,["bvhs"].at(0)["globalInfo"]["siblingsOverlappingPercentageCulled"]),
 		ACCESSOR("Max level PAH",						AT::TOP_LEVEL,["bvhs"].at(0)["globalInfo"]["maxLevel"]),
 		ACCESSOR("Max leaf cost",						AT::TOP_LEVEL,["bvhs"].at(0)["globalInfo"]["properties"]["maxLeafCost"]),
 		ACCESSOR("Max leaf area",						AT::TOP_LEVEL,["bvhs"].at(0)["globalInfo"]["properties"]["maxLeafArea"]),
@@ -117,7 +117,7 @@ int main() {
 	constexpr bool COTTAGE_SCENE = ALL || false;
 	constexpr bool COTTAGE_WALLS_SCENE = ALL || false;
 	constexpr bool CROWD_SCENE = ALL || false;
-	constexpr bool RANDOM100_SCENE = ALL || false;
+	constexpr bool RANDOM100_SCENE = ALL || true;
 	constexpr bool RANDOM1000_SCENE = ALL || false;
 
 	constexpr string_view RESULTS_DIRECTORY = "D:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/Results/";

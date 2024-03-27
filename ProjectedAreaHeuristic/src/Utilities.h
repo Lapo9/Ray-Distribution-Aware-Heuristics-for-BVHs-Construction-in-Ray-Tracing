@@ -135,6 +135,7 @@ namespace pah {
 		 * @brief Returns the area of the hull.
 		 */
 		float computeArea() const {
+			if (size() < 3) return 0;
 			float area = 0.0f;
 			//use the shoelace formula to comute the area
 			for (int i = 0; i < vertices.size(); ++i) {
@@ -145,9 +146,9 @@ namespace pah {
 		}
 
 		/**
-		 * @brief Returns the amount of overlapping area between 2 convex hulls.
+		 * @brief Returns the hull obtained by intersecting 2 @p ConvexHull2d
 		 */
-		friend float overlappingArea(const ConvexHull2d& h1, const ConvexHull2d& h2) {
+		friend ConvexHull2d overlappingHull(const ConvexHull2d& h1, const ConvexHull2d& h2) {
 			std::vector<Vector2> vertices{};
 
 			// find all the points of a hull, internal to the other hull
@@ -187,12 +188,18 @@ namespace pah {
 				}
 			}
 
-			if (vertices.size() == 0) return 0.0f;
+			if (vertices.size() == 0) return ConvexHull2d{};
 
 			// sort all the points in counterclockwise order (find a point inside the overlap hull and sort by atan2)
 			std::ranges::sort(vertices, [center = ConvexHull2d{ vertices }.barycenter()](const Vector2& a, const Vector2& b) {return atan2(a.y - center.y, a.x - center.x) >= atan2(b.y - center.y, b.x - center.x); });
+			return ConvexHull2d{ vertices };
+		}
 
-			return ConvexHull2d{ vertices }.computeArea();
+		/**
+		 * @brief Returns the amount of overlapping area between 2 convex hulls.
+		 */
+		friend float overlappingArea(const ConvexHull2d& h1, const ConvexHull2d& h2) {
+			return overlappingHull(h1, h2).computeArea();
 		}
 
 	private:

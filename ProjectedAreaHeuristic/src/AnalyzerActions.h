@@ -116,20 +116,33 @@ namespace pah::analyzerActions {
 		 * @brief Computes the percentage of the overlapping area between the 2 children.
 		 */
 		template<int maxLevelToConsider>
-		static void siblingsOverlapping(std::tuple<float,float,float,int>& totalAndOverlappingArea, ANALYZER_ACTION_PER_NODE_ARGUMENTS) {
+		static void siblingsOverlapping(std::tuple<float,float,float,float>& totalAndOverlappingArea, ANALYZER_ACTION_PER_NODE_ARGUMENTS) {
 			if (node.isLeaf() || !bvh.getInfluenceArea() || currentLevel > maxLevelToConsider) return;
+
 			const auto& contourPointsLeft = ConvexHull2d{ bvh.getInfluenceArea()->getProjectedHull(node.leftChild->aabb) };
 			const auto& contourPointsRight = ConvexHull2d{ bvh.getInfluenceArea()->getProjectedHull(node.rightChild->aabb) };
-
+			auto overlappingChildrenHull = overlappingHull(contourPointsLeft, contourPointsRight);
+			if (overlappingChildrenHull.size() < 3) return;
+			float overlappingChildrenArea = overlappingChildrenHull.computeArea();
 			float smallestChildrenArea = glm::min(contourPointsLeft.computeArea(), contourPointsRight.computeArea());
-			float overlappingChildrenArea = overlappingArea(contourPointsLeft, contourPointsRight);
-			float overlappingPercentage = smallestChildrenArea == 0 ? 0.f : overlappingChildrenArea / smallestChildrenArea;
+
+			// compute culled areas
+			auto projectionPlaneHull = ConvexHull2d{ bvh.getInfluenceArea()->getProjectionPlaneHull() };
+			const auto& contourPointsLeftCulled = overlappingHull(contourPointsLeft, projectionPlaneHull);
+			const auto& contourPointsRightCulled = overlappingHull(contourPointsRight, projectionPlaneHull);
+			auto overlappingChildrenHullCulled = overlappingHull(contourPointsLeftCulled, contourPointsRightCulled);
+			float overlappingChildrenAreaCulled = overlappingChildrenHullCulled.computeArea();
+			float smallestChildrenAreaCulled = glm::min(contourPointsLeftCulled.computeArea(), contourPointsRightCulled.computeArea());
+			
 			get<0>(totalAndOverlappingArea) += smallestChildrenArea;
 			get<1>(totalAndOverlappingArea) += overlappingChildrenArea;
-			get<2>(totalAndOverlappingArea) += overlappingPercentage;
-			get<3>(totalAndOverlappingArea)++;
+			get<2>(totalAndOverlappingArea) += smallestChildrenAreaCulled;
+			get<3>(totalAndOverlappingArea) += overlappingChildrenAreaCulled;
 
+			float overlappingPercentage = smallestChildrenArea == 0 ? 0.f : overlappingChildrenArea / smallestChildrenArea;
+			float overlappingPercentageCulled = smallestChildrenAreaCulled == 0 ? 0.f : overlappingChildrenAreaCulled / smallestChildrenAreaCulled;
 			localLog["metrics"]["childrenOverlappingPercentage"] = overlappingPercentage;
+			localLog["metrics"]["childrenOverlappingPercentageCulled"] = overlappingPercentageCulled;
 		}
 	}
 
@@ -201,9 +214,9 @@ namespace pah::analyzerActions {
 		/**
 		 * @brief Computes the total percentage of overlapping area among siblings.
 		 */
-		static void siblingsOverlapping(std::tuple<float,float,float,int>& totalAndOverlappingArea, ANALYZER_ACTION_FINAL_ARGUMENTS) {
+		static void siblingsOverlapping(std::tuple<float,float,float,float>& totalAndOverlappingArea, ANALYZER_ACTION_FINAL_ARGUMENTS) {
 			log["globalInfo"]["siblingsOverlappingPercentage"] = get<1>(totalAndOverlappingArea) / get<0>(totalAndOverlappingArea);
-			log["globalInfo"]["siblingsOverlappingPercentageAverage"] = get<2>(totalAndOverlappingArea) / get<3>(totalAndOverlappingArea);
+			log["globalInfo"]["siblingsOverlappingPercentageCulled"] = get<3>(totalAndOverlappingArea) / get<2>(totalAndOverlappingArea);
 		}
 	}
 }
