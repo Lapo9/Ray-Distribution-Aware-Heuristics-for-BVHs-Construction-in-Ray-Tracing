@@ -217,7 +217,8 @@ namespace pah {
 			int bins; /**< How many bins are used to create the nodes of th @p Bvh. The higher, the better the @p Bvh, but the slower the construction. */
 			int maxNonFallbackLevels; /**< Nodes after this level will use the fallback (SAH) method. */
 			float splitPlaneQualityThreshold;
-			float maxChildrenFatherHitProbabilityRatio;
+			float acceptableChildrenFatherHitProbabilityRatio;
+			float excellentChildrenFatherHitProbabilityRatio;
 		};
 
 		//custom alias

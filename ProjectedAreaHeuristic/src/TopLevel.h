@@ -75,17 +75,12 @@ namespace pah {
 			}
 		};
 
-		struct Properties {
-			float splitPlaneQualityThreshold;
-			float maxChildrenFatherHitProbabilityRatio;
-		};
-
 		/**
 		 * @brief The constructor can take the Bvhs both as r-value references (thus taking their ownership), or as l-value references and then copying then into the fields of this object.
 		 */
 		 //COMPILER_BUG C++ allows this, but MSVC makes it so that constrained template parameters cannot be universal references template<std::same_as<Bvh> BvhType, std::same_as<Bvh>... Bvhs>
 		template<typename BvhType, typename... Bvhs>
-		TopLevel(const Properties& properties, BvhType&& fallbackBvh, Bvhs&&... bvhs) : properties{ properties }, fallbackBvh{ std::forward<BvhType>(fallbackBvh) } {
+		TopLevel(BvhType&& fallbackBvh, Bvhs&&... bvhs) : fallbackBvh{ std::forward<BvhType>(fallbackBvh) } {
 			(this->bvhs.emplace_back(std::forward<Bvhs>(bvhs)), ...);
 		}
 
@@ -125,7 +120,6 @@ namespace pah {
 	protected:
 		std::vector<Bvh> bvhs;
 		Bvh fallbackBvh; //if none of the other BVHs is hit, this one is used; it will contain every triangle in the scene
-		Properties properties;
 		const std::vector<Triangle>* lastBuildTriangles; //triangle array used for last build
 	};
 
@@ -134,7 +128,7 @@ namespace pah {
 	public:
 		//COMPILER_BUG C++ allows this, but MSVC makes it so that constrained template parameters cannot be universal references template<std::same_as<Bvh> BvhType, std::same_as<Bvh>... Bvhs>
 		template<typename BvhType, typename... Bvhs>
-		TopLevelAabbs(const Properties& properties, BvhType&& fallbackBvh, Bvhs&&... bvhs) : TopLevel { properties, std::forward<BvhType>(fallbackBvh), std::forward<Bvhs>(bvhs)... } {}
+		TopLevelAabbs(BvhType&& fallbackBvh, Bvhs&&... bvhs) : TopLevel { std::forward<BvhType>(fallbackBvh), std::forward<Bvhs>(bvhs)... } {}
 
 		void build(const std::vector<Triangle>& triangles) override;
 		void update() override;
@@ -214,8 +208,8 @@ namespace pah {
 
 		//COMPILER_BUG C++ allows this, but MSVC makes it so that constrained template parameters cannot be universal references: template<std::same_as<Bvh> BvhType, std::same_as<Bvh>... Bvhs>
 		template<typename BvhType, typename... Bvhs>
-		TopLevelOctree(const Properties& properties, const OctreeProperties& octreeProperties, BvhType&& fallbackBvh, Bvhs&&... bvhs)
-			: TopLevel{ properties, std::forward<BvhType>(fallbackBvh), std::forward<Bvhs>(bvhs)... }, octreeProperties{ octreeProperties }, root{} {
+		TopLevelOctree(const OctreeProperties& octreeProperties, BvhType&& fallbackBvh, Bvhs&&... bvhs)
+			: TopLevel{ std::forward<BvhType>(fallbackBvh), std::forward<Bvhs>(bvhs)... }, octreeProperties{ octreeProperties }, root{} {
 			Aabb sceneAabb = Aabb::minAabb();
 
 			//the Aabb of the root, must contain all the influence areas in the scene

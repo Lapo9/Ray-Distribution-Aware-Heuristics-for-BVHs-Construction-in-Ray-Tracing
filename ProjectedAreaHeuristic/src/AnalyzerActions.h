@@ -122,7 +122,6 @@ namespace pah::analyzerActions {
 			const auto& contourPointsLeft = ConvexHull2d{ bvh.getInfluenceArea()->getProjectedHull(node.leftChild->aabb) };
 			const auto& contourPointsRight = ConvexHull2d{ bvh.getInfluenceArea()->getProjectedHull(node.rightChild->aabb) };
 			auto overlappingChildrenHull = overlappingHull(contourPointsLeft, contourPointsRight);
-			if (overlappingChildrenHull.size() < 3) return;
 			float overlappingChildrenArea = overlappingChildrenHull.computeArea();
 			float smallestChildrenArea = glm::min(contourPointsLeft.computeArea(), contourPointsRight.computeArea());
 

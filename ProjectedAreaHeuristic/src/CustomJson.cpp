@@ -172,7 +172,8 @@ void pah::to_json(json& j, const Bvh::Properties& properties) {
 	j["maxLevels"] = properties.maxLevels;
 	j["maxNonFallbackLevels"] = properties.maxNonFallbackLevels;
 	j["splitPlaneQualityThreshold"] = properties.splitPlaneQualityThreshold;
-	j["maxChildrenFatherHitProbabilityRatio"] = properties.maxChildrenFatherHitProbabilityRatio;
+	j["acceptableChildrenFatherHitProbabilityRatio"] = properties.acceptableChildrenFatherHitProbabilityRatio;
+	j["excellentChildrenFatherHitProbabilityRatio"] = properties.excellentChildrenFatherHitProbabilityRatio;
 }
 
 void pah::to_json(json& j, const TopLevelOctree::OctreeProperties& properties) {

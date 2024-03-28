@@ -63,12 +63,19 @@ namespace pah {
 	 */
 	struct ConvexHull2d {
 	public:
-		template<std::same_as<Vector2>... Vec2>
-		ConvexHull2d(const Vec2&... vertices) : vertices{} {
+		template<std::same_as<Vector2> Vec2, std::same_as<Vector2>... Vec2s>
+		ConvexHull2d(const Vec2& v0, const Vec2& v1, const Vec2& v2, const Vec2s&... vertices) : vertices{} {
+			this->vertices.push_back(v0);
+			this->vertices.push_back(v1);
+			this->vertices.push_back(v2);
 			(this->vertices.push_back(vertices), ...);
 		}
-
-		ConvexHull2d(const std::vector<Vector2>& vertices) : vertices{ vertices } {}
+		
+		ConvexHull2d() {}
+		
+		ConvexHull2d(const std::vector<Vector2>& vertices) : vertices{ vertices } {
+			if (size() < 3 && size() != 0) throw std::logic_error{ "A ConvexHull2d must have at least 3 vertices, or 0. This one has " + size() };
+		}
 
 		/**
 		 * @brief Returns the barycenter of the @p ConvexHull.
@@ -110,6 +117,8 @@ namespace pah {
 		 * @brief Returns whether a point is inside the hull.
 		 */
 		bool isPointInside(const Vector2& P) const {
+			if (size() == 0) return false;
+
 			// returns whether the cross product of 2d vectors is positive
 			auto cross2d = [](const Vector2& lhs, const Vector2& rhs) -> float { return lhs.x * rhs.y - rhs.x * lhs.y; };
 
@@ -149,6 +158,7 @@ namespace pah {
 		 * @brief Returns the hull obtained by intersecting 2 @p ConvexHull2d
 		 */
 		friend ConvexHull2d overlappingHull(const ConvexHull2d& h1, const ConvexHull2d& h2) {
+			if (h1.size() == 0 || h2.size() == 0) return ConvexHull2d{};
 			std::vector<Vector2> vertices{};
 
 			// find all the points of a hull, internal to the other hull
@@ -188,7 +198,7 @@ namespace pah {
 				}
 			}
 
-			if (vertices.size() == 0) return ConvexHull2d{};
+			if (vertices.size() < 3) return ConvexHull2d{};
 
 			// sort all the points in counterclockwise order (find a point inside the overlap hull and sort by atan2)
 			std::ranges::sort(vertices, [center = ConvexHull2d{ vertices }.barycenter()](const Vector2& a, const Vector2& b) {return atan2(a.y - center.y, a.x - center.x) >= atan2(b.y - center.y, b.x - center.x); });

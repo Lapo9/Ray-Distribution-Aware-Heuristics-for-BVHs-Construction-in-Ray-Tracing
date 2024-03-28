@@ -61,7 +61,7 @@ pah::Bvh::TraversalResults pah::Bvh::traverse(const Ray& ray) const {
 		const Node& current = *toVisit.front();
 		toVisit.pop(); //queue::front doesn't remove the element from the queue, it just accesses it
 		//we enter the if statement iff there is a hit with the box and this hit is closer than the closest hit found so far
-		if (const auto& boxHitInfo = collisionDetection::areColliding(ray, current.aabb); boxHitInfo.hit && boxHitInfo.distance < closestHit) {
+		if (const auto& boxHitInfo = collisionDetection::areColliding(ray, current.aabb); boxHitInfo.hit){//}&& boxHitInfo.distance < closestHit) {
 			res.intersectionTestsTotal++;
 			res.intersectionTestsWithNodes++;
 			if (current.isLeaf()) {
@@ -106,11 +106,13 @@ void pah::Bvh::splitNode(Node& node, Axis fatherSplittingAxis, float fatherHitPr
 	TIME(TimeLogger timeLoggerSplitting{ [&timingInfo = node.nodeTimingInfo](DurationMs duration) { timingInfo.logSplittingTot(duration); } };);
 	//try to split for each axis provided by chooseSplittingPlanes
 	for (auto [axis, quality] : splittingPlanes) {
+		float bestCutSoFarQuality = (bestLeftCostSoFar.hitProbability + bestRightCostSoFar.hitProbability) / fatherHitProbability;
+		if (bestCutSoFarQuality <= properties.excellentChildrenFatherHitProbabilityRatio) break;
 		bool forceFallback = false; // whether to use the standard SAH strategies in place of the user selected ones
 		//if the quality of this split plane is too low...
 		if (quality < properties.splitPlaneQualityThreshold) {
 			// ...and we haven't already found a satisfactory split, then fallback to longest + SAH strategy (only use the best SAH split plane)
-			if ((bestLeftCostSoFar.hitProbability + bestRightCostSoFar.hitProbability) / fatherHitProbability <= properties.maxChildrenFatherHitProbabilityRatio) break;
+			if (bestCutSoFarQuality <= properties.acceptableChildrenFatherHitProbabilityRatio) break;
 
 			forceFallback = true;
 			Axis sahAxis = chooseSplittingPlanesWrapper(node, influenceArea, fatherSplittingAxis, rng, currentLevel, forceFallback)[influenceArea ? 0 : 1].first; // if there is no influence area, it means we've already used the longest option, so try a different one
