@@ -25,30 +25,31 @@ int main() {
 	// select data to export to the csv file
 	using AT = AnalysisType;
 	CsvExporter csvTraversal{
-		ACCESSOR("Estimated PAH cost",					AT::TOP_LEVEL,["bvhs"].at(0)["globalInfo"]["pahCost"]),
-		ACCESSOR("Estimated SAH cost",					AT::TOP_LEVEL,["bvhs"].back()["globalInfo"]["sahCost"]),
-		ACCESSOR("PAH cost with fallback",				AT::PAH,["cost"]["traversalCostAveragePerRay"]),
-		ACCESSOR("PAH intersections with fallback",		AT::PAH,["total"]["intersectionTests"]["intersectionTestsAveragePerRay"]),
-		ACCESSOR("PAH hit percentage",					AT::PAH,["total"]["hitMiss"]["hitsPercentage"]),
-		ACCESSOR("PAH cost without fallback",			AT::PAH,["cost"]["traversalCostForBvhPerRay"].at(0).at(1)),
-		ACCESSOR("SAH cost without fallback",			AT::PAH,["cost"]["traversalCostForBvhPerRay"].back().at(1)),
-		ACCESSOR("PAH intersections without fallback",	AT::PAH,["fallback"]["intersectionTests"]["intersectionTestsNonFallbackAveragePerRay"]),
-		ACCESSOR("SAH cost",							AT::FALLBACK,["cost"]["traversalCostAveragePerRay"]),
-		ACCESSOR("SAH intersections",					AT::FALLBACK,["fallback"]["intersectionTests"]["intersectionTestsNonFallbackAveragePerRay"]),
-		ACCESSOR("Overlapping %",						AT::TOP_LEVEL,["bvhs"].at(0)["globalInfo"]["siblingsOverlappingPercentage"]),
-		ACCESSOR("Overlapping % culled",				AT::TOP_LEVEL,["bvhs"].at(0)["globalInfo"]["siblingsOverlappingPercentageCulled"]),
-		ACCESSOR("Max level PAH",						AT::TOP_LEVEL,["bvhs"].at(0)["globalInfo"]["maxLevel"]),
-		ACCESSOR("Max leaf cost",						AT::TOP_LEVEL,["bvhs"].at(0)["globalInfo"]["properties"]["maxLeafCost"]),
-		ACCESSOR("Max leaf area",						AT::TOP_LEVEL,["bvhs"].at(0)["globalInfo"]["properties"]["maxLeafArea"]),
-		ACCESSOR("Max leaf hit probability",			AT::TOP_LEVEL,["bvhs"].at(0)["globalInfo"]["properties"]["maxLeafHitProbability"]),
-		ACCESSOR("Max triangles per leaf",				AT::TOP_LEVEL,["bvhs"].at(0)["globalInfo"]["properties"]["maxTrianglesPerLeaf"]),
-		ACCESSOR("Max non fallback levels",				AT::TOP_LEVEL,["bvhs"].at(0)["globalInfo"]["properties"]["maxNonFallbackLevels"]),
-		ACCESSOR("Split plane quality threshold",		AT::TOP_LEVEL,["bvhs"].at(0)["globalInfo"]["properties"]["splitPlaneQualityThreshold"]),
-		ACCESSOR("Max children/father hit probability",	AT::TOP_LEVEL,["bvhs"].at(0)["globalInfo"]["properties"]["maxChildrenFatherHitProbabilityRatio"]),
-		ACCESSOR("Choose split plane PAH average",		AT::TOP_LEVEL,["bvhs"].at(0)["totalTiming"]["chooseSplittingPlanesAverage"]),
-		ACCESSOR("Choose split plane SAH average",		AT::TOP_LEVEL,["bvhs"].back()["totalTiming"]["chooseSplittingPlanesAverage"]),
-		ACCESSOR("Compute cost PAH average",			AT::TOP_LEVEL,["bvhs"].at(0)["totalTiming"]["computeCostAverage"]),
-		ACCESSOR("Compute cost SAH average",			AT::TOP_LEVEL,["bvhs"].back()["totalTiming"]["computeCostAverage"])
+		ACCESSOR("Estimated PAH cost",							AT::TOP_LEVEL,["bvhs"].at(0)["globalInfo"]["pahCost"]),
+		ACCESSOR("Estimated SAH cost",							AT::TOP_LEVEL,["bvhs"].back()["globalInfo"]["sahCost"]),
+		ACCESSOR("PAH cost with fallback",						AT::PAH,["cost"]["traversalCostAveragePerRay"]),
+		ACCESSOR("PAH intersections with fallback",				AT::PAH,["total"]["intersectionTests"]["intersectionTestsAveragePerRay"]),
+		ACCESSOR("PAH hit percentage",							AT::PAH,["total"]["hitMiss"]["hitsPercentage"]),
+		ACCESSOR("PAH cost without fallback",					AT::PAH,["cost"]["traversalCostForBvhPerRay"].at(0).at(1)),
+		ACCESSOR("SAH cost without fallback",					AT::PAH,["cost"]["traversalCostForBvhPerRay"].back().at(1)),
+		ACCESSOR("PAH intersections without fallback",			AT::PAH,["fallback"]["intersectionTests"]["intersectionTestsNonFallbackAveragePerRay"]),
+		ACCESSOR("SAH cost",									AT::FALLBACK,["cost"]["traversalCostAveragePerRay"]),
+		ACCESSOR("SAH intersections",							AT::FALLBACK,["fallback"]["intersectionTests"]["intersectionTestsNonFallbackAveragePerRay"]),
+		ACCESSOR("Overlapping %",								AT::TOP_LEVEL,["bvhs"].at(0)["globalInfo"]["siblingsOverlappingPercentage"]),
+		ACCESSOR("Overlapping % culled",						AT::TOP_LEVEL,["bvhs"].at(0)["globalInfo"]["siblingsOverlappingPercentageCulled"]),
+		ACCESSOR("Max level PAH",								AT::TOP_LEVEL,["bvhs"].at(0)["globalInfo"]["maxLevel"]),
+		ACCESSOR("Max leaf cost",								AT::TOP_LEVEL,["bvhs"].at(0)["globalInfo"]["properties"]["maxLeafCost"]),
+		ACCESSOR("Max leaf area",								AT::TOP_LEVEL,["bvhs"].at(0)["globalInfo"]["properties"]["maxLeafArea"]),
+		ACCESSOR("Max leaf hit probability",					AT::TOP_LEVEL,["bvhs"].at(0)["globalInfo"]["properties"]["maxLeafHitProbability"]),
+		ACCESSOR("Max triangles per leaf",						AT::TOP_LEVEL,["bvhs"].at(0)["globalInfo"]["properties"]["maxTrianglesPerLeaf"]),
+		ACCESSOR("Max non fallback levels",						AT::TOP_LEVEL,["bvhs"].at(0)["globalInfo"]["properties"]["maxNonFallbackLevels"]),
+		ACCESSOR("Split plane quality threshold",				AT::TOP_LEVEL,["bvhs"].at(0)["globalInfo"]["properties"]["splitPlaneQualityThreshold"]),
+		ACCESSOR("Acceptable children/father hit probability",	AT::TOP_LEVEL,["bvhs"].at(0)["globalInfo"]["properties"]["acceptableChildrenFatherHitProbabilityRatio"]),
+		ACCESSOR("Excellent children/father hit probability",	AT::TOP_LEVEL,["bvhs"].at(0)["globalInfo"]["properties"]["excellentChildrenFatherHitProbabilityRatio"]),
+		ACCESSOR("Choose split plane PAH average",				AT::TOP_LEVEL,["bvhs"].at(0)["totalTiming"]["chooseSplittingPlanesAverage"]),
+		ACCESSOR("Choose split plane SAH average",				AT::TOP_LEVEL,["bvhs"].back()["totalTiming"]["chooseSplittingPlanesAverage"]),
+		ACCESSOR("Compute cost PAH average",					AT::TOP_LEVEL,["bvhs"].at(0)["totalTiming"]["computeCostAverage"]),
+		ACCESSOR("Compute cost SAH average",					AT::TOP_LEVEL,["bvhs"].back()["totalTiming"]["computeCostAverage"])
 	};
 
 	//generate triangles for different scenes
@@ -61,7 +62,7 @@ int main() {
 	const vector cottageTriangles = Triangle::fromObj("D:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/ProjectedAreaHeuristic/exampleData/Cottage.obj");
 	const vector cottageWallsTriangles = Triangle::fromObj("D:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/ProjectedAreaHeuristic/exampleData/CottageWalls.obj");
 	const vector crowdTriangles = Triangle::fromObj("D:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/ProjectedAreaHeuristic/exampleData/Crowd.obj");
-	const vector sponzaTriangles = Triangle::fromObj("D:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/ProjectedAreaHeuristic/exampleData/Cube.obj");
+	const vector sponzaTriangles = Triangle::fromObj("D:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/ProjectedAreaHeuristic/exampleData/Sponza.obj");
 
 	//Top level analyzer used by most scenes
 	TopLevelOctreeAnalyzer topLevelAnalyzer{
@@ -111,12 +112,12 @@ int main() {
 
 	constexpr bool WOOD_SCENE = ALL || false;
 	constexpr bool SUZANNE_SCENE = ALL || false;
-	constexpr bool COTTAGE_SCENE = ALL || false;
+	constexpr bool COTTAGE_SCENE = ALL || true;
 	constexpr bool COTTAGE_WALLS_SCENE = ALL || false;
-	constexpr bool CROWD_SCENE = ALL || false;
+	constexpr bool CROWD_SCENE = ALL || true;
 	constexpr bool RANDOM100_SCENE = ALL || false;
-	constexpr bool RANDOM1000_SCENE = ALL || false;
-	constexpr bool SPONZA_SCENE = ALL || true;
+	constexpr bool RANDOM1000_SCENE = ALL || true;
+	constexpr bool SPONZA_SCENE = ALL || false;
 
 	constexpr string_view RESULTS_DIRECTORY = "D:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/Results/";
 
@@ -435,8 +436,7 @@ int main() {
 				auto scene = TestScene{ string(RESULTS_DIRECTORY) + "SponzaPlaneFullParallel", sponzaTriangles, vector{&rayCasterPlaneFullParallel}, std::move(topLevel), topLevelAnalyzer };
 				csvTraversal.addAnalysis("SponzaPlaneFullParallel", scene.buildAndTraverse());
 			}
-
-			
+	
 			// === Sponza scene: 1 plane influence area 15 degrees covering all the scene. 1 ray caster relative to the influence area. ===
 			{
 				PlaneInfluenceArea influenceAreaPlaneFull15{ Plane{{-12,11,0.5}, {.966,0,-.259}, 16,11}, 60, 10000 };
@@ -465,8 +465,7 @@ int main() {
 				TopLevelOctree topLevel{ octreeProperties, fallbackBvh, std::move(bvhPlaneFullOblique) };
 				auto scene = TestScene{ string(RESULTS_DIRECTORY) + "SponzaPlaneFullOblique", sponzaTriangles, vector{&rayCasterPlaneFullOblique}, std::move(topLevel), topLevelAnalyzer };
 				csvTraversal.addAnalysis("SponzaPlaneFullOblique", scene.buildAndTraverse());
-			}
-			
+			}	
 		}
 	};
 
@@ -773,6 +772,49 @@ int main() {
 				csvTraversal.addAnalysis("Random1000PlaneFullObliqueLongest", scene.buildAndTraverse());
 			}
 		}
+
+		// === Sponza scene: 1 plane full influence area longest split ===
+		if constexpr (PLANE_FULL_LONGEST and_or SPONZA_SCENE) {
+			// === Sponza scene: 1 plane influence area parallel to x covering all the scene. 1 ray caster relative to the influence area. ===
+			{
+				PlaneInfluenceArea influenceAreaPlaneFullParallel{ Plane{{-9,11,-1}, {1,0,0}, 16, 11}, 50, 10000 };
+				PlaneRayCaster rayCasterPlaneFullParallel{ influenceAreaPlaneFullParallel }; rayCasterPlaneFullParallel.generateRays(rng, 1000, true);
+				Bvh bvhPlaneFullParallel{ bvhProperties, influenceAreaPlaneFullParallel, PAH_STRATEGY, bvhStrategies::chooseSplittingPlanesLongest, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
+				TopLevelOctree topLevel{ octreeProperties, fallbackBvh, std::move(bvhPlaneFullParallel) };
+				auto scene = TestScene{ string(RESULTS_DIRECTORY) + "SponzaPlaneFullParallelLongest", sponzaTriangles, vector{&rayCasterPlaneFullParallel}, std::move(topLevel), topLevelAnalyzer };
+				csvTraversal.addAnalysis("SponzaPlaneFullParallelLongest", scene.buildAndTraverse());
+			}
+
+			// === Sponza scene: 1 plane influence area 15 degrees covering all the scene. 1 ray caster relative to the influence area. ===
+			{
+				PlaneInfluenceArea influenceAreaPlaneFull15{ Plane{{-12,11,0.5}, {.966,0,-.259}, 16,11}, 60, 10000 };
+				PlaneRayCaster rayCasterPlaneFull15{ influenceAreaPlaneFull15 }; rayCasterPlaneFull15.generateRays(rng, 1000, true);
+				Bvh bvhPlaneFull15{ bvhProperties, influenceAreaPlaneFull15, PAH_STRATEGY, bvhStrategies::chooseSplittingPlanesLongest, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
+				TopLevelOctree topLevel{ octreeProperties, fallbackBvh, std::move(bvhPlaneFull15) };
+				auto scene = TestScene{ string(RESULTS_DIRECTORY) + "SponzaPlaneFull15Longest", sponzaTriangles, vector{&rayCasterPlaneFull15}, std::move(topLevel), topLevelAnalyzer };
+				csvTraversal.addAnalysis("SponzaPlaneFull15Longest", scene.buildAndTraverse());
+			}
+
+			// === Sponza scene: 1 plane influence area 45 degrees covering all the scene. 1 ray caster relative to the influence area. ===
+			{
+				PlaneInfluenceArea influenceAreaPlaneFull45{ Plane{{-10,11,18}, {1,0,-1}, 25,11}, 70, 10000 };
+				PlaneRayCaster rayCasterPlaneFull45{ influenceAreaPlaneFull45 }; rayCasterPlaneFull45.generateRays(rng, 1000, true);
+				Bvh bvhPlaneFull45{ bvhProperties, influenceAreaPlaneFull45, PAH_STRATEGY, bvhStrategies::chooseSplittingPlanesLongest, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
+				TopLevelOctree topLevel{ octreeProperties, fallbackBvh, std::move(bvhPlaneFull45) };
+				auto scene = TestScene{ string(RESULTS_DIRECTORY) + "SponzaPlaneFull45Longest", sponzaTriangles, vector{&rayCasterPlaneFull45}, std::move(topLevel), topLevelAnalyzer };
+				csvTraversal.addAnalysis("SponzaPlaneFull45Longest", scene.buildAndTraverse());
+			}
+
+			// === Sponza scene: 1 plane influence area oblique covering all the scene. 1 ray caster relative to the influence area. ===
+			{
+				PlaneInfluenceArea influenceAreaPlaneFullOblique{ Plane{{-12,10,7.2}, {.84,0.26,-.48}, 16,11}, 70, 10000 };
+				PlaneRayCaster rayCasterPlaneFullOblique{ influenceAreaPlaneFullOblique }; rayCasterPlaneFullOblique.generateRays(rng, 1000, true);
+				Bvh bvhPlaneFullOblique{ bvhProperties, influenceAreaPlaneFullOblique, PAH_STRATEGY, bvhStrategies::chooseSplittingPlanesLongest, bvhStrategies::shouldStopThresholdOrLevel, "plane" };
+				TopLevelOctree topLevel{ octreeProperties, fallbackBvh, std::move(bvhPlaneFullOblique) };
+				auto scene = TestScene{ string(RESULTS_DIRECTORY) + "SponzaPlaneFullObliqueLongest", sponzaTriangles, vector{&rayCasterPlaneFullOblique}, std::move(topLevel), topLevelAnalyzer };
+				csvTraversal.addAnalysis("SponzaPlaneFullObliqueLongest", scene.buildAndTraverse());
+			}
+		}
 	};
 
 	// POINT FULL PARALLEL
@@ -1076,6 +1118,49 @@ int main() {
 				TopLevelOctree topLevel{ octreeProperties, fallbackBvh, std::move(bvhPointFullOblique) };
 				auto scene = TestScene{ string(RESULTS_DIRECTORY) + "Random1000PointFullOblique", random1000Triangles, vector{&rayCasterPointFullOblique}, std::move(topLevel), topLevelAnalyzer };
 				csvTraversal.addAnalysis("Random1000PointFullOblique", scene.buildAndTraverse());
+			}
+		}
+
+		// === Sponza scene: 1 point full influence area ===
+		if constexpr (POINT_FULL and_or SPONZA_SCENE) {
+			// === Sponza scene: 1 point influence area parallel to x covering all the scene. 1 ray caster relative to the influence area. ===
+			{
+				PointInfluenceArea influenceAreaPointFullParallel{ Pov{{-9,11,-1}, {1,0,0}, 70, 50}, 50, 1, 10000 };
+				PointRayCaster rayCasterPointFullParallel{ influenceAreaPointFullParallel }; rayCasterPointFullParallel.generateRays(rng, 1000, true);
+				Bvh bvhPointFullParallel{ bvhProperties, influenceAreaPointFullParallel, PAH_STRATEGY, bvhStrategies::chooseSplittingPlanesFacing, bvhStrategies::shouldStopThresholdOrLevel, "point" };
+				TopLevelOctree topLevel{ octreeProperties, fallbackBvh, std::move(bvhPointFullParallel) };
+				auto scene = TestScene{ string(RESULTS_DIRECTORY) + "SponzaPointFullParallel", sponzaTriangles, vector{&rayCasterPointFullParallel}, std::move(topLevel), topLevelAnalyzer };
+				csvTraversal.addAnalysis("SponzaPointFullParallel", scene.buildAndTraverse());
+			}
+
+			// === Sponza scene: 1 point influence area 15 degrees covering all the scene. 1 ray caster relative to the influence area. ===
+			{
+				PointInfluenceArea influenceAreaPointFull15{ Pov{{-12,11,0.5}, {.966,0,-.259}, 70,50}, 60,1, 10000 };
+				PointRayCaster rayCasterPointFull15{ influenceAreaPointFull15 }; rayCasterPointFull15.generateRays(rng, 1000, true);
+				Bvh bvhPointFull15{ bvhProperties, influenceAreaPointFull15, PAH_STRATEGY, bvhStrategies::chooseSplittingPlanesFacing, bvhStrategies::shouldStopThresholdOrLevel, "point" };
+				TopLevelOctree topLevel{ octreeProperties, fallbackBvh, std::move(bvhPointFull15) };
+				auto scene = TestScene{ string(RESULTS_DIRECTORY) + "SponzaPointFull15", sponzaTriangles, vector{&rayCasterPointFull15}, std::move(topLevel), topLevelAnalyzer };
+				csvTraversal.addAnalysis("SponzaPointFull15", scene.buildAndTraverse());
+			}
+
+			// === Sponza scene: 1 point influence area 45 degrees covering all the scene. 1 ray caster relative to the influence area. ===
+			{
+				PointInfluenceArea influenceAreaPointFull45{ Pov{{-10,11,18}, {1,0,-1}, 90,50}, 70,1, 10000 };
+				PointRayCaster rayCasterPointFull45{ influenceAreaPointFull45 }; rayCasterPointFull45.generateRays(rng, 1000, true);
+				Bvh bvhPointFull45{ bvhProperties, influenceAreaPointFull45, PAH_STRATEGY, bvhStrategies::chooseSplittingPlanesFacing, bvhStrategies::shouldStopThresholdOrLevel, "point" };
+				TopLevelOctree topLevel{ octreeProperties, fallbackBvh, std::move(bvhPointFull45) };
+				auto scene = TestScene{ string(RESULTS_DIRECTORY) + "SponzaPointFull45", sponzaTriangles, vector{&rayCasterPointFull45}, std::move(topLevel), topLevelAnalyzer };
+				csvTraversal.addAnalysis("SponzaPointFull45", scene.buildAndTraverse());
+			}
+
+			// === Sponza scene: 1 point influence area oblique covering all the scene. 1 ray caster relative to the influence area. ===
+			{
+				PointInfluenceArea influenceAreaPointFullOblique{ Pov{{-12,10,7.2}, {.84,0.26,-.48}, 70,50}, 70,1, 10000 };
+				PointRayCaster rayCasterPointFullOblique{ influenceAreaPointFullOblique }; rayCasterPointFullOblique.generateRays(rng, 1000, true);
+				Bvh bvhPointFullOblique{ bvhProperties, influenceAreaPointFullOblique, PAH_STRATEGY, bvhStrategies::chooseSplittingPlanesFacing, bvhStrategies::shouldStopThresholdOrLevel, "point" };
+				TopLevelOctree topLevel{ octreeProperties, fallbackBvh, std::move(bvhPointFullOblique) };
+				auto scene = TestScene{ string(RESULTS_DIRECTORY) + "SponzaPointFullOblique", sponzaTriangles, vector{&rayCasterPointFullOblique}, std::move(topLevel), topLevelAnalyzer };
+				csvTraversal.addAnalysis("SponzaPointFullOblique", scene.buildAndTraverse());
 			}
 		}
 	};
