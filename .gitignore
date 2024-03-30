@@ -397,6 +397,19 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 
+# Core latex/pdflatex auxiliary files:
+*.aux
+*.lof
+*.log
+*.lot
+*.fls
+*.out
+*.toc
+*.fmt
+*.fot
+*.cb
+*.cb2
+
 # Draw.io backups
 *.drawio.bkp
 *.drawio.dtmp

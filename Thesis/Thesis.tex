@@ -1,0 +1,177 @@
+% Copyright 2021 Politecnico di Milano, Italy. Inc. All rights reserved
+
+\documentclass{PoliMi_MasterThesis}
+
+% === Packages and configurations ===
+% Configurations
+\usepackage{parskip} % For paragraph layout
+\usepackage{setspace} % For using single or double spacing
+\usepackage{emptypage} % To insert empty pages
+\setlength\parindent{0pt} % Indentation
+\raggedbottom % Do not stretch empty space to fill the page
+
+% Titles
+\usepackage{titlesec}
+% \titlespacing{\section}{left spacing}{before spacing}{after spacing}
+\titlespacing{\section}{0pt}{3.3ex}{2ex}
+\titlespacing{\subsection}{0pt}{3.3ex}{1.65ex}
+\titlespacing{\subsubsection}{0pt}{3.3ex}{1ex}
+\usepackage{color}
+
+% Language and fonts
+\usepackage[english]{babel} % The document is in English  
+\usepackage[utf8]{inputenc} % UTF8 encoding
+\usepackage[T1]{fontenc} % Font encoding
+\usepackage[11pt]{moresize} % Big fonts
+
+% Images
+\usepackage{graphicx} % For images
+\graphicspath{{./Images/}} % Directory of the images
+\usepackage{transparent} % Enables transparent images
+\usepackage{eso-pic} % For the background picture on the title page
+\usepackage{subfig} % Numbered and caption subfigures using \subfloat.
+\usepackage{tikz} % A package for high-quality hand-made figures.
+\usetikzlibrary{}
+\usepackage{caption} % Coloured captions
+\usepackage{xcolor} % Coloured captions
+\usepackage{amsthm,thmtools,xcolor} % Coloured "Theorem"
+\usepackage{float}
+
+% Math
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{bm}
+\usepackage[overload]{empheq} % For braced-style systems of equations.
+\usepackage{fix-cm} % To override original LaTeX restrictions on sizes
+
+% Tables
+\usepackage{tabularx}
+\usepackage{longtable} % Tables that can span several pages
+\usepackage{colortbl}
+
+% Algorithms
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
+% Bibliography
+\usepackage[colorlinks=true,linkcolor=black,anchorcolor=black,citecolor=black,filecolor=black,menucolor=black,runcolor=black,urlcolor=black]{hyperref} % Adds clickable links at references
+\usepackage{cleveref}
+\usepackage[square, numbers, sort&compress]{natbib} % Square brackets, citing references with numbers, citations sorted by appearance in the text and compressed
+\bibliographystyle{alpha} % You may use a different style adapted to your field
+
+% Other packages
+\usepackage{pdfpages} % To include a pdf file
+\usepackage{afterpage}
+\usepackage{fancyhdr} % For the headers
+\fancyhf{}
+
+% Input of configuration file. Do not change config.tex file unless you really know what you are doing. 
+\input{config}
+
+
+% === Start of document ===
+
+\begin{document}
+
+\fancypagestyle{plain}{
+\fancyhf{} % Clear all header and footer fields
+\fancyhead[RO,RE]{\thepage} %RO=right odd, RE=right even
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}}
+
+
+% === Title page ===
+\pagestyle{empty} % No page numbers
+\frontmatter % Use roman page numbering style (i, ii, iii, iv...) for the preamble pages
+
+\puttitle{
+	title=Ray Distribution Aware Heuristics for Bounding Volume Hierarchies Construction,
+	name=Lapo Falcone,
+	course=Computer Science and Engineering,
+	ID  = 996089,
+	advisor= Prof. Marco Gribaudo,
+	academicyear={2023-24}
+}
+
+
+% === Preamble ===
+\startpreamble
+\setcounter{page}{1} % Set page counter to 1
+
+% Abstract
+\chapter*{Abstract} 
+Abstract
+\\
+\\
+\textbf{Keywords:} here, the keywords, of your thesis
+
+% Abstract in Italian
+\chapter*{Abstract in lingua italiana}
+Abstract Italiano
+\\
+\\
+\textbf{Parole chiave:} qui, vanno, le parole chiave, della tesi
+
+
+% === Table of contents ===
+\thispagestyle{empty}
+\tableofcontents % Table of contents 
+\thispagestyle{empty}
+\cleardoublepage
+
+\addtocontents{toc}{\vspace{2em}} % Add a gap in the Contents, for aesthetics
+\mainmatter % Begin numeric (1,2,3...) page numbering
+
+
+% === Intro ===
+\chapter*{Introduction}
+Intro \cite{meister2021survey}
+
+
+% === Chapter 1 ===
+\chapter{Chapter one}
+\label{ch:chapter_one}
+Chapter 1
+
+
+% === Chapter 2 ... ===
+\chapter{Chapter two}
+\label{ch:chapter_two}%
+Chapter 2
+
+
+% === Bibliography ===
+\addtocontents{toc}{\vspace{2em}} % Add a gap in the Contents, for aesthetics
+\bibliography{Bibliography} % The references information are stored in the file named "Bibliography.bib"
+
+
+% === Appendices ===
+\cleardoublepage
+\addtocontents{toc}{\vspace{2em}} % Add a gap in the Contents, for aesthetics
+\appendix
+
+\chapter{Appendix A}
+First appendice
+
+% === Lists ===
+\listoffigures
+\listoftables
+
+% Table of symbols
+\chapter*{List of Symbols} % You have to include a chapter for your list of symbols (
+\begin{table}[H]
+    \centering
+    \begin{tabular}{lll}
+        \textbf{Symbol} & \textbf{Description} & \textbf{Unit} \\\hline\\[-9px]
+        $\bm{alpha}$ & symbol 1 & km \\[2px]
+    \end{tabular}
+\end{table}
+
+% === Ringraziamenti ===
+\chapter*{Acknowledgements}
+Ringrazio...
+
+\cleardoublepage
+\end{document}
