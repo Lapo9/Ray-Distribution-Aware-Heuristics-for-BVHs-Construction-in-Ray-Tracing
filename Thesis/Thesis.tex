@@ -53,13 +53,17 @@
 
 % Algorithms
 \usepackage{algorithm}
-\usepackage{algorithmic}
+\usepackage{algorithmicx}
+\usepackage{algpseudocodex}
+\newcommand*\Let[2]{\State #1 $\gets$ #2}
+\newcommand*\AAnd{\textbf{ and }}
+\newcommand*\AOr{\textbf{ or }}
 
 % Bibliography
 \usepackage[colorlinks=true,linkcolor=black,anchorcolor=black,citecolor=black,filecolor=black,menucolor=black,runcolor=black,urlcolor=black]{hyperref} % Adds clickable links at references
 \usepackage{cleveref}
 \usepackage[square, numbers, sort&compress]{natbib} % Square brackets, citing references with numbers, citations sorted by appearance in the text and compressed
-\bibliographystyle{alpha} % You may use a different style adapted to your field
+\bibliographystyle{abbrvnat} % You may use a different style adapted to your field
 
 % Other packages
 \usepackage{pdfpages} % To include a pdf file
@@ -138,7 +142,6 @@ Chapter 1
 
 % === Chapter 2 ... ===
 \chapter{Chapter two}
-\label{ch:chapter_two}%
 Chapter 2
 
 
@@ -152,8 +155,49 @@ Chapter 2
 \addtocontents{toc}{\vspace{2em}} % Add a gap in the Contents, for aesthetics
 \appendix
 
-\chapter{Appendix A}
-First appendice
+\chapter{Collision and Culling Algorithms}
+\section{Ray-AABB Intersection} \label{ray_box_intersection}
+The algorithm we used to detect intersections between a ray and an AABB is the branchless slab algorithm \cite{ray_box_intersection}.
+Given a ray in the form: $r(t) = O + t\cdot d$, where $O$ is the origin and $d$ the direction, the main idea of the algorithm is to find the 2 values of $t$ ($\overline{t_1}$ and $\overline{t_2}$) such that $r(\overline{t_{1,2}})$ are the points where the ray intersects the AABB.
+
+Since the object to intersect the ray with is an axis-aligned bounding box in the min-max form, the algorithm can proceed one dimension at a time:
+\begin{itemize}
+	\item First, it finds the intersection points of the ray with the planes parallel to the $yz$ plane, and sorts them in an ascending order with reference to the corresponding $\overline{t_{1,2}}$ values.
+	\item Then it does the same with the $xz$ plane:
+	\begin{itemize}
+		\item As closest intersection point, it keeps the furthest between the 2 closest intersection points found so far.
+		\item As furthest intersection point, it keeps the closest between the 2 furthest intersection points found so far.
+	\end{itemize}
+	\item Then it does the same with the $xy$ plane.
+	\item Finally, an intersection is detected only in the case where the furthest intersection point is actually further than the closest one found by the algorithm.
+	\item The returned $\overline{t}$ value is the smaller one, as long as it is greater or equal to 0, otherwise it means that the origin of the ray is inside the AABB, and one of the intersection points is \textit{behind} the ray origin.
+\end{itemize}
+	
+It is interesting to note how, under the floating-point IEEE 754 standard, the algorithm also works when it is not possible to find an intersection point along a certain axis (i.e. when the ray is parallel to certain planes). Indeed, in such cases, the values $\overline{t_{1,2}}$ will be $\pm \inf$, and the comparisons will still be well defined.
+
+
+\begin{algorithm}[H]
+	\caption{Ray-AABB branchless slab intersection algorithm in 3 dimensions}
+	\begin{algorithmic}[1]
+	\Function{Intersect}{$aabb, ray$}
+	\Let {$tx1$}{$(aabb.min.x - ray.origin.x) / ray.direction.x$}
+	\Let {$tx2$}{$(aabb.max.x - ray.origin.x) / ray.direction.x$}
+	\Let {$tMin$}{$min(tx1, tx2)$}
+	\Let {$tMax$}{$max(tx1, tx2)$}
+	\Let {$ty1$}{$(aabb.min.y - ray.origin.y) / ray.direction.y$}
+	\Let {$ty2$}{$(aabb.max.y - ray.origin.y) / ray.direction.y$}
+	\Let {$tMin$}{$ max(tMin, min(ty1, ty2))$}
+	\Let {$tMax$}{$ min(tMax, max(ty1, ty2))$}
+	\Let {$tz1$}{$(aabb.min.z - ray.origin.z) / ray.direction.z$}
+	\Let {$tz2$}{$(aabb.max.z - ray.origin.z) / ray.direction.z$}
+	\Let {$tMin$}{$max(tMin, min(tz1, tz2))$}
+	\Let {$tMax$}{$min(tMax, max(tz1, tz2))$}
+	\Let {$areColliding$}{$tMax > tMin$ \AAnd $tMax \geq 0$}
+	\Let {$collisionDist$}{$tMin < 0 ? tMax : tMin$}
+	\State \Return $\langle areColliding, collisionDist \rangle$
+	\EndFunction
+	\end{algorithmic}
+\end{algorithm} 
 
 % === Lists ===
 \listoffigures
