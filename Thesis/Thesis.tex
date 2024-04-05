@@ -156,48 +156,217 @@ Chapter 2
 \appendix
 
 \chapter{Collision and Culling Algorithms}
-\section{Ray-AABB Intersection} \label{ray_box_intersection}
+\section{Ray-AABB Intersection} \label{sec:ray_box_intersection}
 The algorithm we used to detect intersections between a ray and an AABB is the branchless slab algorithm \cite{ray_box_intersection}.
+
 Given a ray in the form: $r(t) = O + t\cdot d$, where $O$ is the origin and $d$ the direction, the main idea of the algorithm is to find the 2 values of $t$ ($\overline{t_1}$ and $\overline{t_2}$) such that $r(\overline{t_{1,2}})$ are the points where the ray intersects the AABB.
 
 Since the object to intersect the ray with is an axis-aligned bounding box in the min-max form, the algorithm can proceed one dimension at a time:
-\begin{itemize}
-	\item First, it finds the intersection points of the ray with the planes parallel to the $yz$ plane, and sorts them in an ascending order with reference to the corresponding $\overline{t_{1,2}}$ values.
+\begin{enumerate}
+	\item First, it finds the intersection points of the ray with the planes parallel to the $yz$ plane, and sorts them in an ascending order with reference to the corresponding $\overline{t_{1,2}}$ values. We call the point with the smallest $\overline{t}$ value the \textit{closest}, and the other one the $\overline{furthest}$.
 	\item Then it does the same with the $xz$ plane:
 	\begin{itemize}
-		\item As closest intersection point, it keeps the furthest between the 2 closest intersection points found so far.
+		\item As closest intersection point, it keeps the furthest between the 2 closest intersection points found so far (the one with the $yz$ plane and the one with the $xz$ plane).
 		\item As furthest intersection point, it keeps the closest between the 2 furthest intersection points found so far.
 	\end{itemize}
 	\item Then it does the same with the $xy$ plane.
-	\item Finally, an intersection is detected only in the case where the furthest intersection point is actually further than the closest one found by the algorithm.
-	\item The returned $\overline{t}$ value is the smaller one, as long as it is greater or equal to 0, otherwise it means that the origin of the ray is inside the AABB, and one of the intersection points is \textit{behind} the ray origin.
-\end{itemize}
+	\item Finally, an intersection is detected only in the case where the furthest intersection point actually has an associated $\overline{t}$ value bigger than the one of the closest point found by the algorithm.
+	\item The returned $\overline{t}$ value is the smaller one, as long as it is greater or equal to 0; otherwise it means that the origin of the ray is inside the AABB, and one of the intersection points is \textit{behind} the ray origin.
+\end{enumerate}
 	
-It is interesting to note how, under the floating-point IEEE 754 standard, the algorithm also works when it is not possible to find an intersection point along a certain axis (i.e. when the ray is parallel to certain planes). Indeed, in such cases, the values $\overline{t_{1,2}}$ will be $\pm \inf$, and the comparisons will still be well defined.
-
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{Images/ray_aabb_intersection.png}
+    \caption{Visual representation of the presented algorithm in 2 dimensions. An interactive simulation of this algorithm can be found at: \url{https://www.geogebra.org/m/np3tnjvb}.}
+    \label{fig:ray_aabb_intersection}
+\end{figure}
 
 \begin{algorithm}[H]
 	\caption{Ray-AABB branchless slab intersection algorithm in 3 dimensions}
 	\begin{algorithmic}[1]
-	\Function{Intersect}{$aabb, ray$}
-	\Let {$tx1$}{$(aabb.min.x - ray.origin.x) / ray.direction.x$}
-	\Let {$tx2$}{$(aabb.max.x - ray.origin.x) / ray.direction.x$}
-	\Let {$tMin$}{$min(tx1, tx2)$}
-	\Let {$tMax$}{$max(tx1, tx2)$}
-	\Let {$ty1$}{$(aabb.min.y - ray.origin.y) / ray.direction.y$}
-	\Let {$ty2$}{$(aabb.max.y - ray.origin.y) / ray.direction.y$}
-	\Let {$tMin$}{$ max(tMin, min(ty1, ty2))$}
-	\Let {$tMax$}{$ min(tMax, max(ty1, ty2))$}
-	\Let {$tz1$}{$(aabb.min.z - ray.origin.z) / ray.direction.z$}
-	\Let {$tz2$}{$(aabb.max.z - ray.origin.z) / ray.direction.z$}
-	\Let {$tMin$}{$max(tMin, min(tz1, tz2))$}
-	\Let {$tMax$}{$min(tMax, max(tz1, tz2))$}
-	\Let {$areColliding$}{$tMax > tMin$ \AAnd $tMax \geq 0$}
-	\Let {$collisionDist$}{$tMin < 0 ? tMax : tMin$}
-	\State \Return $\langle areColliding, collisionDist \rangle$
-	\EndFunction
+		\Function{Intersect}{$ray, aabb$}
+		\Let {$tx1$}{$(aabb.min.x - ray.origin.x) / ray.direction.x$} \Comment{yz plane}
+		\Let {$tx2$}{$(aabb.max.x - ray.origin.x) / ray.direction.x$}
+		\Let {$tMin$}{$min(tx1, tx2)$}
+		\Let {$tMax$}{$max(tx1, tx2)$}
+		\Let {$ty1$}{$(aabb.min.y - ray.origin.y) / ray.direction.y$} \Comment{xz plane}
+		\Let {$ty2$}{$(aabb.max.y - ray.origin.y) / ray.direction.y$}
+		\Let {$tMin$}{$ max(tMin, min(ty1, ty2))$}
+		\Let {$tMax$}{$ min(tMax, max(ty1, ty2))$}
+		\Let {$tz1$}{$(aabb.min.z - ray.origin.z) / ray.direction.z$} \Comment{xy plane}
+		\Let {$tz2$}{$(aabb.max.z - ray.origin.z) / ray.direction.z$}
+		\Let {$tMin$}{$max(tMin, min(tz1, tz2))$}
+		\Let {$tMax$}{$min(tMax, max(tz1, tz2))$}
+		\Let {$areColliding$}{$tMax > tMin$ \AAnd $tMax \geq 0$}
+		\Let {$collisionDist$}{$tMin < 0 ? tMax : tMin$}
+		\State \Return $\langle areColliding, collisionDist \rangle$
+		\EndFunction
 	\end{algorithmic}
 \end{algorithm} 
+
+It is interesting to note how, under the floating-point IEEE 754 standard, the algorithm also works when it is not possible to find an intersection point along a certain axis (i.e. when the ray is parallel to certain planes). Indeed, in such cases, the values $\overline{t_{1,2}}$ will be $\pm \infty$, and the comparisons will still be well defined.
+
+\section{Ray-Plane Intersection} \label{sec:ray_plane_intersection}
+For ray-plane intersection we decided to use this algorithm presented in the educational portal of the SIGGRAPH conference \cite{ray_plane_intersection}.
+
+Given a ray in the form: $r(t) = O + t\cdot d$, where $O$ is the origin and $d$ the direction, and a plane whose normal $n$ and a point $P$ are known, we first check whether the plane and the ray are parallel, in which case no intersection can be found.
+
+Then, if they are not parallel, we obtain the analytic form of the 3-dimensional plane: 
+\begin{align*}
+	A\cdot x + B\cdot y + C\cdot z + D = 0
+\end{align*}
+In particular, we know a point $P$ that is part of the plane, therefore we can obtain the $D$ parameter:
+\begin{align*}
+&A\cdot P.x + B\cdot P.y + C\cdot P.z + D = 0\\
+\implies& D = -(A\cdot P.x + B\cdot P.y + C\cdot P.z)
+\end{align*}
+By definition, the vector formed by the parameters $[A,B,C]$ is perpendicular to the plane, therefore:
+\begin{align*}
+&D = -(n.x\cdot P.x + n.y\cdot P.y + n.z\cdot P.z)\\
+\implies& D = -\langle n \cdot P \rangle
+\end{align*}
+Now that we have the parametric equation of the plane, we can force a point of the plane to also be a point of the ray: 
+\begin{align*}
+	&A\cdot r(t).x + B\cdot r(t).y + C\cdot r(t).z + D = 0\\
+	\implies& A\cdot (O.x + t\cdot d.x) + B\cdot (O.y + t\cdot d.y) + C\cdot (O.z + t\cdot d.z) + D = 0\\
+	\implies& t = \frac{-\langle n\cdot O \rangle + D}{\langle n\cdot d \rangle}
+\end{align*}
+Finally, if the found $\overline{t}$ value is negative, it means that the intersection point between the ray and the plane is \textit{behind} the ray origin, therefore no intersection is found. Else the ray intersects the plane at point $r(\overline{t})$.
+
+\begin{algorithm}[H]
+	\caption{Ray-plane intersection algorithm}
+	\begin{algorithmic}[1]
+		\Function{Intersect}{$ray, plane$}
+		\Let{$d$}{$ray.direction$}
+		\Let{$O$}{$ray.origin$}
+		\Let{$n$}{$plane.normal$}
+		\Let{$P$}{$plane.point$}
+		\If{$\langle n\cdot d \rangle = 0$} \Comment{Ray is parallel to plane}
+			\State \Return $\langle false, \_ \rangle$
+		\EndIf
+		\Let{$D$}{$-\langle n\cdot P \rangle$}
+		\Let{$t$}{$\frac{-\langle n\cdot O \rangle}{\langle n\cdot d \rangle}$}
+		\If{$t<0$} \Comment{Intersection point is \textit{behind} ray origin}
+			\State \Return $\langle false, \_ \rangle$
+		\Else
+			\State \Return $\langle true, t \rangle$
+		\EndIf
+		\EndFunction
+	\end{algorithmic}
+\end{algorithm} 
+
+\section{AABB-AABB Intersection} \label{sec:aabb_aabb_intersection}
+To detect a collision between 2 axis-aligned bounding boxes in the min-max form, it is sufficient to check that there is an overlap between them in all 3 dimensions. By naming the 2 AABBs as $A$ and $B$ we get:
+\begin{align*}
+	A.min.x \leq& B.max.x \And \\
+	A.max.x \geq& B.min.x \And \\
+	A.min.y \leq& B.max.y \And \\
+	A.max.y \geq& B.min.y \And \\
+	A.min.z \leq& B.max.z \And \\
+	A.max.z \geq& B.min.z
+\end{align*}
+
+\section{Frustum-AABB Intersection} \label{sec:frustum_aabb_intersection}
+In order to detect an intersection between a frustum and an axis-aligned bounding box in the min-max form, we used a simplified version of the separating axis test (a special case of the separating hyperplane theorem) \cite{separating_axis_test}. The simplification comes from the fact that we need to find the intersection of a frustum and an AABB, and not two 3D convex hulls, meaning that we can exploit some assumptions on the direction of the edges of the two objects, as we'll note below.
+
+Before proceeding with the separating axis test, we first try a simpler AABB-AABB collision test, between the given AABB and the AABB that most tightly encloses the frustum. In case this \textit{rejection test} gives a negative answer, we can deduce that the frustum and the AABB are not colliding. Otherwise, we must use the more expensive SAT.
+
+The separating axis theorem in 3 dimensions states that 2 convex hulls are not colliding if and only if there is a plane that divides the space into 2 half-spaces each fully containing one of the two convex hulls.\\
+To find whether such a plane exists, we project the two convex hulls on certain axis, and check whether their 1D projections are overlapping. The theorem also states that if there is a axis where the projections are not overlapping it must be:
+\begin{itemize}
+	\item An axis perpendicular to one of the faces of the convex hulls, or
+	\item An axis parallel to the cross product between an edge of the first convex hull and an edge of the second convex hull.
+\end{itemize}
+This consideration makes it possible to use the theorem in a concrete scenario.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.35]{Images/aabb_1d_proj.png}
+    \caption{The projection of an AABB on an axis.}
+    \label{fig:aabb_1d_proj}
+\end{figure}
+
+In principle, given 2 polyhedra with 6 faces each (such as a frustum and an AABB), there should be $(6 + 6)_{normals} + (12\cdot 12)_{cross\: products} = 156$ axis to check; but, since:
+\begin{itemize}
+	\item The AABB has edges only in 3 different directions, and faces normals only in 3 different directions, and
+	\item The frustum has edges only in 6 different directions, and faces normals only in 5 different directions
+\end{itemize}
+the number of checks is reduced to $(3 + 5)_{normals} + (3\cdot 6)_{cross\: products} = 26$.
+
+\begin{figure}[H]
+    \centering
+    \subfloat[AABB: 3 different edges directions]{
+        \includegraphics[scale=0.35]{Images/aabb_edges_same_dir.png}
+		}
+		\qquad
+	\subfloat[Frustum: 6 different edges directions]{
+        \includegraphics[scale=0.35]{Images/frustum_edges_same_dir.png}
+    }
+	\caption{In the figure the edges having the same direction are colored in the same color.}
+    \label{fig:aabb_frustum_different_edges_directions}
+\end{figure}
+
+
+\subsection{1D Projections Overlapping Test}
+In order to detect if the 1D projections of the 3D hulls are overlapping, we identify the outermost points of each projection (namely $A_{min}, A_{max}, B_{min}, B_{max}$) and check that $B_{min} \leq A_{max} \And B_{max} \geq A_{min}$.\\
+For the AABB another optimization is possible, where we detect what points will be the outermost after the projection without actually projecting them, based on the direction of the axis:
+
+\begin{figure}[H]
+    \centering
+    \subfloat[AABB vertices layout.]{
+        \raisebox{-0.1\height}{\includegraphics[scale=0.35]{Images/aabb.png}}
+    }
+    \quad
+    \subfloat{
+		\raisebox{0.5\height}{
+		\begin{tabular}{| c | c |}
+			\hline
+			\textbf{axis direction} & \textbf{extremes} \\
+			\hline \hline
+			$x \geq 0 \And y \geq 0 \And z \leq 0$ & 1, 6\\
+			$x \leq 0 \And y \leq 0 \And z \geq 0$ & 6, 1\\
+			$x \geq 0 \And y \geq 0 \And z \geq 0$ & 0, 7\\
+			$x \leq 0 \And y \leq 0 \And z \leq 0$ & 7, 0\\
+			$x \geq 0 \And y \leq 0 \And z \leq 0$ & 3, 4\\
+			$x \leq 0 \And y \geq 0 \And z \geq 0$ & 4, 3\\
+			$x \geq 0 \And y \leq 0 \And z \geq 0$ & 2, 5\\
+			$x \leq 0 \And y \geq 0 \And z \leq 0$ & 5, 2\\
+			\hline
+		\end{tabular}
+		}
+    }
+    \label{fig:aabb_projected_extremes}
+\end{figure}
+
+\begin{algorithm}[H]
+	\caption{Ray-AABB branchless slab intersection algorithm in 3 dimensions}
+	\begin{algorithmic}[1]
+		\Function{Intersect}{$frustum, aabb$}
+		\If{$!intersect(frustum.aabb, aabb)$} \Comment{AABB-AABB test}
+			\State \Return $false$
+		\EndIf
+		\Let{$axesToCheck$}{$(\perp frustum \: faces) \cup (\perp AABB \: faces) \cup (\times edges$)}
+		\ForAll{$axis \in axesToCheck$}
+			\Let{$frustumExtremes$}{$findFrustumExtremes(frustum, axis)$} \Comment{Returns the vertices of the frustum that, after the projection, will be the extremes}
+			\Let{$aabbExtremes$}{$findAabbExtremes(aabb, axis)$} \Comment{Same as above, but uses the discussed optimization}
+			\Let{$A_{min}$}{$\langle aabbExtremes.first \cdot axis \rangle$}
+			\Let{$A_{max}$}{$\langle aabbExtremes.second \cdot axis \rangle$}
+			\Let{$B_{min}$}{$\langle frustumExtremes.first \cdot axis \rangle$}
+			\Let{$B_{max}$}{$\langle frustumExtremes.second \cdot axis \rangle$}
+			\If{$!(B_{min} \leq A_{max} \And B_{max} \geq A_{min})$} 
+				\State \Return $false$
+			\EndIf
+		\EndFor
+		\State \Return $true$ \Comment{If we havent't found any axis where there is no overlap, boxes are colliding}
+		\EndFunction
+	\end{algorithmic}
+\end{algorithm} 
+
+\section{Point inside AABB Test} \label{sec:point_inside_aabb}
+\section{Point inside Frustum Test} \label{sec:point_inside_frustum}
+\section{Point inside 2D Convex Hull Test} \label{sec:point_inside_2dHull}
+\section{2D Hull Culling} \label{sec:2dHull_culling}
+
 
 % === Lists ===
 \listoffigures

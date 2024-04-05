@@ -491,7 +491,7 @@ bool collisionDetection::areColliding(const Frustum & frustum, const Aabb & aabb
 		auto frustumExtremes = projectedFrustumExtremes(axis, frustum);
 
 		// |--------------------|MA     MB    overlap iff mB <= MA && MB >= mA (not overlap iff mB > MA || MB < mA)
-			// mA             mB|-----------|
+		// mA             mB|-----------|
 		if (dot(aabbVertices[aabbExtremesIndexes.first], axis) > frustumExtremes.second ||
 			dot(aabbVertices[aabbExtremesIndexes.second], axis) < frustumExtremes.first) return false;
 	}
@@ -543,7 +543,7 @@ collisionDetection::RayCollisionInfo pah::collisionDetection::areColliding(const
 	// P = O + tR is the parametric equation of the ray.
 	// A*x + B*y + C*z + D = 0 is the equation of the plane.
 	// We know a point on the plane (Q), and that the normal to the plane N = (A, B, C), and D is the distance from the origin (O) to the plane.
-	// Therefore D = -(A.x + B.y + C.z) = -(N.x * Q.x + N.y * Q.y + N.z * Q.z) = -dot(N, Q)
+	// Therefore D = -(A*x + B*y + C*z) = -(N.x * Q.x + N.y * Q.y + N.z * Q.z) = -dot(N, Q)
 	float D = -dot(N, plane.getPoint());
 
 	// To find the ray-plane intersection we can force the point of the plane to be P:
