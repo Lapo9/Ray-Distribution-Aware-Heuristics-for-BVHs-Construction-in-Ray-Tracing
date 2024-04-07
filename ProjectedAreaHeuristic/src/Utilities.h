@@ -282,7 +282,7 @@ namespace pah {
 		bool isPointInside(const Vector3& P) const {
 			// The point is inside iff it is "to the left" of all sides taken in counter clockwise order (or "to the right" in counterclockwise order)
 			// We determine whether the point is to the left or right of the first edge, by calculating the cross product between the edge vector and the vector connecting the first vertex of the edge to our point.
-			// Then we try the sam ewith all the edges, and the cross product result must point in the same direction as the first one (therefore the dot product should be > 0)
+			// Then we try the same with all the edges, and the cross product result must point in the same direction as the first one (therefore the dot product should be > 0)
 			int M = size();
 			Vector3 edge = vertices[0] - vertices[M - 1];
 			Vector3 p = P - vertices[M - 1];

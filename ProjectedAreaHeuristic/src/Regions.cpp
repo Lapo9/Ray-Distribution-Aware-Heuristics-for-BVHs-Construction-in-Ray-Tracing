@@ -222,7 +222,7 @@ bool pah::Frustum::contains(const Vector3 & point) const {
 	if (!enclosingAabbObj.contains(point)) return false;
 
 	//look at "Fast Extraction of Viewing Frustum Planes from the WorldView-Projection Matrix" section 2 and the GeoGebra file "2dFrustum"
-		//basically p' = M*p --> p inside frustum iff -w' < x' < w' AND -w' < y' < w' AND -w' < z' < w'
+	//basically p' = M*p --> p inside frustum iff -w' < x' < w' AND -w' < y' < w' AND -w' < z' < w'
 	auto p = viewProjectionMatrix * Vector4{ point, 1.0f }; //projected point
 	return -p.w < p.x && p.x < p.w &&
 		-p.w < p.y && p.y < p.w &&

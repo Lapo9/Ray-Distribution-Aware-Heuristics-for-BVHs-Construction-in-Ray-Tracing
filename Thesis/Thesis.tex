@@ -257,14 +257,16 @@ Finally, if the found $\overline{t}$ value is negative, it means that the inters
 
 \section{AABB-AABB Intersection} \label{sec:aabb_aabb_intersection}
 To detect a collision between 2 axis-aligned bounding boxes in the min-max form, it is sufficient to check that there is an overlap between them in all 3 dimensions. By naming the 2 AABBs as $A$ and $B$ we get:
-\begin{align*}
-	A.min.x \leq& B.max.x \And \\
-	A.max.x \geq& B.min.x \And \\
-	A.min.y \leq& B.max.y \And \\
-	A.max.y \geq& B.min.y \And \\
-	A.min.z \leq& B.max.z \And \\
-	A.max.z \geq& B.min.z
-\end{align*}
+\begin{subequations}
+	\begin{align*}[left=\empheqlbrace]
+		A.min.x \leq& B.max.x \\
+		A.max.x \geq& B.min.x \\
+		A.min.y \leq& B.max.y \\
+		A.max.y \geq& B.min.y \\
+		A.min.z \leq& B.max.z \\
+		A.max.z \geq& B.min.z
+	\end{align*}
+\end{subequations}
 
 \section{Frustum-AABB Intersection} \label{sec:frustum_aabb_intersection}
 In order to detect an intersection between a frustum and an axis-aligned bounding box in the min-max form, we used a simplified version of the separating axis test (a special case of the separating hyperplane theorem) \cite{separating_axis_test}. The simplification comes from the fact that we need to find the intersection of a frustum and an AABB, and not two 3D convex hulls, meaning that we can exploit some assumptions on the direction of the edges of the two objects, as we'll note below.
@@ -272,7 +274,7 @@ In order to detect an intersection between a frustum and an axis-aligned boundin
 Before proceeding with the separating axis test, we first try a simpler AABB-AABB collision test, between the given AABB and the AABB that most tightly encloses the frustum. In case this \textit{rejection test} gives a negative answer, we can deduce that the frustum and the AABB are not colliding. Otherwise, we must use the more expensive SAT.
 
 The separating axis theorem in 3 dimensions states that 2 convex hulls are not colliding if and only if there is a plane that divides the space into 2 half-spaces each fully containing one of the two convex hulls.\\
-To find whether such a plane exists, we project the two convex hulls on certain axis, and check whether their 1D projections are overlapping. The theorem also states that if there is a axis where the projections are not overlapping it must be:
+To find whether such a plane exists, we project the two convex hulls on certain axes, and check whether their 1D projections are overlapping. The theorem also states that if there is an axis where the projections are not overlapping it must be either:
 \begin{itemize}
 	\item An axis perpendicular to one of the faces of the convex hulls, or
 	\item An axis parallel to the cross product between an edge of the first convex hull and an edge of the second convex hull.
@@ -281,7 +283,7 @@ This consideration makes it possible to use the theorem in a concrete scenario.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[scale=0.35]{Images/aabb_1d_proj.png}
+    \includegraphics[scale=0.35]{Images/aabb_1d_proj.png} 
     \caption{The projection of an AABB on an axis.}
     \label{fig:aabb_1d_proj}
 \end{figure}
@@ -363,9 +365,54 @@ For the AABB another optimization is possible, where we detect what points will 
 \end{algorithm} 
 
 \section{Point inside AABB Test} \label{sec:point_inside_aabb}
+To check if a point $P$ is inside an axis-aligned bounding box in the min-max form, it is sufficient to compare its coordinates with the minimum and maximum of the AABB component-wise:
+\begin{subequations}
+	\begin{align*}[left=\empheqlbrace]
+		min.x \leq P.x \leq max.x \\
+		min.y \leq P.y \leq max.y \\
+		min.z \leq P.z \leq max.z
+	\end{align*}
+\end{subequations}
+
 \section{Point inside Frustum Test} \label{sec:point_inside_frustum}
+It is possible to detect whether a point is inside a 3-dimensional frustum by projecting it with the perspective matrix associated with the frustum and then comparing its coordinates, as suggested by \cite{point_inside_frustum_test}.
+
+Given the perspective matrix $\textit{M}$ associated with the frustum, we can project a point $P$ and get: $P' = \textit{M} \cdot P$; and perform the perspective division. 
+
+$P'' = \frac{P'}{P'.w}$ $P''$ is now in normalized device coordinates (NDC) space, where the frustum is an axis-aligned bounding box that extends from $\langle -1, -1, -1 \rangle$ to $\langle 1, 1, 1 \rangle$ \footnote{Based on the convention used, it is possible that the AABB in NDC space has a different size. For example, it is common an AABB extending from $\langle -1, -1, 0 \rangle$ to $\langle 1, 1, 1 \rangle$}.
+
+It is now immediate to see that $P$ is inside the frustum if and only if $P''$ is inside the AABB (see section \ref{sec:point_inside_aabb}).
+
+A simple optimization allow us to avoid the perspective division. Indeed, since in homogeneous coordinates:
+$$\langle x',y',z',w' \rangle = \langle \frac{x'}{w'},\frac{y'}{w'},\frac{z'}{w'},\frac{w'}{w'} \rangle = \langle x'',y'',z'',1 \rangle$$
+We can change the inequalities to check whether the point is inside the frustum from:
+
+\begin{minipage}{.4\linewidth}
+	\begin{subequations}
+		\begin{align*}[left=\empheqlbrace]
+			-1 \leq x'' \leq 1 \\
+			-1 \leq y'' \leq 1 \\
+			-1 \leq z'' \leq 1
+		\end{align*}
+	\end{subequations}
+\end{minipage}
+		to:
+\begin{minipage}{.4\linewidth}
+	\begin{subequations}
+		\begin{align*}[left=\empheqlbrace]
+			-w' \leq x' \leq w' \\
+			-w' \leq y' \leq w' \\
+			-w' \leq z' \leq w'
+		\end{align*}
+	\end{subequations}
+\end{minipage}
+
+We created a 2D visual demonstration of how it is possible to detect if a point is inside a frustum at \url{https://www.geogebra.org/m/ammj5mxd}.
+
 \section{Point inside 2D Convex Hull Test} \label{sec:point_inside_2dHull}
+
 \section{2D Hull Culling} \label{sec:2dHull_culling}
+
 
 
 % === Lists ===
