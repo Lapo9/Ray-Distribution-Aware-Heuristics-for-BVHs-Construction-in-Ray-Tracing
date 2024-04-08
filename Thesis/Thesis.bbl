@@ -1,0 +1,49 @@
+\begin{thebibliography}{7}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Akenine-M\"{o}ller et~al.(2018)Akenine-M\"{o}ller, Haines, Hoffman, Pesce, Iwanicki, and Hillaire]{separating_axis_test}
+T.~Akenine-M\"{o}ller, E.~Haines, N.~Hoffman, A.~Pesce, M.~Iwanicki, and S.~Hillaire.
+\newblock \emph{Real-Time Rendering 4th Edition}.
+\newblock A K Peters/CRC Press, Boca Raton, FL, USA, 2018.
+\newblock ISBN 978-1-13862-700-0.
+\newblock Chapter 22.2.
+
+\bibitem[Gribb and Hartmann(2001)]{point_inside_frustum_test}
+G.~Gribb and K.~Hartmann.
+\newblock Fast extraction of viewing frustum planes from the world-view-projection matrix.
+\newblock \emph{Online document}, 2001.
+
+\bibitem[Meister et~al.(2021)Meister, Ogaki, Benthin, Doyle, Guthe, and Bittner]{meister2021survey}
+D.~Meister, S.~Ogaki, C.~Benthin, M.~J. Doyle, M.~Guthe, and J.~Bittner.
+\newblock A survey on bounding volume hierarchies for ray tracing.
+\newblock In \emph{Computer Graphics Forum}, volume~40, pages 683--712. Wiley Online Library, 2021.
+
+\bibitem[Owen(1999)]{ray_plane_intersection}
+S.~Owen.
+\newblock Ray-plane intersection.
+\newblock \url{https://education.siggraph.org/static/HyperGraph/raytrace/rayplane_intersection.htm}, 1999.
+\newblock Accessed: (11/01/2024).
+
+\bibitem[Owen(2001)]{ray_box_intersection}
+S.~Owen.
+\newblock Ray-box intersection.
+\newblock \url{https://education.siggraph.org/static/HyperGraph/raytrace/rtinter3.htm}, 2001.
+\newblock Accessed: (10/01/2024).
+
+\bibitem[Oz()]{convex_hull_culling}
+S.~Oz.
+\newblock Intersection of convex polygons algorithm.
+\newblock \url{https://www.swtestacademy.com/intersection-convex-polygons-algorithm/}.
+\newblock Accessed: (20/03/2024).
+
+\bibitem[Prunier()]{ray_triangle_intersection}
+J.-C. Prunier.
+\newblock Ray-triangle intersection: Geometric solution.
+\newblock \url{https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/ray-triangle-intersection-geometric-solution.html}.
+\newblock Accessed: (09/01/2024).
+
+\end{thebibliography}

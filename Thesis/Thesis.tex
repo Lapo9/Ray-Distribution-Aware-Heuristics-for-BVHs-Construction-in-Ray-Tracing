@@ -185,20 +185,20 @@ Since the object to intersect the ray with is an axis-aligned bounding box in th
 	\caption{Ray-AABB branchless slab intersection algorithm in 3 dimensions}
 	\begin{algorithmic}[1]
 		\Function{Intersect}{$ray, aabb$}
-		\Let {$tx1$}{$(aabb.min.x - ray.origin.x) / ray.direction.x$} \Comment{yz plane}
-		\Let {$tx2$}{$(aabb.max.x - ray.origin.x) / ray.direction.x$}
-		\Let {$tMin$}{$min(tx1, tx2)$}
-		\Let {$tMax$}{$max(tx1, tx2)$}
-		\Let {$ty1$}{$(aabb.min.y - ray.origin.y) / ray.direction.y$} \Comment{xz plane}
-		\Let {$ty2$}{$(aabb.max.y - ray.origin.y) / ray.direction.y$}
-		\Let {$tMin$}{$ max(tMin, min(ty1, ty2))$}
-		\Let {$tMax$}{$ min(tMax, max(ty1, ty2))$}
-		\Let {$tz1$}{$(aabb.min.z - ray.origin.z) / ray.direction.z$} \Comment{xy plane}
-		\Let {$tz2$}{$(aabb.max.z - ray.origin.z) / ray.direction.z$}
-		\Let {$tMin$}{$max(tMin, min(tz1, tz2))$}
-		\Let {$tMax$}{$min(tMax, max(tz1, tz2))$}
+		\Let {$t1_x$}{$\frac{aabb.min.x - ray.origin.x}{ray.direction.x}$} \Comment{yz plane}
+		\Let {$t2_x$}{$\frac{aabb.max.x - ray.origin.x}{ray.direction.x}$}
+		\Let {$tMin$}{$min(t1_x, t2_x)$}
+		\Let {$tMax$}{$max(t1_x, t2_x)$}
+		\Let {$t1_y$}{$\frac{aabb.min.y - ray.origin.y}{ray.direction.y}$} \Comment{xz plane}
+		\Let {$t2_y$}{$\frac{aabb.max.y - ray.origin.y}{ray.direction.y}$}
+		\Let {$tMin$}{$ max(tMin, min(t1_y, t2_y))$}
+		\Let {$tMax$}{$ min(tMax, max(t1_y, t2_y))$}
+		\Let {$t1_z$}{$\frac{aabb.min.z - ray.origin.z}{ray.direction.z}$} \Comment{xy plane}
+		\Let {$t2_z$}{$\frac{aabb.max.z - ray.origin.z}{ray.direction.z}$}
+		\Let {$tMin$}{$max(tMin, min(t1_z, t2_z))$}
+		\Let {$tMax$}{$min(tMax, max(t1_z, t2_z))$}
 		\Let {$areColliding$}{$tMax > tMin$ \AAnd $tMax \geq 0$}
-		\Let {$collisionDist$}{$tMin < 0 ? tMax : tMin$}
+		\Let {$collisionDist$}{$tMin < 0 \: ? \: tMax \: : \: tMin$}
 		\State \Return $\langle areColliding, collisionDist \rangle$
 		\EndFunction
 	\end{algorithmic}
@@ -217,18 +217,18 @@ Then, if they are not parallel, we obtain the analytic form of the 3-dimensional
 \end{align*}
 In particular, we know a point $P$ that is part of the plane, therefore we can obtain the $D$ parameter:
 \begin{align*}
-&A\cdot P.x + B\cdot P.y + C\cdot P.z + D = 0\\
-\implies& D = -(A\cdot P.x + B\cdot P.y + C\cdot P.z)
+&A\cdot P_x + B\cdot P_y + C\cdot P_z + D = 0\\
+\implies& D = -(A\cdot P_x + B\cdot P_y + C\cdot P_z)
 \end{align*}
 By definition, the vector formed by the parameters $[A,B,C]$ is perpendicular to the plane, therefore:
 \begin{align*}
-&D = -(n.x\cdot P.x + n.y\cdot P.y + n.z\cdot P.z)\\
+&D = -(n_x\cdot P_x + n_y\cdot P_y + n_z\cdot P_z)\\
 \implies& D = -\langle n \cdot P \rangle
 \end{align*}
 Now that we have the parametric equation of the plane, we can force a point of the plane to also be a point of the ray: 
 \begin{align*}
-	&A\cdot r(t).x + B\cdot r(t).y + C\cdot r(t).z + D = 0\\
-	\implies& A\cdot (O.x + t\cdot d.x) + B\cdot (O.y + t\cdot d.y) + C\cdot (O.z + t\cdot d.z) + D = 0\\
+	&A\cdot r(t)_x + B\cdot r(t)_y + C\cdot r(t)_z + D = 0\\
+	\implies& A\cdot (O_x + t\cdot d_x) + B\cdot (O_y + t\cdot d_y) + C\cdot (O_z + t\cdot d_z) + D = 0\\
 	\implies& t = \frac{-\langle n\cdot O \rangle + D}{\langle n\cdot d \rangle}
 \end{align*}
 Finally, if the found $\overline{t}$ value is negative, it means that the intersection point between the ray and the plane is \textit{behind} the ray origin, therefore no intersection is found. Else the ray intersects the plane at point $r(\overline{t})$.
@@ -255,16 +255,25 @@ Finally, if the found $\overline{t}$ value is negative, it means that the inters
 	\end{algorithmic}
 \end{algorithm} 
 
+\section{Ray-Triangle Intersection} \label{sec:ray_triangle_intersection}
+Once we have algorithms to check for ray-plane intersection (\ref{sec:ray_plane_intersection}) and for a point inside a 2D convex hull (\ref{sec:point_inside_2dHull}), we can combine them to check if a ray intersects a triangle and to compute the coordinates of the intersection point:
+
+\begin{enumerate}
+	\item Build a plane that has as normal the normal to the triangle, and as point any vertex of the triangle;
+	\item Use the ray-plane intersection algorithm (\ref{sec:ray_plane_intersection}) to find the coordinates of the point where the ray and the plane collide (if any);
+	\item Use the point inside 2D convex hull test (\ref{sec:point_inside_2dHull}) to determine if the intersection point is inside the triangle.
+\end{enumerate}
+
 \section{AABB-AABB Intersection} \label{sec:aabb_aabb_intersection}
 To detect a collision between 2 axis-aligned bounding boxes in the min-max form, it is sufficient to check that there is an overlap between them in all 3 dimensions. By naming the 2 AABBs as $A$ and $B$ we get:
 \begin{subequations}
 	\begin{align*}[left=\empheqlbrace]
-		A.min.x \leq& B.max.x \\
-		A.max.x \geq& B.min.x \\
-		A.min.y \leq& B.max.y \\
-		A.max.y \geq& B.min.y \\
-		A.min.z \leq& B.max.z \\
-		A.max.z \geq& B.min.z
+		A.min_x \leq& B.max_x \\
+		A.max_x \geq& B.min_x \\
+		A.min_y \leq& B.max_y \\
+		A.max_y \geq& B.min_y \\
+		A.min_z \leq& B.max_z \\
+		A.max_z \geq& B.min_z
 	\end{align*}
 \end{subequations}
 
@@ -368,9 +377,9 @@ For the AABB another optimization is possible, where we detect what points will 
 To check if a point $P$ is inside an axis-aligned bounding box in the min-max form, it is sufficient to compare its coordinates with the minimum and maximum of the AABB component-wise:
 \begin{subequations}
 	\begin{align*}[left=\empheqlbrace]
-		min.x \leq P.x \leq max.x \\
-		min.y \leq P.y \leq max.y \\
-		min.z \leq P.z \leq max.z
+		min_x \leq P_x \leq max_x \\
+		min_y \leq P_y \leq max_y \\
+		min_z \leq P_z \leq max_z
 	\end{align*}
 \end{subequations}
 
@@ -379,7 +388,7 @@ It is possible to detect whether a point is inside a 3-dimensional frustum by pr
 
 Given the perspective matrix $\textit{M}$ associated with the frustum, we can project a point $P$ and get: $P' = \textit{M} \cdot P$; and perform the perspective division. 
 
-$P'' = \frac{P'}{P'.w}$ $P''$ is now in normalized device coordinates (NDC) space, where the frustum is an axis-aligned bounding box that extends from $\langle -1, -1, -1 \rangle$ to $\langle 1, 1, 1 \rangle$ \footnote{Based on the convention used, it is possible that the AABB in NDC space has a different size. For example, it is common an AABB extending from $\langle -1, -1, 0 \rangle$ to $\langle 1, 1, 1 \rangle$}.
+$P'' = \frac{P'}{P'_w}$ $P''$ is now in normalized device coordinates (NDC) space, where the frustum is an axis-aligned bounding box that extends from $\langle -1, -1, -1 \rangle$ to $\langle 1, 1, 1 \rangle$ \footnote{Based on the convention used, it is possible that the AABB in NDC space has a different size. For example, it is common an AABB extending from $\langle -1, -1, 0 \rangle$ to $\langle 1, 1, 1 \rangle$}.
 
 It is now immediate to see that $P$ is inside the frustum if and only if $P''$ is inside the AABB (see section \ref{sec:point_inside_aabb}).
 
@@ -410,9 +419,134 @@ We can change the inequalities to check whether the point is inside the frustum 
 We created a 2D visual demonstration of how it is possible to detect if a point is inside a frustum at \url{https://www.geogebra.org/m/ammj5mxd}.
 
 \section{Point inside 2D Convex Hull Test} \label{sec:point_inside_2dHull}
+Given a 2D convex hull in 3-dimensional space and a 3D point laying on the same plane as the hull, it is possible to use a simple inside-outside test \cite{ray_triangle_intersection} to determine whether the point is inside the convex hull.
 
-\section{2D Hull Culling} \label{sec:2dHull_culling}
+The main idea is that the point lays inside the convex hull if and only if it is \textit{to the right} (or \textit{to the left}, depending on the winding order) of all the edges of the hull.
 
+In order to determine the relative position of a point and an edge $\overline{AB}$, we can look at the cross product:
+$$u \times v \; where \; u = \overrightarrow{AB}, v = \overrightarrow{AP}$$
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.4]{Images/cross_product.png} 
+    \caption{Visualization of cross product.}
+    \label{fig:cross_product}
+\end{figure}
+
+Therefore the strategy to determine if a point is on the same side of all the edges of the convex hull is to compute a reference cross product, by choosing any of the edges, and then making sure that all the other cross products have the same direction. To check that 2 vectors have the same direction it is sufficient that their dot product is positive.
+
+\begin{algorithm}[H]
+	\caption{Inside-outside test between a 3D point and a 2D convex hull.} 
+	\begin{algorithmic}[1]
+		\Function{IsInside}{$P, hull$}
+		\Let{$N$}{$number \: of \: edges \: of \: hull$}
+		\Let{$u$}{$hull[0] - hull[N-1]$}
+		\Let{$v$}{$P - hull[N-1]$}
+		\Let{$ref$}{$u \times v$} \Comment{The reference cross product}
+		\For{$0\leq i < N$}
+			\Let{$u$}{$hull[i+1] - hull[i]$}
+			\Let{$v$}{$P - hull[i]$}
+			\Let{$cross$}{$u \times v$}
+			\If{$\langle ref \cdot cross \rangle \leq 0$}
+				\State \Return $false$
+			\EndIf
+		\EndFor
+		\State \Return $true$
+		\EndFunction
+	\end{algorithmic}
+\end{algorithm} 
+
+\section{2D Convex Hull Culling} \label{sec:2dHull_culling}
+In order to find the overlapping region between two 2D hulls in 2-dimensional space, we can proceed as illustrated in the diagram below (\cite{convex_hull_culling}):
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.7]{Images/hull_culling.png} 
+    \caption{General algorithm to find the overlapping region between two convex hulls called $A$ and $B$.}
+    \label{fig:hull_culling}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.4]{Images/overlapping_hull.png} 
+    \caption{Yellow vertices are found in the first 2 steps (vertices inside), whereas light blue vertices are found in the third step (edges intersections).}
+    \label{fig:overlapping_hull}
+\end{figure}
+
+We'll now go through each phase and see the used algorithms.
+
+\subsection{Vertices inside convex hull}
+To find out what vertices of a hull are inside the other one we simply looped over them and used the point inside convex hull test (\ref{sec:point_inside_2dHull}).
+
+\subsection{Edges intersections}
+To detect an intersection between two segments, we first have to compute the equation of the line the segment is lying on.
+
+Given a segment $\overline{PQ}$, the underlying line has equation:
+$$A\cdot x + B\cdot y = C$$
+We can then compute the parameters of the line as:
+\begin{subequations}
+	\begin{align*}[left=\empheqlbrace]
+		A &= Q_y - P_y\\
+		B &= P_x - Q_x\\
+		C &= A\cdot P_x + B\cdot P_y
+	\end{align*}
+\end{subequations}
+
+After we calculate the underlying line of both segments, with parameters $A_1, B_1, C_1, A_2, B_2, C_2$, we can compute the intersection point $K$ of the two lines as:
+\begin{subequations}
+	\begin{align*}[left=\empheqlbrace]
+		\Delta &= A_1 \cdot B_2 - A_2 \cdot B_1\\
+		K_x &= \frac{B_2 \cdot C_1 - B_1 \cdot C_2}{\Delta}\\
+		K_y &= \frac{A_1 \cdot C_2 - A_2 \cdot C_1}{\Delta}
+	\end{align*}
+\end{subequations}
+
+We are now left with the task of verifying whether the found intersection point $K$ is in between both segments' extremes. Let's call the first segment $\overline{MN}$ and the second one $\overline{PQ}$:
+
+\begin{minipage}{.4\linewidth}
+	\begin{subequations}
+		\begin{align*}[left=\empheqlbrace]
+			min(M_x, N_x) &\leq K_x \And\\
+			max(M_x, N_x) &\geq K_x \And\\
+			min(M_y, N_y) &\leq K_y \And\\
+			max(M_y, N_y) &\geq K_y		
+		\end{align*}
+	\end{subequations}
+\end{minipage}
+		$And$
+\begin{minipage}{.4\linewidth}
+	\begin{subequations}
+		\begin{align*}[left=\empheqlbrace]
+			min(P_x, Q_x) &\leq K_x \And\\
+			max(P_x, Q_x) &\geq K_x \And\\
+			min(P_y, Q_y) &\leq K_y \And\\
+			max(P_y, Q_y) &\geq K_y		
+		\end{align*}
+	\end{subequations}
+\end{minipage}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.4]{Images/segments_intersection.png} 
+    \caption{In this example segments do not collide because $max(M_x, N_x) = N_x \ngeq K_x$ or $max(M_y, N_y) \ngeq K_y$}
+    \label{fig:cross_product}
+\end{figure}
+
+\subsection{Vertices ordering}
+Given a set of unordered 2D points belonging to a convex hull, we want to sort them in a counterclockwise order, so that two consecutive vertices form an edge of the convex hull.
+
+To do so we can compute the barycenter $O$ of the set of points that, being them part of a convex hull\footnote{We can state that the vertices we found so far make up a convex hull because the overlapping of two convex hulls is necessarily a convex hull.}, is necessarily inside the convex hull itself.
+
+Now, for each vertex $A_k$ we can calculate the vector $\overrightarrow{OA_k}$, and sort the vertices based on $atan2(\overrightarrow{OA_k}_y, \overrightarrow{OA_K}_x)$.
+
+The $atan2(v_y, v_x)$ function returns the angle between the positive x-axis and the vector $v=\langle v_x, v_y \rangle$. Differently from the arctangent function, the returned angle ranges in the interval $(-\pi, \pi]$, therefore is well suited for our purpose of sorting the convex hull vertices.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.4]{Images/vertices_sorting.png} 
+    \caption{Vertices of a convex hull before and after $atan2$ sorting.}
+    \label{fig:vertices_sorting}
+\end{figure}
 
 
 % === Lists ===
