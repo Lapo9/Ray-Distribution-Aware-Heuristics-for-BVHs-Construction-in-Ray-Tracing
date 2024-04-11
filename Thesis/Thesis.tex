@@ -36,6 +36,16 @@
 \usepackage{xcolor} % Coloured captions
 \usepackage{amsthm,thmtools,xcolor} % Coloured "Theorem"
 \usepackage{float}
+\usepackage{eso-pic} % Background pictures for each page
+\newcommand*\triangleLogo{
+	\clearpage
+	\thispagestyle{empty}
+	\newpage
+	\begin{figure}
+		\centering
+		\includegraphics[width=\textwidth]{Images/triangle_logo_thin.png} 
+	\end{figure}
+}
 
 % Math
 \usepackage{amsmath}
@@ -78,10 +88,9 @@
 % === Start of document ===
 
 \begin{document}
-
 \fancypagestyle{plain}{
 \fancyhf{} % Clear all header and footer fields
-\fancyhead[RO,RE]{\thepage} %RO=right odd, RE=right even
+\fancyhead[R]{\thepage} %RO=right odd, RE=right even
 \renewcommand{\headrulewidth}{0pt}
 \renewcommand{\footrulewidth}{0pt}}
 
@@ -102,21 +111,52 @@
 
 % === Preamble ===
 \startpreamble
+\triangleLogo
 \setcounter{page}{1} % Set page counter to 1
 
 % Abstract
-\chapter*{Abstract} 
-Abstract
-\\
-\\
-\textbf{Keywords:} here, the keywords, of your thesis
+\makeatletter
+\let\savedchap\@makechapterhead
+\def\@makechapterhead{\vspace*{-3cm}\savedchap}
+\polimichapter{Abstract}
+\let\@makechapterhead\savedchap
+\makeatletter
+\small
+In the last few years, real-time computer graphics have been transitioning from a pipeline based on rasterization to one using ray tracing.
+Ray tracing makes it possible to accurately simulate the behavior of light rays, enabling developers of graphics content to reproduce high-fidelity scenes without using a plethora of techniques to mimic light transport.
+
+While ray tracing is widely used for off-line rendering, such as for CGI effects in films or animated movies, the same cannot be stated for on-line applications, such as videogames. The main problem with ray tracing is that simulating light transport is computationally expensive, reason why in recent videogames ray tracing is only used on small portions of the scene or to simulate some effects (such as reflections, shadows, or ambient occlusion).
+
+In order to increase the spread of ray tracing in on-line rendering applications too, research is moving in two macro directions.
+
+The first one is to build GPUs with an architecture more suited for ray tracing, such as the RT cores from Ampere Nvidia GPUs.
+
+The second, but not least important one is to design software optimizations to make ray tracing cheaper.
+
+One of the problems that is ubiquitous in the ray tracing environment is to detect collisions between a ray and the geometry of the scene to render. Given the huge amount of primitives present in modern graphic applications, it is necessary to use a data structure to accelerate the ray collision retrieval process. The state-of-the-art structure is the bounding volume hierarchy (BVH), which hierarchically organizes primitives, making it possible to skip entire sections of the scene that are spatially far away from the ray that is being traced during BVH traversal.
+
+In this work we propose two novelty heuristics that work in pairs to build higher-quality BVHs, a data structure to make it possible to use them, and a comparative analysis of their performance in different scenarios.
+
+The first heuristic, called \textbf{projected area heuristic} (PAH) aims at better estimating the amount of rays that hit each node of the BVH by exploiting some artifacts in the ray distribution in the scene, caused by another optimization used in a previous step of the ray tracing pipeline (namely Monte-Carlo importance sampling).
+
+The second one (\textbf{splitting plane facing}) aims at reducing the overlap among nodes of the BVH, consequently reducing the number of intersection tests needed during the BVH traversal phase.
+
+\textbf{Keywords:} Ray tracing, bounding volume hierarchy, BVH
+\normalsize
 
 % Abstract in Italian
-\chapter*{Abstract in lingua italiana}
+\makeatletter
+\let\savedchap\@makechapterhead
+\def\@makechapterhead{\vspace*{-3cm}\savedchap}
+\polimichapter{Abstract in Lingua Italiana}
+\let\@makechapterhead\savedchap
+\makeatletter
+\small
 Abstract Italiano
 \\
 \\
-\textbf{Parole chiave:} qui, vanno, le parole chiave, della tesi
+\textbf{Parole chiave:} Ray tracing, bounding volume hierarchy, BVH
+\normalsize
 
 
 % === Table of contents ===
@@ -128,6 +168,10 @@ Abstract Italiano
 \addtocontents{toc}{\vspace{2em}} % Add a gap in the Contents, for aesthetics
 \mainmatter % Begin numeric (1,2,3...) page numbering
 
+% Add logo to page numbers
+\AddToShipoutPicture{%
+	\put(\textwidth+58,\textheight+88){\includegraphics[scale=0.06]{Images/triangle_logo.png}}
+}
 
 % === Intro ===
 \chapter*{Introduction}
@@ -529,7 +573,7 @@ We are now left with the task of verifying whether the found intersection point 
     \centering
     \includegraphics[scale=0.4]{Images/segments_intersection.png} 
     \caption{In this example segments do not collide because $max(M_x, N_x) = N_x \ngeq K_x$ or $max(M_y, N_y) \ngeq K_y$}
-    \label{fig:cross_product}
+    \label{fig:segments:intersection}
 \end{figure}
 
 \subsection{Vertices ordering}
@@ -548,6 +592,18 @@ The $atan2(v_y, v_x)$ function returns the angle between the positive x-axis and
     \label{fig:vertices_sorting}
 \end{figure}
 
+\section{2D Hull Area Computation} \label{sec:2dHull_area_computation}
+To calculate the area of a 2-dimensional hull we decided to use the Gauss's area formula, also known as the shoelace formula \cite{shoelace_formula}.
+
+Given a polygon with vertices $P_0, P_1, ..., P_n$, where each vertex has coordinates: $P_k = (x_k, y_k)$, its area can be found with this formula:
+\begin{align*}
+	Area =& \bigg|\frac{1}{2}\cdot\left(\begin{vmatrix} x_0 & y_1\\y_0 & y_1 \end{vmatrix} + \begin{vmatrix} x_1 & y_2\\y_1 & y_2 \end{vmatrix} + ... + \begin{vmatrix} x_{n-1} & y_n\\y_{n-1} & y_n \end{vmatrix} + \begin{vmatrix} x_n & y_0\\y_n & y_0 \end{vmatrix}\right)\bigg|\\
+	=& \Bigg|\frac{\displaystyle\sum_{i=0}^{n}(x_i \cdot y_{i+1} - y_i \cdot x_{i+1})}{2}\Bigg|
+\end{align*}
+
+In the last formula we consider $P_0 = P_{n+1}$.
+
+
 
 % === Lists ===
 \listoffigures
@@ -564,8 +620,14 @@ The $atan2(v_y, v_x)$ function returns the angle between the positive x-axis and
 \end{table}
 
 % === Ringraziamenti ===
-\chapter*{Acknowledgements}
-Ringrazio...
+\chapter*{Ringraziamenti}
+\small
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ultricies integer quis auctor elit sed vulputate mi. Accumsan sit amet nulla facilisi morbi. Suspendisse potenti nullam ac tortor vitae purus faucibus. Ultricies lacus sed turpis tincidunt id. Sit amet mauris commodo quis imperdiet. Arcu bibendum at varius vel. Venenatis urna cursus eget nunc. Mus mauris vitae ultricies leo integer malesuada nunc vel. Sodales neque sodales ut etiam sit. Pellentesque dignissim enim sit amet venenatis urna cursus eget nunc. Condimentum mattis pellentesque id nibh tortor id aliquet lectus. Ultrices gravida dictum fusce ut placerat orci nulla pellentesque dignissim. Faucibus pulvinar elementum integer enim neque. Morbi tincidunt augue interdum velit euismod in pellentesque massa.
 
-\cleardoublepage
+A diam maecenas sed enim ut sem viverra aliquet eget. Viverra aliquet eget sit amet tellus cras. Tellus at urna condimentum mattis pellentesque. Quis viverra nibh cras pulvinar. Posuere morbi leo urna molestie at elementum. Aenean euismod elementum nisi quis eleifend quam. In hac habitasse platea dictumst vestibulum rhoncus. Nullam non nisi est sit amet facilisis magna etiam tempor. Neque laoreet suspendisse interdum consectetur libero. Vitae auctor eu augue ut lectus arcu bibendum. Ipsum consequat nisl vel pretium lectus quam. Velit dignissim sodales ut eu sem. Odio morbi quis commodo odio. Lectus nulla at volutpat diam. Neque gravida in fermentum et sollicitudin ac. Nunc non blandit massa enim nec dui nunc. Quisque id diam vel quam elementum pulvinar etiam non quam. Consequat id porta nibh venenatis cras sed felis. Vitae justo eget magna fermentum iaculis eu non diam. Mi sit amet mauris commodo.
+\normalsize
+
+\ClearShipoutPicture
+
+\triangleLogo
 \end{document}

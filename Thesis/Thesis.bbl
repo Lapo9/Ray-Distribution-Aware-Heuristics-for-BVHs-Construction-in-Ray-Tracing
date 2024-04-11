@@ -1,4 +1,4 @@
-\begin{thebibliography}{7}
+\begin{thebibliography}{8}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -16,6 +16,11 @@ T.~Akenine-M\"{o}ller, E.~Haines, N.~Hoffman, A.~Pesce, M.~Iwanicki, and S.~Hill
 G.~Gribb and K.~Hartmann.
 \newblock Fast extraction of viewing frustum planes from the world-view-projection matrix.
 \newblock \emph{Online document}, 2001.
+
+\bibitem[Lee and Lim(2017)]{shoelace_formula}
+Y.~Lee and W.~Lim.
+\newblock Shoelace formula: Connecting the area of a polygon and the vector cross product.
+\newblock \emph{The Mathematics Teacher}, 110\penalty0 (8):\penalty0 631--636, 2017.
 
 \bibitem[Meister et~al.(2021)Meister, Ogaki, Benthin, Doyle, Guthe, and Bittner]{meister2021survey}
 D.~Meister, S.~Ogaki, C.~Benthin, M.~J. Doyle, M.~Guthe, and J.~Bittner.

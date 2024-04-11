@@ -6,45 +6,45 @@ Database file #1: Bibliography.bib
 Warning--can't use both volume and number fields in meister2021survey
 Warning--empty year in convex_hull_culling
 Warning--empty year in ray_triangle_intersection
-You've used 7 entries,
+You've used 8 entries,
             2773 wiz_defined-function locations,
-            634 strings with 5938 characters,
-and the built_in function-call counts, 2991 in all, are:
-= -- 260
-> -- 175
-< -- 7
-+ -- 61
-- -- 54
-* -- 202
-:= -- 467
-add.period$ -- 28
-call.type$ -- 7
-change.case$ -- 38
-chr.to.int$ -- 7
-cite$ -- 17
-duplicate$ -- 133
-empty$ -- 246
-format.name$ -- 63
-if$ -- 630
+            643 strings with 6142 characters,
+and the built_in function-call counts, 3447 in all, are:
+= -- 304
+> -- 196
+< -- 8
++ -- 68
+- -- 60
+* -- 239
+:= -- 535
+add.period$ -- 31
+call.type$ -- 8
+change.case$ -- 43
+chr.to.int$ -- 8
+cite$ -- 19
+duplicate$ -- 153
+empty$ -- 286
+format.name$ -- 72
+if$ -- 726
 int.to.chr$ -- 1
 int.to.str$ -- 1
-missing$ -- 4
-newline$ -- 49
-num.names$ -- 28
-pop$ -- 103
+missing$ -- 5
+newline$ -- 54
+num.names$ -- 32
+pop$ -- 111
 preamble$ -- 1
-purify$ -- 32
+purify$ -- 36
 quote$ -- 0
-skip$ -- 106
+skip$ -- 122
 stack$ -- 0
-substring$ -- 46
-swap$ -- 19
+substring$ -- 73
+swap$ -- 20
 text.length$ -- 2
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 72
+type$ -- 83
 warning$ -- 3
-while$ -- 24
+while$ -- 29
 width$ -- 0
-write$ -- 105
+write$ -- 118
 (There were 3 warnings)

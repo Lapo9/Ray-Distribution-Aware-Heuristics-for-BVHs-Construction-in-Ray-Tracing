@@ -146,7 +146,7 @@ namespace pah {
 		float computeArea() const {
 			if (size() < 3) return 0;
 			float area = 0.0f;
-			//use the shoelace formula to comute the area
+			//use the shoelace formula to compute the area
 			for (int i = 0; i < vertices.size(); ++i) {
 				int iNext = i + 1 == vertices.size() ? 0 : i + 1;
 				area += vertices[i].x * vertices[iNext].y - vertices[i].y * vertices[iNext].x;
