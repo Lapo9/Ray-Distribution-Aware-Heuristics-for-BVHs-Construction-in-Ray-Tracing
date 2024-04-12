@@ -135,9 +135,9 @@ The second, but not least important one is to design software optimizations to m
 
 One of the problems that is ubiquitous in the ray tracing environment is to detect collisions between a ray and the geometry of the scene to render. Given the huge amount of primitives present in modern graphic applications, it is necessary to use a data structure to accelerate the ray collision retrieval process. The state-of-the-art structure is the bounding volume hierarchy (BVH), which hierarchically organizes primitives, making it possible to skip entire sections of the scene that are spatially far away from the ray that is being traced during BVH traversal.
 
-In this work we propose two novelty heuristics that work in pairs to build higher-quality BVHs, a data structure to make it possible to use them, and a comparative analysis of their performance in different scenarios.
+In this work we propose two novel heuristics that work in pairs to build higher-quality BVHs, a data structure to make it possible to use them, and a comparative analysis of their performance in different scenarios.
 
-The first heuristic, called \textbf{projected area heuristic} (PAH) aims at better estimating the amount of rays that hit each node of the BVH by exploiting some artifacts in the ray distribution in the scene, caused by another optimization used in a previous step of the ray tracing pipeline (namely Monte-Carlo importance sampling).
+The first heuristic, called \textbf{projected area heuristic} (PAH), aims at better estimating the amount of rays that hit each node of the BVH by exploiting some artifacts in the ray distribution in the scene, caused by another optimization used in a previous step of the ray tracing pipeline (namely Monte-Carlo importance sampling).
 
 The second one (\textbf{splitting plane facing}) aims at reducing the overlap among nodes of the BVH, consequently reducing the number of intersection tests needed during the BVH traversal phase.
 
@@ -175,7 +175,25 @@ Abstract Italiano
 
 % === Intro ===
 \chapter*{Introduction}
-Intro \cite{meister2021survey}
+In the field of computer graphics, we refer to ray tracing as a family of rendering algorithms that simulate light transport in order to transition from a mathematical representation of a scene to an image on the screen. 
+
+Conceptually ray tracing is an extremely straightforward technique, that can be summarized in a few steps:
+\begin{enumerate}
+	\item Generate a ray of light from a light source;
+	\item Find out the first object the ray intersects;
+	\item Compute how much energy is absorbed by the material of the object;
+	\item Modify the direction of the ray based on the material of the object (for example it may be reflected or refracted);
+	\item Repeat from 2. until the ray hits the camera;
+	\item Color the pixel of the camera hit by the ray based on the energy of the ray.
+\end{enumerate}
+
+Since ray tracing mimics the behavior of light in the real world, the technique can be directly used to simulate complex light effects that require the use of ad-hoc and approximate methods if we use other rendering algorithms, such as the widely spread rasterization pipeline.
+
+To give an intuition of how the ad-hoc methods can be convoluted and produce worse results, we summarize one of the most intuitive ones used to generate shadows, called shadow mapping. A shadow map is the projection of the scene from the point of view of a point light source, saved in a texture where each pixel stores the distance from the light source to the projected point. When the scene is projected by the main camera, each visible point is transformed into the coordinate system of the shadow map via matrix multiplication, and is then compared to the point stored in the corresponding pixel of the shadow map. If the point of the shadow map is closer than the corresponding point projected by the main camera, we deduce that such a point is not visible from the point of view of the light source and, therefore, is in shadow. This specific technique is correct only with point lights, and must be adjusted in case translucent objects are present in the scene.
+
+With ray tracing shadows are natively generated since, if a point is in shadow, no light ray starting from it will hit the camera pixels. Moreover, in principle, it works with any kind of light, not only point lights, and thus produces higher-quality shadows, since no approximations must be made.
+
+Until now we briefly highlighted the strong points of ray tracing, and greatly simplified it. The main issue with ray tracing is that it is computationally expensive to simulate light transport. Of course it is impossible to simulate 
 
 
 % === Chapter 1 ===
