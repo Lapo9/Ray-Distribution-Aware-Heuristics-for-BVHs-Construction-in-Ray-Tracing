@@ -36,6 +36,7 @@
 \usepackage{xcolor} % Coloured captions
 \usepackage{amsthm,thmtools,xcolor} % Coloured "Theorem"
 \usepackage{float}
+\usepackage[font=small]{caption} % To make captions small
 \usepackage{eso-pic} % Background pictures for each page
 \newcommand*\triangleLogo{
 	\clearpage
@@ -175,26 +176,82 @@ Abstract Italiano
 
 % === Intro ===
 \chapter*{Introduction}
+\large \textbf{Why ray tracing?} \normalsize\\
 In the field of computer graphics, we refer to ray tracing as a family of rendering algorithms that simulate light transport in order to transition from a mathematical representation of a scene to an image on the screen. 
 
 Conceptually ray tracing is an extremely straightforward technique, that can be summarized in a few steps:
 \begin{enumerate}
-	\item Generate a ray of light from a light source;
-	\item Find out the first object the ray intersects;
-	\item Compute how much energy is absorbed by the material of the object;
-	\item Modify the direction of the ray based on the material of the object (for example it may be reflected or refracted);
-	\item Repeat from 2. until the ray hits the camera;
-	\item Color the pixel of the camera hit by the ray based on the energy of the ray.
+\item Generate a ray of light from a light source;
+\item Find out the first object the ray intersects;
+\item Compute how much energy is absorbed by the material of the object;
+\item Modify the direction of the ray based on the material of the object (for example it may be reflected or refracted);
+\item Repeat from 2. until the ray hits the camera;
+\item Color the pixel of the camera hit by the ray based on the energy of the ray.
 \end{enumerate}
 
-Since ray tracing mimics the behavior of light in the real world, the technique can be directly used to simulate complex light effects that require the use of ad-hoc and approximate methods if we use other rendering algorithms, such as the widely spread rasterization pipeline.
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.4]{Images/ray_tracing_simple.png}
+    \caption{The width of the yellow ray represents the amount of energy carried. After each intersection some energy is absorbed.}
+    \label{fig:ray_tracing_simple}
+\end{figure}
 
-To give an intuition of how the ad-hoc methods can be convoluted and produce worse results, we summarize one of the most intuitive ones used to generate shadows, called shadow mapping. A shadow map is the projection of the scene from the point of view of a point light source, saved in a texture where each pixel stores the distance from the light source to the projected point. When the scene is projected by the main camera, each visible point is transformed into the coordinate system of the shadow map via matrix multiplication, and is then compared to the point stored in the corresponding pixel of the shadow map. If the point of the shadow map is closer than the corresponding point projected by the main camera, we deduce that such a point is not visible from the point of view of the light source and, therefore, is in shadow. This specific technique is correct only with point lights, and must be adjusted in case translucent objects are present in the scene.
+Since ray tracing mimics the behavior of light in the real world, the technique can be directly used to simulate complex light effects that would require the use of ad-hoc and approximate methods if we use other rendering algorithms, such as the widely spread rasterization pipeline.
+
+To give an intuition of how the ad-hoc methods can be convoluted and produce worse results, we summarize one of the most intuitive ones used to generate shadows, called shadow mapping. A shadow map is the projection of the scene from the point of view of a point light source, saved in a texture where each pixel stores the distance from the light source to the projected point. When the scene is projected by the main camera, each visible point is transformed into the coordinate system of the shadow map via matrix multiplication, and is then compared to the point stored in the corresponding pixel of the shadow map. If the point of the shadow map is closer to the light source than the corresponding point projected by the main camera, we deduce that such a point is not visible from the point of view of the light source and, therefore, is in shadow. This specific technique is correct only with point lights, and must be adjusted in case translucent objects are present in the scene.
 
 With ray tracing shadows are natively generated since, if a point is in shadow, no light ray starting from it will hit the camera pixels. Moreover, in principle, it works with any kind of light, not only point lights, and thus produces higher-quality shadows, since no approximations must be made.
 
-Until now we briefly highlighted the strong points of ray tracing, and greatly simplified it. The main issue with ray tracing is that it is computationally expensive to simulate light transport. Of course it is impossible to simulate 
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.6]{Images/shadow_map.png}
+    \caption{The first figure is from the main camera PoV, the second one from the light source PoV. The second figure represents depth: the closer a point is to the light source, the darker. The blue point is in shadow, because the corresponding point in the shadow map is further away than the stored depth.}
+    \label{fig:shadow_map}
+\end{figure}
 
+\large \textbf{We need optimizations} \normalsize\\
+Until now we briefly highlighted the strong points of ray tracing, and greatly simplified it. The main issue with ray tracing is that it is computationally expensive to simulate light transport. Of course, it is impossible to track the path of every photon emitted by a light source, therefore, even in ray tracing algorithms, some approximations must be made. The nature of the approximations depends on the specific ray tracing algorithm used. For example, in many techniques falling under the name of \textit{backward ray tracing} \footnote{In some literature the term \textit{backward ray tracing} can also refer to the opposite family of algorithms, since the first ray tracing methods were indeed backward.}, rays don't start from the light sources, but from the camera, and gain energy when they hit a light source. At this point the path described by the ray is followed backward and the energy hitting the pixel of the camera is computed. In this way the number of rays is greatly reduced, because all the rays hit the camera, therefore none is wasted. On the other hand, some phenomena (such as caustics) cannot be realistically simulated.
+
+From this point on we will consider the scenario where rays are traced backwards.
+
+One optimization that is foundational to modern ray tracing and relevant to our work, is the use of the \textbf{Monte-Carlo} integration method, and, in particular, a variance reduction technique called \textbf{importance sampling}. We will introduce the concept in this section in an oversimplified way, and then explain it from a mathematical standpoint in \ref{TODO}.
+
+When a ray hits a point on a surface, it may bounce in any direction, based on the material. The most intuitive bounce is a perfect reflection, but, since at a microscopic level surfaces are never perfectly planar, it is possible for the incoming ray to bounce in any direction. This phenomenon is described in a probabilistic way by the bidirectional reflective distribution function (BRDF). Each material is described by a BRDF, and each BRDF makes it more likely for a ray coming from a certain direction to bounce to another range of directions (for example, for a perfectly reflective material, the BRDF will return a probability of 1 for a ray to bounce to the perfect reflection direction).
+
+\begin{figure}[H]
+    \centering
+    \subfloat[Perfectly reflective surface.]{
+        \includegraphics[scale=0.45]{Images/reflective_brdf.png}
+		}
+		\qquad
+	\subfloat[Non-reflective surface.]{
+        \includegraphics[scale=0.45]{Images/non_reflective_brdf.png}
+    }
+	\caption{In figure (a) all the rays coming from a direction are reflected towards the same direction. In (b), instead, the surface is microscopically rough, 2 rays coming from the same direction could bounce to 2 very different directions. Under each figure there is the corresponding graph of its BRDF.} 
+    \label{fig:surfaces_reflectiveness}
+\end{figure}
+
+Therefore, if we wanted to accurately simulate the light behavior after a ray hits a material, and compute how much light is reflected towards a specific direction (the one of the incoming ray), we would need to send a probe ray to every direction of the hemisphere centered on the hit point, get back the light energy carried by each probe ray, and compute an average based on the probability of each probe ray given by the BRDF. In short, we would need to integrate the light energy function over the hemisphere. This exact same process would then need to be replicated when each probe ray hits an object, recursively, until each ray in the scene hits a light source or gets completely absorbed.
+
+This process, of course, is not feasible, but it can be approximated by the Monte-Carlo method with fewer samples. The idea is that, instead of probing each direction of the hemisphere with a ray, we probe just a small number (often just one) of directions. In most cases the estimate of the light incoming to the point will not be accurate, but, granted that there is a high enough number of incoming rays hitting the neighborhood of the point, the incoming light average will indeed be accurate.
+
+In order to get the most out of the probe rays we cast out of a hemisphere, we would like to send them in directions that contribute the most to final value we are trying to calculate, namely the light reflected toward the direction of the incoming ray. This is the base concept behind importance sampling. In ray tracing there are two common ways to achieve this:
+\begin{description}
+\item[BRDF sampling] Probe rays are cast in directions where the BRDF returns a high weight. In this way the energy the probe rays carry is multiplied by a value close to 1; on the other hand, the energy can be a low value.
+\item[Light sampling] Probe rays are cast directly towards light sources. In this way they will likely carry a lot of energy (unless an obstacle is hit), but the BRDF weight they will be multiplied with may be small.
+\end{description}
+It is even possible to combine the two techniques with a method called multiple importance sampling (MIS).
+
+The use of importance sampling generates artifacts in the ray distribution on the scene. Rays' directions will no longer be distributed uniformly, but, due to light sampling, more rays will tend to go towards light sources.
+
+\large \textbf{Rays intersections} \normalsize\\
+One of the problems that is common to all the algorithms of the ray tracing family is to find the intersection between a ray and the geometry of the scene.
+
+The objects in the scene are usually meshes, which are a collection of geometric primitives. In many real-world scenarios, primitives are simple triangles, described by 3 vertices. Therefore, the problem of intersecting a ray with the scene is reduced to the problem of intersecting a ray with a collection of triangles.
+
+Given an algorithm to find out if a ray hits a triangle in \ref{sec:ray_triangle_intersection}, the naive way of retrieving the closer triangle hit by a ray would be to perform the ray-triangle test on all the triangles present in the scene. Such an algorithm has a complexity of $\mathcal{O}(n\cdot m)$ where $n$ is the number of triangles and $m$ the number of rays.
+
+Acceleration structures have been developed to speed up the process. The state-of-the-art acceleration structure used in ray tracing is the \textbf{bounding volume hierarchy} (BVH). 
 
 % === Chapter 1 ===
 \chapter{Chapter one}
