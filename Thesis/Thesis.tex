@@ -235,7 +235,7 @@ Therefore, if we wanted to accurately simulate the light behavior after a ray hi
 
 This process, of course, is not feasible, but it can be approximated by the Monte-Carlo method with fewer samples. The idea is that, instead of probing each direction of the hemisphere with a ray, we probe just a small number (often just one) of directions. In most cases the estimate of the light incoming to the point will not be accurate, but, granted that there is a high enough number of incoming rays hitting the neighborhood of the point, the incoming light average will indeed be accurate.
 
-In order to get the most out of the probe rays we cast out of a hemisphere, we would like to send them in directions that contribute the most to final value we are trying to calculate, namely the light reflected toward the direction of the incoming ray. This is the base concept behind importance sampling. In ray tracing there are two common ways to achieve this:
+In order to get the most out of the probe rays we cast out of a hemisphere, we would like to send them in directions that contribute the most to the final value we are trying to calculate, namely the light reflected toward the direction of the incoming ray. This is the base concept behind importance sampling. In ray tracing there are two common ways to achieve this:
 \begin{description}
 \item[BRDF sampling] Probe rays are cast in directions where the BRDF returns a high weight. In this way the energy the probe rays carry is multiplied by a value close to 1; on the other hand, the energy can be a low value.
 \item[Light sampling] Probe rays are cast directly towards light sources. In this way they will likely carry a lot of energy (unless an obstacle is hit), but the BRDF weight they will be multiplied with may be small.
@@ -251,7 +251,64 @@ The objects in the scene are usually meshes, which are a collection of geometric
 
 Given an algorithm to find out if a ray hits a triangle in \ref{sec:ray_triangle_intersection}, the naive way of retrieving the closer triangle hit by a ray would be to perform the ray-triangle test on all the triangles present in the scene. Such an algorithm has a complexity of $\mathcal{O}(n\cdot m)$ where $n$ is the number of triangles and $m$ the number of rays.
 
-Acceleration structures have been developed to speed up the process. The state-of-the-art acceleration structure used in ray tracing is the \textbf{bounding volume hierarchy} (BVH). 
+Acceleration structures have been developed to speed up the process. The state-of-the-art acceleration structure used in ray tracing is the \textbf{bounding volume hierarchy} (BVH).
+
+In summary, a BVH is a binary tree\footnote{Technically it can be a tree with any breadth, but binary trees are the most common ones.} where each node wraps some of the triangles in the scene in a bounding volume, usually an axis-aligned bounding box (AABB). Given a node $A$ wrapping the triangles in the set $T_A$, the two children of $A$, called $B$ and $C$ wrap the triangles in the sets $T_B$ and $T_C$ such that $T_B \cup T_C = T_A$. Thanks to this structure, if a ray doesn't intersect a bounding volume, we deduce that it will not intersect any of the triangles contained in the bounding volume too, making it possible to discard them without having to perform any additional intersection test. This means that, if the BVH is balanced, the the complexity to find an intersection between a ray and the scene is $\mathcal{O}(log_2(n) \cdot m)$.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.4]{Images/TODO.png}
+    \caption{A 2-dimensional BVH.}
+    \label{fig:bvh_2d}
+\end{figure}
+
+Given the definition and the advantages of a BVH over the naive algorithm, we now have to build a BVH starting from the primitives in the scene.
+Building the optimal BVH is an NP-complete problem since, for each level of the BVH, we would have to try all the possible ways to subdivide the triangles into 2 AABBs, recursively, until all the branches are leaves; then measure the quality of the BVHs and take the best one.
+
+In a real-world scenario a greedy algorithm is used instead, where, at each level, some of the possible ways to subdivide the triangles are tried, and the best one with reference to a cost metric function is greedily taken. This means that, even if in the next level it is found out that the split in a previous level was not optimal, the algorithm proceeds without changing the previous decision.
+
+The quality of the trees built with such an algorithm depends on many factors, but two of the most relevant ones are the cost function and how the algorithm tries to split the triangles at each level.
+
+\large \textbf{The surface area heuristic} \normalsize\\
+The vast majority of the state-of-the-art algorithms to build BVHs uses the \textbf{surface area heuristic (SAH)} as cost metric. SAH is extremely simple and fast: the cost of a node $K$ is proportional to the probability that a random ray intersects the node $p(hit\:K)$, and the number of primitives the node contains $\#T_K$:
+$$SAH(K) = p(hit\:K) \cdot \#T_K$$
+
+The probability that a node is hit by a random ray is proportional to its area: $p(hit\:K) = \frac{A_K}{A_tot}$ where $A_tot$ is the area of the AABB enclosing the whole scene.
+Computing the area of an AABB is trivial.
+
+SAH is based on three hypotheses:
+\begin{enumerate}
+	\item All the rays hit AABB enclosing the whole scene.
+	\item All the rays start from outside the scene.
+	\item Rays are distributed in a uniform random way on their 6-dimensional space (3 dimensions for the position of their origin and 3 dimensions for their direction).
+\end{enumerate}
+
+None of these hypotheses is satisfied in a real-world scenario, and, in particular, we will focus on the third one.
+
+As we noted above, due to the use of importance sampling, rays are not distributed uniformly in the scene. In particular, due to light sampling, in proximity of light sources, rays have directions pointing towards the light source. Based on the light source type, we have different types of ray distributions, as it is possible to appreciate in the images below.
+
+\begin{figure}[H]
+    \centering
+    \subfloat[Point light generated distribution]{
+        \includegraphics[scale=0.25]{Images/TODO.png}
+		}
+		\qquad
+	\subfloat[Area light generated distribution]{
+        \includegraphics[scale=0.25]{Images/TODO.png}
+    }
+	\caption{The ray distributions generated by point and area lights.}
+    \label{fig:generated_distributions}
+\end{figure}
+
+Area lights tend to generate regions where rays are parallel. This means that we can better estimate the probability that a ray intersects an AABB by computing its projected area on the plane perpendicular to the bundle of rays, instead of the surface area of the AABB. Such a projected area can be computed with an orthographic projection.
+
+Point lights, instead, tend to generate a bundle of lines passing through a point, and therefore the projected area can be computed with a perspective projection.
+
+In this work we aim to show how this way of computing the cost function for the construction of a BVH can produce higher quality BVHs in some situations. We named this novel approach as \textbf{projected area heuristic (PAH)}.
+
+
+
+
 
 % === Chapter 1 ===
 \chapter{Chapter one}
