@@ -203,13 +203,6 @@ To give an intuition of how the ad-hoc methods can be convoluted and produce wor
 
 With ray tracing shadows are natively generated since, if a point is in shadow, no light ray starting from it will hit the camera pixels. Moreover, in principle, it works with any kind of light, not only point lights, and thus produces higher-quality shadows, since no approximations must be made.
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[scale=0.6]{Images/shadow_map.png}
-    \caption{The first figure is from the main camera PoV, the second one from the light source PoV. The second figure represents depth: the closer a point is to the light source, the darker. The blue point is in shadow, because the corresponding point in the shadow map is further away than the stored depth.}
-    \label{fig:shadow_map}
-\end{figure}
-
 \large \textbf{We need optimizations} \normalsize\\
 Until now we briefly highlighted the strong points of ray tracing, and greatly simplified it. The main issue with ray tracing is that it is computationally expensive to simulate light transport. Of course, it is impossible to track the path of every photon emitted by a light source, therefore, even in ray tracing algorithms, some approximations must be made. The nature of the approximations depends on the specific ray tracing algorithm used. For example, in many techniques falling under the name of \textit{backward ray tracing} \footnote{In some literature the term \textit{backward ray tracing} can also refer to the opposite family of algorithms, since the first ray tracing methods were indeed backward.}, rays don't start from the light sources, but from the camera, and gain energy when they hit a light source. At this point the path described by the ray is followed backward and the energy hitting the pixel of the camera is computed. In this way the number of rays is greatly reduced, because all the rays hit the camera, therefore none is wasted. On the other hand, some phenomena (such as caustics) cannot be realistically simulated.
 
@@ -312,8 +305,8 @@ In this work we aim to show how this way of computing the cost function for the 
 
 
 % === Chapter 1 ===
-\chapter{Chapter one}
-\label{ch:Background Theory}
+\chapter{Background Theory}
+\label{ch:background_theory}
 In this chapter we will summarize the background knowledge needed to fully comprehend this work.
 
 In section \ref{sec:ray_tracing_principles} we will introduce ray tracing in simple terms, and list some of its advantages, disadvantages and its today's applications.
@@ -340,7 +333,7 @@ Ray tracing aims to mimic the real-world behavior of light, and for this reason 
 
 Since ray tracing natively simulates light, it can produce extremely realistic images, without resorting to ad-hoc techniques used to approximate light phenomena in other rendering algorithms, such as the widely spread rasterization pipeline.
 
-To give an intuition of how the ad-hoc methods can be convoluted and produce worse results, we summarize one of the simplest ones used to generate shadows, called shadow mapping (figure \ref{fig:shadow_map}). A shadow map is the projection of the scene from the point of view of a point light source, saved in a texture where each pixel stores the distance from the light source to the projected point. When the scene is projected by the main camera, each visible point is transformed into the coordinate system of the shadow map via matrix multiplication. The distance from the light source of the point in the new coordinate system is then compared to the point stored in the corresponding pixel of the shadow map. If the point of the shadow map is closer to the light source than the corresponding point projected by the main camera, we deduce that such a point is not visible from the point of view of the light source and, therefore, is in shadow. This specific technique is correct only with point lights, and must be adjusted in case translucent objects are present in the scene.
+To give an intuition of how the ad-hoc methods can be convoluted and produce worse results, we summarize one of the simplest ones used to generate shadows, called shadow mapping \cite{shadow_maps}. A shadow map is the projection of the scene from the point of view of a point light source, saved in a texture where each pixel stores the distance from the light source to the projected point. When the scene is projected by the main camera, each visible point is transformed into the coordinate system of the shadow map via matrix multiplication (figure \ref{fig:shadow_map}). The point in the new coordinate system is then compared to the point stored in the corresponding pixel of the shadow map. If the point of the shadow map is closer to the light source than the corresponding point projected by the main camera, we deduce that such a point is not visible from the point of view of the light source and, therefore, is in shadow. This specific technique is correct only with point lights, and must be adjusted in case translucent objects are present in the scene.
 
 With ray tracing shadows are natively generated since, if a point is in shadow, no light ray starting from it will hit the camera pixels. Moreover, in principle, it works with any kind of light, not only point lights, and thus produces higher-quality shadows, since no approximations must be made.
 
@@ -356,16 +349,16 @@ Due to the highly realistic images ray tracing algorithms can produce, the techn
 
 The most prominent use of the second category is in movies. CGI effects and animated films are almost always produced by using ray tracing, in particular a very accurate algorithm called path tracing. In the first category we can find videogames.
 
-The main difference between real-time and production ray tracing lies in the time constraints for producing a frame. In production ray tracing producing a frame can take a long time, even in the order of magnitude of days. Whereas, in real-time ray tracing, a frame must be produced every $33$ms to achieve $30$ frames per second and $16.5$ms for $60$ fps, which can be considered today's standard by many PC videogames.
+The main difference between real-time and production ray tracing lies in the time constraints for producing a frame. In production ray tracing producing a frame can take a long time, even in the order of magnitude of days. Whereas, in real-time ray tracing, a frame must be produced every $33$ms to achieve $30$ frames per second (fps), and every $16.5$ms to achieve $60$ fps, which can be considered today's standard by many PC videogames.
 
-This starking difference makes it so that different techniques must be used depending on the scenario. In real-time ray tracing many approximations must be introduced in order to stay within the frame budget, whereas in production ray tracing more accurate algorithms can be used. Our work can benefit both categories, since the methods we will introduce can make ray tracing faster, in some situations, without introducing approximations.
+This starking difference makes it so that different techniques must be used depending on the scenario. In real-time ray tracing many approximations must be introduced in order to stay within the frame time budget, whereas in production ray tracing more accurate algorithms can be used, since time constraints are loose. Our work can benefit both categories, since the methods we will introduce can make ray tracing faster, in some situations, without introducing approximations.
 
 \subsection*{Optimizations Overview}
-Until now we briefly highlighted the strong points of ray tracing, and greatly simplified it. The main issue with ray tracing is that it is computationally expensive to simulate light transport.
+Until now we briefly highlighted the strong points of ray tracing, and greatly simplified it. The main issue with ray tracing is that it is computationally expensive to simulate light transport in a convincing way. The reason lies in the rendering equation, and will be explained in section \ref{sec:monte_carlo_and_variance_reduction_techniques}.
 
 In order to make ray tracing usable in the real world, the industry moved in two directions:
 \begin{description}
-	\item [Hardware accelerators] GPU vendors, in particular Nvidia, started creating GPUs with specialized cores for ray tracing. These cores have a memory layout that makes it faster to find a ray-triangle intersection.
+	\item [Hardware accelerators] GPU vendors, in particular Nvidia, started creating GPUs with specialized cores for ray tracing. These cores have a memory layout that makes it faster to find a ray-triangle intersection. An example of this can be the RT cores from Turing Nvidia GPUs \cite{rt_cores}.
 	\item [Software optimizations] Software developers introduced new algorithms to improve the performance of a specific part of the ray tracing pipeline. These algorithms can vary a lot in complexity and results. One of the most common optimizations for real-time ray tracing is to use ray tracing only for some light effects (such as shadows or reflections), while using rasterization for most of the scene.
 \end{description}
 
@@ -378,7 +371,7 @@ The other family comprehends optimizations aimed at reducing the number of rays 
 \subsection*{Backward Ray Tracing}
 Before going to the next section, it is important to introduce the concept of backward ray tracing\footnote{In some literature the term \textit{backward ray tracing} can also refer to the opposite family of algorithms, since the first ray tracing methods were indeed backward.}. 
 
-In backward ray tracing light rays don't start from light sources, but from the eye position. Starting from the eye, each ray will then hit a fictitious plane placed in front of the eye (the near plane). The near plane can be subdivided into discrete units displaced in a regular grid, which we will consider the pixels of the final image. Each ray is therefore associated with the pixel it hits, and will contribute to its final color.
+In backward ray tracing light rays don't start from light sources, but from the eye position. Starting from the eye, each ray will then hit a fictitious plane placed in front of the eye (the near plane), similar to what happens in a pinhole camera \ref{pinhole_camera}. The near plane can be subdivided into discrete units displaced in a regular grid, which we will consider the pixels of the final image. Each ray is therefore associated with the pixel it hits, and will contribute to its final color.
 
 \begin{figure}[H]
     \centering
@@ -387,9 +380,13 @@ In backward ray tracing light rays don't start from light sources, but from the 
     \label{fig:pinhole_camera}
 \end{figure}
 
-The rays starting from the camera will hit the scene and bounce around until either they lose all of their energy, or they hit a light source. In the case a ray hits a light source, we already know how much of its energy will be lost due to intersections with objects, therefore we can immediately compute the color of the pixel associated with the ray (as if we followed that same ray's path backward). If a ray never hits a light source, it will not contribute to the color of its associated pixel.
+The rays starting from the camera will hit the scene and bounce around. At each bounce a ray loses a fraction of its energy (unless the surface is perfectly reflective), until either it gets completely absorbed, or it hits a light source. In the case a ray hits a light source, we already know how much of its energy will be lost due to intersections with objects, therefore we can immediately compute the color of the pixel associated with the ray (as if we followed that same ray's path backward). If a ray never hits a light source, it will not contribute to the color of its associated pixel.
 
-With a limited budget of rays we can cast, backward ray tracing is more efficient than forward ray tracing. In forward ray tracing a ray could never hit the camera, and it would be wasted. In backward ray tracing all the rays hit the camera by definition, thus none is wasted.
+A way of looking at this algorithm is to think we are tracing \textit{importons}, which can be considered the dual concept of \textit{photons} \cite{importons}. Thanks to the light reciprocity principle \cite{light_reciprocity}, which states that light transmits in the same way in both ways, tracing photons or importons is equivalent.
+
+The advantage of backward ray tracing is that, with a limited budget of rays we can cast, it is more efficient than forward ray tracing. Indeed, in forward ray tracing it is possible a ray never hits the camera, in which case it would be wasted. In backward ray tracing all the rays hit the camera by definition, thus none is wasted.
+
+Of course, if a ray starting from the camera never hits a light source, it could be considered wasted, but some techniques that will be described in section \ref{sec:monte_carlo_and_variance_reduction_techniques} makes it more likely that a ray hits a light source in its path.
 
 From this point on we will consider the scenario where rays are traced backwards.
 
@@ -401,19 +398,19 @@ $$
 L_o(\bar{x},\bar{\omega}_o) = L_e(\bar{x}, \bar{\omega}_o) + \int_\Omega BRDF(\bar{x}, \bar{\omega}_i, \bar{\omega}_o) \cdot \cos(\bar{n}, \bar{\omega}_i) \cdot L_i(\bar{x}, \bar{\omega}_i) d\bar{\omega}_i
 $$
 
-This equation, developed by James T. Kajiya in 1986 \cite{TODO}, can be used to calculate the amount of light reflected by a point $\bar{x}$ towards a direction $\bar{\omega}_o$. In order to compute such a quantity we need to know these parameters:
+This equation, developed by James T. Kajiya in 1986 \cite{rendering_equation}, can be used to calculate the amount of light \textit{generated} by a point $\bar{x}$ towards a direction $\bar{\omega}_o$. In order to compute such a quantity we need to know these parameters:
 \begin{itemize}
 	\item $L_e(\bar{x}, \bar{\omega}_o)$ The light emitted by the point $\bar{x}$ towards a direction $\bar{\omega}_o$.
 	\item $BRDF$ The bidirectional reflectance distribution function of the material at point $\bar{x}$.
-	\item $\bar{n}$ The normal at point $\bar{x}$.
+	\item $\bar{n}$ The normal to the surface at point $\bar{x}$.
 	\item $L_i(\bar{x}, \bar{\omega}_i)$ The light incoming to $\bar{x}$ from a generic direction $\bar{\omega}_i$.
 \end{itemize}
 
 The equation can be divided into two parts:
 
-The first part, the light emitted $L_e(\bar{x}, \bar{\omega}_o)$, is 0 unless the point is a light source. Depending on the light source, it can assume a uniform value in each direction (point light), a value only in one hemisphere (a plane area light), or a specific value based on the direction, usually controlled by a function (such as in spotlight). In any case the emitted light value is known by the definition of the light source in the scene, therefore can be easily plugged into the equation.
+The first part describes the light emitted $L_e(\bar{x}, \bar{\omega}_o)$, and it is 0 unless the point is a light source. Depending on the light source, it can assume a uniform value in each direction (point light), a value only in one hemisphere (a plane area light), or a specific value based on the direction, usually controlled by a function (such as in spotlight). In any case the emitted light value is known by the definition of the light source in the scene, therefore can be easily plugged into the equation.
 
-The second part of the equation presents an integral, and represents the light reflected by the material of the point towards the direction $\bar{\omega}_o$. In simple words, this second term tells us that, in order to compute the reflected light, we have to know, first, how much light is incoming to the point from all the directions on the hemisphere $\Omega$. And second, the property of the material, summarized in the $BRDF$. The $BRDF$ tells us how much of the incoming light is reflected towards the direction $\bar{\omega}_o$.
+The second part of the equation presents an integral, and represents the light reflected by the material of the point towards the direction $\bar{\omega}_o$. In simple words, this second term tells us that, in order to compute the reflected light, we have to know, first, how much light is incoming to the point from all the directions in the hemisphere $\Omega$. And second, the properties of the material, summarized in the $BRDF$. The $BRDF$ tells us how much of the incoming light is reflected towards the direction $\bar{\omega}_o$. 
 
 \begin{figure}[H]
     \centering
@@ -431,7 +428,7 @@ The term $\cos(\bar{n}, \bar{\omega}_i)$ is called geometry term, and reflects a
     \label{fig:geometry_term}
 \end{figure}
 
-In this integral term, the $BRDF$ is known by definition, and the geometry term is a simple cosine. TODO instead the L_i term can only be known by probing rays, and it is recursive (L_in point 1 = L_out point 2). Moreover, there is an integral, therefore Monte Carlo
+In this integral term, the BRDF is known by definition, and the geometry term is a simple cosine. TODO instead the $L_i$ term can only be known by probing rays, and it is recursive ($L_in$ point 1 = $L_out$ point 2). Moreover, there is an integral, therefore Monte Carlo
 
 \subsection*{Monte-Carlo}
 \subsection*{Variance Reduction Techniques}
