@@ -398,7 +398,7 @@ $$
 L_o(\bar{x},\bar{\omega}_o) = L_e(\bar{x}, \bar{\omega}_o) + \int_\Omega BRDF(\bar{x}, \bar{\omega}_i, \bar{\omega}_o) \cdot \cos(\bar{n}, \bar{\omega}_i) \cdot L_i(\bar{x}, \bar{\omega}_i) d\bar{\omega}_i
 $$
 
-This equation, developed by James T. Kajiya in 1986 \cite{rendering_equation}, can be used to calculate the amount of light \textit{generated} by a point $\bar{x}$ towards a direction $\bar{\omega}_o$. In order to compute such a quantity we need to know these parameters:
+This equation, developed by James T. Kajiya in 1986 \cite{rendering_equation}, can be used to calculate the amount of light \textit{generated} by a point $\bar{x}$ towards a direction $\bar{\omega}_o$. As we will see in the next paragraphs, with the term \textit{generated} we refer to the sum of the light emitted by the point, and the light reflected by it. In order to compute such a quantity we need to know these parameters:
 \begin{itemize}
 	\item $L_e(\bar{x}, \bar{\omega}_o)$ The light emitted by the point $\bar{x}$ towards a direction $\bar{\omega}_o$.
 	\item $BRDF$ The bidirectional reflectance distribution function of the material at point $\bar{x}$.
@@ -408,7 +408,7 @@ This equation, developed by James T. Kajiya in 1986 \cite{rendering_equation}, c
 
 The equation can be divided into two parts:
 
-The first part describes the light emitted $L_e(\bar{x}, \bar{\omega}_o)$, and it is 0 unless the point is a light source. Depending on the light source, it can assume a uniform value in each direction (point light), a value only in one hemisphere (a plane area light), or a specific value based on the direction, usually controlled by a function (such as in spotlight). In any case the emitted light value is known by the definition of the light source in the scene, therefore can be easily plugged into the equation.
+The first part describes the light emitted $L_e(\bar{x}, \bar{\omega}_o)$, and it is 0 unless the point is a light source. Depending on the light source type, it can assume a uniform value in each direction (point light), a value only in one hemisphere (a plane area light), or a specific value based on the direction, usually controlled by a function (such as in spotlight). In any case the emitted light value is known by the definition of the light source in the scene, therefore can be easily plugged into the equation.
 
 The second part of the equation presents an integral, and represents the light reflected by the material of the point towards the direction $\bar{\omega}_o$. In simple words, this second term tells us that, in order to compute the reflected light, we have to know, first, how much light is incoming to the point from all the directions in the hemisphere $\Omega$. And second, the properties of the material, summarized in the $BRDF$. The $BRDF$ tells us how much of the incoming light is reflected towards the direction $\bar{\omega}_o$. 
 
@@ -428,9 +428,69 @@ The term $\cos(\bar{n}, \bar{\omega}_i)$ is called geometry term, and reflects a
     \label{fig:geometry_term}
 \end{figure}
 
-In this integral term, the BRDF is known by definition, and the geometry term is a simple cosine. TODO instead the $L_i$ term can only be known by probing rays, and it is recursive ($L_in$ point 1 = $L_out$ point 2). Moreover, there is an integral, therefore Monte Carlo
+In this integral term, the BRDF is known by definition, and the geometry term is a simple cosine. On the other hand, we almost never have an analytical form of the $L_i$ term, and is indeed this specific part of the equation what really makes ray tracing expensive.
 
-\subsection*{Monte-Carlo}
+In order to compute the $L_i$ term for one specific direction $\overline{\omega_{\tilde{i}}}$, we can cast a probe ray $r_1$ from point $\overline{x}$ toward $\overline{\omega_{\tilde{i}}}$. The probe ray will hit another point $\overline{y}$. Now, since we want to compute how much light $r_1$ is carrying towards $\overline{x}$, we have to resolve the rendering equation at point $\overline{y}$ and with outgoing direction $-\overline{\omega_{\tilde{i}}}$, namely $L_o(\overline{y}, -\overline{\omega_{\tilde{i}}})$. In other words, the light incoming to one point from one direction, equals the light outgoing from a second point towards the same direction (with inverted sign). This recursive pattern is usually ended after a certain number of bounces (when we can consider that the ray is carrying an infinitesimal amount of energy), or when a probe ray hits a light source (where the generated light is only influenced by the emitted light term of the rendering equation).
+
+The process we've just described only returns the amount of light incoming to $\overline{x}$ from an arbitrary direction $\overline{\omega_{\tilde{i}}}$. But, as we can see, in the rendering equation an integral over the hemisphere $\Omega$ is present, therefore, in order to have a mathematically correct result, we would need to cast an infinite amount of probe rays. This is not feasible, and leads us to the Monte-Carlo method.
+
+\subsection*{Monte-Carlo Integration}
+In this section we will provide an intuition of the Monte-Carlo integration method, and its basic mathematical foundations necessary to fully understand this work.
+
+Monte-Carlo integration is a method by which it is possible to compute the numerical integral of a function by using random numbers.
+Given a one-dimensional positive integrable function $f$, we can interpret its definite integral in the $[a,b]$ interval as the area between the curve and the x-axis.
+Now, if we select a random point $k_0$ uniformly in the $[a,b]$ interval, we can compute the area $A_r$ of the rectangle with side $\overline{ab}$ and height $f(k_0)$ as $\overline{ab} \cdot f(k_0)$. We can interpret it as a very rough approximation of the area under the function, which, by definition, is equal to the definite integral value. If we repeat this process $N$ times and compute the average of the various $A_r$s, we'll usually get a better estimate of the area under the function because sometimes we will underestimate its value, and sometimes we will overestimate it. We can formalize this process with this formula:
+
+$$\langle F^N \rangle = \frac{1}{N}\cdot (b-a)\cdot\sum_{i=0}^{N-1}\textit{f}(X_i)$$
+Where $X_i \sim \frac{1}{b-a}$ is a uniform random variable in the $[a,b]$ interval. 
+
+$\langle F^N \rangle$ is referred to as the basic Monte-Carlo estimator. The Monte-Carlo estimator, being a linear combination of random variables, is a random variable itself. Monte-Carlo theory states that the expected value of the Monte-Carlo estimator equals the definite integral of $f$. Below we prove this statement:
+
+\begin{subequations}
+	\begin{align*}
+		E[\langle F^N \rangle] &= E[(b-a)\cdot \frac{1}{N}\sum_{i=0}^{N-1}\textit{f}(X_i)] \\
+		&= (b-a)\cdot \frac{1}{N}\cdot\sum_{i=0}^{N-1} E[\textit{f}(X_i)] \\
+		&= (b-a)\cdot \frac{1}{N}\cdot\sum_{i=0}^{N-1}\int_{a}^{b}\textit{f}(x) \cdot \frac{1}{b-a} dx \\
+		&= \frac{1}{N}\cdot\sum_{i=0}^{N-1}\int_{a}^{b}\textit{f}(x) dx \\
+		&= \int_{a}^{b}\textit{f}(x) dx
+	\end{align*}
+\end{subequations}
+
+In order to go from line 2 to line 3, it is important to remember the law of the uncounscious statistician (LOTUS), where $p$ is the probability density function of the random variable $X$:
+$$E[\textit{f}(X)] = \int_{\Omega}\textit{f}(x)\cdot p(x) dx$$
+
+The LOTUS is easier to understand in the discrete case, where $E[\textit{f}(x)] = \sum\textit{f}(x)\cdot p(x)$. This can, for example, be visualized to compute the expected value of a fair die throw: each side has $\frac{1}{6}$ chances of appearing, therefore the expected value equals: $\frac{1}{6} \cdot 1 + \frac{1}{6} \cdot 2 + \frac{1}{6} \cdot 3 + \frac{1}{6} \cdot 4 + \frac{1}{6} \cdot 5 + \frac{1}{6} \cdot 6 = 3.5$. If the die was unfair and, for example, $6$ has a probability to appear of $\frac{1}{2}$, and the remaining 5 sides have a probability of $\frac{1}{10}$ then the expected value would be skewed towards high numbers: $\frac{1}{10} \cdot 1 + \frac{1}{10} \cdot 2 + \frac{1}{10} \cdot 3 + \frac{1}{10} \cdot 4 + \frac{1}{10} \cdot 5 + \frac{1}{2} \cdot 6 = 4.5$. 
+
+Monte-Carlo integration can be used even if the random variable $X_i$ follows a non-uniform distribution. Let the probability density function (PDF) of $X_i$ be $p$, then the Monte-Carlo estimator can be written as:
+
+$$\langle F^N \rangle = \frac{1}{N}\cdot\sum_{i=0}^{N-1}\frac{\textit{f}(X_i)}{p(X_i)}$$
+
+We can prove the formula with an analogous proof to the one above (this time the integration domain is $\Omega$): 
+
+\begin{subequations}
+	\begin{align*}
+		E[\langle F^N \rangle] &= E[\frac{1}{N}\cdot\sum_{i=0}^{N-1}\frac{\textit{f}(X_i)}{p(X_i)}] \\
+		&= \frac{1}{N}\cdot\sum_{i=0}^{N-1}E[\frac{\textit{f}(X_i)}{p(X_i)}] \\
+		&= \frac{1}{N}\cdot\sum_{i=0}^{N-1}\int_{\Omega}\frac{\textit{f}(x)}{pdf(x)} \cdot pdf(x) dx \\
+		&= \frac{1}{N}\cdot\sum_{i=0}^{N-1}\int_{\Omega}\textit{f}(x) dx \\
+		&= \int_{\Omega}\textit{f}(x) dx
+	\end{align*}
+\end{subequations}
+
+Monte-Carlo integration enjoys some important properties that make it suitable to solve many problems concerning integrals, among which the rendering equation.
+
+First, the Monte-Carlo estimator $\langle F^N \rangle$ is consistent, meaning that, as $N$ tends to infinity, the estimator converges to a value.
+
+Moreover, it is also unbiased, therefore the value it converges to is the value of the definite integral of the function it is estimating. The rate of convergence is proportional to the variance $\sigma^2$, this means that, in order to reduce the estimator error by half, 4 times more samples are needed.
+
+Compared to other integration techniques, such as Riemann sum, Monte-Carlo doesn't suffer from the \textit{curse of dimensionality}. \textit{Curse of dimensionality} means that the complexity of the algorithm to compute the integral grows exponentially as the number of its dimensions increases. This is particularly relevant in our case, since we are working in a 3-dimensional domain.
+
+Going back to the case of the rendering equation, it is now clear that we can leverage the mathematical theory behind the Monte-Carlo technique to solve it. In this case the integration domain is the hemisphere, and the probe rays cast are the random samples. As the number of probe rays grows, the function describing the incoming light is estimated more and more accurately. However, since the rate of convergence is quadratic, to double the estimation accuracy 4 times more probe rays are needed.
+
+Actually, in many ray tracing techniques, just one probe ray is cast, but the estimated light entering a point is temporally accumulated. This works because Monte-Carlo integration is unbiased.
+
+
+
 \subsection*{Variance Reduction Techniques}
 
 \section{Ray Tracing Acceleration Structures} \label{sec:ray_tracing_acceleration_structures}
