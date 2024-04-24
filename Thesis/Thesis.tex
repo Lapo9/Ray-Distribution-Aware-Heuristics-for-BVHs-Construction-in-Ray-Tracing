@@ -481,23 +481,75 @@ Monte-Carlo integration enjoys some important properties that make it suitable t
 
 First, the Monte-Carlo estimator $\langle F^N \rangle$ is consistent, meaning that, as $N$ tends to infinity, the estimator converges to a value.
 
-Moreover, it is also unbiased, therefore the value it converges to is the value of the definite integral of the function it is estimating. The rate of convergence is proportional to the variance $\sigma^2$, this means that, in order to reduce the estimator error by half, 4 times more samples are needed.
+Moreover, it is also unbiased, therefore the value it converges to is the value of the definite integral of the function it is estimating. 
 
 Compared to other integration techniques, such as Riemann sum, Monte-Carlo doesn't suffer from the \textit{curse of dimensionality}. \textit{Curse of dimensionality} means that the complexity of the algorithm to compute the integral grows exponentially as the number of its dimensions increases. This is particularly relevant in our case, since we are working in a 3-dimensional domain.
 
-Going back to the case of the rendering equation, it is now clear that we can leverage the mathematical theory behind the Monte-Carlo technique to solve it. In this case the integration domain is the hemisphere, and the probe rays cast are the random samples. As the number of probe rays grows, the function describing the incoming light is estimated more and more accurately. However, since the rate of convergence is quadratic, to double the estimation accuracy 4 times more probe rays are needed.
+We can now calculate the variance and standard deviation of the Monte-Carlo estimator $\sigma[\langle F^N \rangle]$ in order to show the convergence rate of this technique. Here we use the random variable $Y$ as  $\frac{\textit{f}(X)}{p(X)}$:
+
+\begin{subequations}
+	\begin{align*}
+		\sigma[\langle F^N \rangle] &= \sqrt{V[\langle F^N \rangle]} \\
+		&= \sqrt{V[\frac{1}{N}\cdot \sum_{i=0}^{N-1}Y_i]} \\
+		&= \sqrt{\frac{1}{N^2}\cdot V[\sum_{i=0}^{N-1}Y_i]} \\
+		&= \sqrt{\frac{1}{N^2}\cdot \sum_{i=1}^{N-1}V[Y_i]} \\
+		&= \sqrt{\frac{1}{N^2} \cdot N \cdot V[Y]} \\
+		&= \sqrt{\frac{1}{N} \cdot V[Y]} \\
+		&= \frac{1}{\sqrt{N}} \cdot \sigma[Y]
+	\end{align*}
+\end{subequations}
+
+In the above proof we assumed that the random variables $Y_i$ are independent to go from line 3 to 4; we also used the result $V[a\cdot X] = a^2 \cdot V[X]$ to go from line 2 to 3.
+
+It is possible to observe that the convergence rate is inversely proportional to the square root of the number of samples $\sqrt{N}$. This means that to reduce the error by a factor of 2, we would need to increase the samples by a factor of 4. This result is not ideal, and we will analyze other ways to reduce variance without increasing the number of samples in the next section.
+
+Going back to the case of the rendering equation, it is now clear that we can leverage the mathematical theory behind the Monte-Carlo technique to solve it. In this case the integration domain is the hemisphere, and the probe rays cast are the random samples. As the number of probe rays grows, the function describing the incoming light is estimated more and more accurately. However, since the rate of convergence is quadratic, to double the estimation accuracy 4 times more probe rays are needed. Error in the estimate of the incoming light translates into noise in the final rendered image.
 
 Actually, in many ray tracing techniques, just one probe ray is cast, but the estimated light entering a point is temporally accumulated. This works because Monte-Carlo integration is unbiased.
 
-
-
 \subsection*{Variance Reduction Techniques}
+In this section we will describe importance sampling, a variance reduction technique applicable to Monte-Carlo method to reduce the error of the estimate without increasing the number of samples. This technique is particularly relevant in ray tracing, since we have a very limited number of probe rays we can cast. Eventually, we will show how importance sampling can be applied to the ray tracing context, and how its usage generates artifacts in the ray distribution in the rendered scene.
+
+Variance reduction techniques, as the name suggests, are methods used in the Monte-Carlo context to reduce the variance of the estimator without increasing the computational effort.
+
+One of the variance reduction techniques employed in ray tracing and that is relevant to our work is called importance sampling (IS). Let's imagine that we want to integrate a constant function. In this case, the positions where we place our samples are irrelevant: each time we run the Monte-Carlo simulation, the estimator will return the same result, therefore the variance is always 0.
+
+The intuitive idea of importance sampling is to try to run the Monte-Carlo simulation always on a constant function. From a theoretical point of view, this is extremely easy: we simply need to divide the integrand $\textit{f}$ by a function proportional to it. Given the general Monte-Carlo estimator, this can be achieved by choosing a sampling PDF $p$ proportional to $\textit{f}$:
+
+$$\langle F^N \rangle = \frac{1}{N}\cdot\sum_{i=0}^{N-1}\frac{\textit{f}(X_i)}{p(X_i)} \longrightarrow \frac{1}{N}\cdot\sum_{i=0}^{N-1}\frac{\textit{f}(X_i)}{k\cdot \textit{f}(X_i)}$$
+
+From an operative point of view, with importance sampling it is more likely to get a sample from a portion where the integrand has a high value, but, at the same time, this sample will have a lower weight in the final estimate (because it is divided by a higher value). Whereas, if we get a sample from a portion where the integrand has low values, which is rare, its weight will be bigger. This means that the estimate comes from a finer-grained sampling of the portions where the integrand carries most of its information.
+
+Even though from a mathematical point of view this is simple, from a concrete standpoint the technique can be difficult to apply. The main reason is that in many cases, such as in ray tracing, we don't have an analytical form of the integrand function, therefore finding a function proportional to it is problematic. Moreover, a bad choice of the PDF, can lead to an increase in the variance of the estimator even compared to the uniform PDF.
+
+Going back to the ray tracing context, the integrand function has this equation:
+
+$$\int_\Omega BRDF(\bar{x}, \bar{\omega}_i, \bar{\omega}_o) \cdot \cos(\bar{n}, \bar{\omega}_i) \cdot L_i(\bar{x}, \bar{\omega}_i) d\bar{\omega}_i$$
+
+It is possible to note that the function is made up of 3 terms: the $BRDF$, the geometry term and the incoming light term. We can therefore use a probability function proportional to one of the terms to reduce the variance:
+\begin{description}
+	\item[Cosine sampling] The sampling PDF is proportional to the geometry term of the rendering equation.
+	\item[BRDF sampling] The sampling PDF is proportional to the BRDF. BRDFs can assume complex analytical forms, therefore sampling the BRDF is not always easy.
+	\item[Light sampling] The sampling PDF should be proportional to the $L_i$ term of the rendering equation.
+\end{description}
+
+Light sampling is particularly problematic because we almost never have an analytical form of the $L_i$ function. The most used form of light sampling is called next event estimation (NEE), and is achieved by casting rays towards direct light sources. The way in which the light source to sample is chosen can be completely random or require complex strategies, such as in the case described here. 
+
+The main issue with next event estimation is that a direct light can be occluded by an object, or, conversely, a strong light could come from an indirect source, such as a reflection. For this reason, another technique, called path guiding, has been developed to consider mainly indirect lighting in the sampling PDF. Path guiding can be computationally expensive, therefore is often used in non-real-time scenarios, even though approximations have been proposed even for real-time ray tracing.
+
+Using BRDF sampling or light sampling in isolation as variance reduction PDFs can give better or worse results mainly based on the rendered section of the scene. For example, in an well illuminated scene with a mirror, using light sampling gives bad results. This happens because the BRDF of the mirror is null everywhere except for a spike in the perfect reflection direction. This means that its weight in the integrand is much more important than the weight of the $L_i$ term, which is almost constant being the scene well illuminated. If we use light sampling we will cast rays almost uniformly, and many of them will lose all of their energy as soon as they hit the mirror and reflect to a non-perfect-reflection direction.
+
+On the contrary, in a scene with rough materials (such as concrete) and with few distant light sources, using light sampling would be beneficial, since many of the rays would be casted towards a light, instead of toward the void.
+
+To remedy the problem of choosing the right importance sampling technique based on the portion of the scene, a new technique has been developed, called multiple importance sampling (MIS). Since the technique is an extension to importance sampling, it will be described in appendix \ref*{ch:mis}.
+
+The key take away from this section is that with importance sampling we use a non-uniform PDF to sample probe rays. This creates artifacts in the ray distribution in the scene. In particular, if next event estimation is used, a big part of the rays will tend to go toward light sources. In chapter \ref*{ch:projected_area_heuristic} we will study how these artifacts in the ray distribution can be exploited to design a faster technique to traverse a bounding volume hierarchy, which is the main subject of the next sectipn \ref*{sec:ray_tracing_acceleration_structures}.
 
 \section{Ray Tracing Acceleration Structures} \label{sec:ray_tracing_acceleration_structures}
 
 
 % === Chapter 2 ... ===
-\chapter{Chapter two}
+\chapter{Projected Area Heuristic} \label{ch:projected_area_heuristc}
 Chapter 2
 
 
@@ -915,13 +967,16 @@ Given a polygon with vertices $P_0, P_1, ..., P_n$, where each vertex has coordi
 
 In the last formula we consider $P_0 = P_{n+1}$.
 
-
+\chapter{Multiple Importance Sampling} \label{ch:mis}
+TODO
 
 % === Lists ===
 \listoffigures
 \listoftables
 
 % Table of symbols
+
+
 \chapter*{List of Symbols} % You have to include a chapter for your list of symbols (
 \begin{table}[H]
     \centering

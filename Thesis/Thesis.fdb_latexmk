@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex Thesis"] 1713823093 "Thesis.aux" "Thesis.bbl" "Thesis" 1713823263 0
+["bibtex Thesis"] 1713968502 "Thesis.aux" "Thesis.bbl" "Thesis" 1713968507 0
   "./Bibliography.bib" 1713804677 4971 efaef2c2045c8a75f03ea957454c0c06 ""
-  "Thesis.aux" 1713823261 46136 8fcf783fe6a920772e63b6ebaf57d5dc "pdflatex"
+  "Thesis.aux" 1713968506 46650 8549e914e004b0a6983cb9cdb07cd38a "pdflatex"
   "p:/Program Files/texlive/2023/texmf-dist/bibtex/bst/natbib/abbrvnat.bst" 1689594196 26532 66bed5cc59495faaa3f9ae9af9fa5e42 ""
   (generated)
   "Thesis.bbl"
   "Thesis.blg"
   (rewritten before read)
-["pdflatex"] 1713823258 "d:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/Thesis/Thesis.tex" "Thesis.pdf" "Thesis" 1713823263 0
+["pdflatex"] 1713968503 "d:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/Thesis/Thesis.tex" "Thesis.pdf" "Thesis" 1713968507 0
   "Images/./raggiera_polimi.eps" 1712141936 1813066 68b21695bbcbb6d7e09839c06406f8f3 ""
   "Images/02_ING_IND_INFORMAZIONE_COL_POSITIVO.eps" 1712141936 1016894 50c9d95dbacdb6a7531ebeec13361098 ""
   "Images/TODO.png" 1713377561 1555 09f24c0bbc14c55fc00324caf9a1dd46 ""
@@ -28,15 +28,15 @@
   "Images/triangle_logo_thin.png" 1712842991 5445 7cd1d98f135bc94b8059ec20c58bd07c ""
   "Images/vertices_sorting.png" 1712596422 30952 6837b3c83fedc96634abfabf11186014 ""
   "PoliMi_MasterThesis.cls" 1712863111 4472 036eefb2d4a1cbcb2bfa3e194ef279b4 ""
-  "Thesis.aux" 1713823261 46136 8fcf783fe6a920772e63b6ebaf57d5dc "pdflatex"
-  "Thesis.bbl" 1713823094 3475 5d005b7e3749c632f32ff936c93541c7 "bibtex Thesis"
-  "Thesis.lof" 1713823261 3967 3e1e09951638fa0cc108571482ad3408 "pdflatex"
-  "Thesis.lot" 1713823261 130 f826c84079cca262924fc91efb7dde9a "pdflatex"
-  "Thesis.out" 1713823261 4776 dc0a55012ccf9873e4504a298eb6859f "pdflatex"
-  "Thesis.tex" 1713823258 68395 e8357c45897140c64ef6c85c2a62f407 ""
-  "Thesis.toc" 1713823261 2482 05b126a115870beb66825dc2f00fb0b0 "pdflatex"
+  "Thesis.aux" 1713968506 46650 8549e914e004b0a6983cb9cdb07cd38a "pdflatex"
+  "Thesis.bbl" 1713968503 3475 5d005b7e3749c632f32ff936c93541c7 "bibtex Thesis"
+  "Thesis.lof" 1713968506 3987 ef1cad3b21c8dc4ccf1872ad693b14a4 "pdflatex"
+  "Thesis.lot" 1713968506 150 7460b00ca4c2d98f724b7acc062e00fd "pdflatex"
+  "Thesis.out" 1713968506 5035 534d43343b1982a9005ec73506b39e73 "pdflatex"
+  "Thesis.tex" 1713968497 75927 dd18d63e11d1e85577bea1895922fe05 ""
+  "Thesis.toc" 1713968506 2581 e342fe0b57f8dbdde303b302f016138e "pdflatex"
   "config.tex" 1712141936 2274 0a1f30f56ee90e210ed92d2e51617d7d ""
-  "d:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/Thesis/Thesis.tex" 1713823258 68395 e8357c45897140c64ef6c85c2a62f407 ""
+  "d:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/Thesis/Thesis.tex" 1713968497 75927 dd18d63e11d1e85577bea1895922fe05 ""
   "p:/Program Files/texlive/2023/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc" 1689590650 2971 def0b6c1f0b107b3b936def894055589 ""
   "p:/Program Files/texlive/2023/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc" 1689590650 2900 1537cc8184ad1792082cd229ecc269f4 ""
   "p:/Program Files/texlive/2023/texmf-dist/fonts/map/fontname/texfonts.map" 1689592215 3524 cb3e574dea2d1052e39280babc910dc8 ""
@@ -110,6 +110,7 @@
   "p:/Program Files/texlive/2023/texmf-dist/fonts/type1/public/cm-super/sfrm1000.pfb" 1689590650 138258 6525c253f16cededa14c7fd0da7f67b2 ""
   "p:/Program Files/texlive/2023/texmf-dist/fonts/type1/public/cm-super/sfrm1200.pfb" 1689590650 136101 b18d10b3436f8cb0cd04046deb340fe7 ""
   "p:/Program Files/texlive/2023/texmf-dist/fonts/type1/public/cm-super/sfrm1728.pfb" 1689590650 131438 c8884c67ccd7382f731c139fbb34a6cb ""
+  "p:/Program Files/texlive/2023/texmf-dist/fonts/type1/public/cm-super/sfti0800.pfb" 1689590650 187625 dd608ec2036f04ca9db473ad88d8ac35 ""
   "p:/Program Files/texlive/2023/texmf-dist/fonts/type1/public/cm-super/sfti1000.pfb" 1689590650 186554 2eb6bd25fc5e008c37b6575e4923fdc7 ""
   "p:/Program Files/texlive/2023/texmf-dist/fonts/type1/public/cm-super/sfti1200.pfb" 1689590650 198221 29e050730bc4b56b13a53cd149c0a42c ""
   "p:/Program Files/texlive/2023/texmf-dist/fonts/type1/public/cm-super/sftt1000.pfb" 1689590650 169201 651a6333c3213b38091f54d2ab2d2cd6 ""
