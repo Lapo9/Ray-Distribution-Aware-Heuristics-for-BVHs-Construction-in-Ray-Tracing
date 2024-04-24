@@ -1,4 +1,4 @@
-\begin{thebibliography}{13}
+\begin{thebibliography}{18}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -61,10 +61,22 @@ S.~Oz.
 \newblock \url{https://www.swtestacademy.com/intersection-convex-polygons-algorithm/}.
 \newblock Accessed: (20/03/2024).
 
-\bibitem[Prunier()]{ray_triangle_intersection}
+\bibitem[Prunier({\natexlab{a}})]{monte_carlo_estimators_scratchapixel}
+J.-C. Prunier.
+\newblock Monte carlo methods in practice.
+\newblock \url{https://www.scratchapixel.com/lessons/mathematics-physics-for-computer-graphics/monte-carlo-methods-in-practice/monte-carlo-integration.html}, {\natexlab{a}}.
+\newblock Accessed: (22/08/2023).
+
+\bibitem[Prunier({\natexlab{b}})]{monte_carlo_properties}
+J.-C. Prunier.
+\newblock Mathematical foundations of monte carlo methods.
+\newblock \url{https://www.scratchapixel.com/lessons/mathematics-physics-for-computer-graphics/monte-carlo-methods-mathematical-foundations/quick-introduction-to-monte-carlo-methods.html}, {\natexlab{b}}.
+\newblock Accessed: (21/08/2023).
+
+\bibitem[Prunier({\natexlab{c}})]{ray_triangle_intersection}
 J.-C. Prunier.
 \newblock Ray-triangle intersection: Geometric solution.
-\newblock \url{https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/ray-triangle-intersection-geometric-solution.html}.
+\newblock \url{https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/ray-triangle-intersection-geometric-solution.html}, {\natexlab{c}}.
 \newblock Accessed: (09/01/2024).
 
 \bibitem[Santos et~al.(2024)Santos, Bashford-Rogers, Barbosa, and Navr{\'a}til]{quantum_ray_tracing}
@@ -76,5 +88,21 @@ L.~P. Santos, T.~Bashford-Rogers, J.~Barbosa, and P.~Navr{\'a}til.
 A.~Shelankov and G.~Pikus.
 \newblock Reciprocity in reflection and transmission of light.
 \newblock \emph{Physical Review B}, 46\penalty0 (6):\penalty0 3326, 1992.
+
+\bibitem[Soch()]{lotus}
+J.~Soch.
+\newblock Proof: Law of the unconscious statistician.
+\newblock \url{https://statproofbook.github.io/P/mean-lotus.html}.
+\newblock Accessed: (09/09/2023).
+
+\bibitem[Veach(1998{\natexlab{a}})]{monte_carlo_convergence}
+E.~Veach.
+\newblock \emph{Robust Monte Carlo methods for light transport simulation}.
+\newblock Stanford University, 1998{\natexlab{a}}.
+
+\bibitem[Veach(1998{\natexlab{b}})]{monte_carlo_estimators_veach}
+E.~Veach.
+\newblock \emph{Robust Monte Carlo methods for light transport simulation}.
+\newblock Stanford University, 1998{\natexlab{b}}.
 
 \end{thebibliography}
