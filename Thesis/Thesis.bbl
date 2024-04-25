@@ -1,4 +1,4 @@
-\begin{thebibliography}{18}
+\begin{thebibliography}{31}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -28,15 +28,51 @@ A.~Celarek.
 \newblock \url{https://www.cg.tuwien.ac.at/courses/Rendering/2020/slides/04_The_Rendering_Equation_v20200515.pdf}.
 \newblock From TU Wien university, Accessed: (19/08/2023).
 
+\bibitem[Chung et~al.(2009)Chung, Yu, Kim, and Kim]{tessellation}
+K.~Chung, C.-H. Yu, D.~Kim, and L.-S. Kim.
+\newblock Shader-based tessellation to save memory bandwidth in a mobile multimedia processor.
+\newblock \emph{Computers \& Graphics}, 33\penalty0 (5):\penalty0 625--637, 2009.
+
+\bibitem[Cole()]{sdf}
+J.~Cole.
+\newblock Signed distance fields.
+\newblock \url{https://jasmcole.com/2019/10/03/signed-distance-fields/}.
+\newblock Accessed: (11/05/2023).
+
 \bibitem[Gribb and Hartmann(2001)]{point_inside_frustum_test}
 G.~Gribb and K.~Hartmann.
 \newblock Fast extraction of viewing frustum planes from the world-view-projection matrix.
 \newblock \emph{Online document}, 2001.
 
+\bibitem[Hart et~al.(1989)Hart, Sandin, and Kauffman]{ray_marching}
+J.~Hart, D.~Sandin, and L.~Kauffman.
+\newblock Ray tracing deterministic 3-d fractals.
+\newblock \emph{SIGGRAPH '89}, 1989.
+
 \bibitem[Kajiya(1986)]{rendering_equation}
 J.~T. Kajiya.
 \newblock The rendering equation.
 \newblock In \emph{Proceedings of the 13th annual conference on Computer graphics and interactive techniques}, pages 143--150, 1986.
+
+\bibitem[Karis et~al.()Karis, Stubbe, and Wihlidal]{nanite}
+B.~Karis, R.~Stubbe, and G.~Wihlidal.
+\newblock Nanite: A deep dive.
+\newblock SIGGRAPH '21: Advances in Real-Time Rendering in Games.
+
+\bibitem[Kaufman and Mueller(2005)]{voxel_rendering}
+A.~E. Kaufman and K.~Mueller.
+\newblock Overview of volume rendering.
+\newblock \emph{The visualization handbook}, 7:\penalty0 127--174, 2005.
+
+\bibitem[Kirk and Arvo(1991)]{mailboxing}
+D.~Kirk and J.~Arvo.
+\newblock Improved ray tagging for voxel-based ray tracing.
+\newblock In \emph{Graphics Gems II}, pages 264--266. Elsevier, 1991.
+
+\bibitem[Kopta et~al.(2012)Kopta, Ize, Spjut, Brunvand, Davis, and Kensler]{bvh_update}
+D.~Kopta, T.~Ize, J.~Spjut, E.~Brunvand, A.~Davis, and A.~Kensler.
+\newblock Fast, effective bvh updates for animated scenes.
+\newblock In \emph{Proceedings of the ACM SIGGRAPH Symposium on Interactive 3D Graphics and Games}, pages 197--204, 2012.
 
 \bibitem[Lee and Lim(2017)]{shoelace_formula}
 Y.~Lee and W.~Lim.
@@ -95,6 +131,16 @@ J.~Soch.
 \newblock \url{https://statproofbook.github.io/P/mean-lotus.html}.
 \newblock Accessed: (09/09/2023).
 
+\bibitem[Stich et~al.(2009)Stich, Friedrich, and Dietrich]{bvh_spatial_splitting}
+M.~Stich, H.~Friedrich, and A.~Dietrich.
+\newblock Spatial splits in bounding volume hierarchies.
+\newblock In \emph{Proceedings of the Conference on High Performance Graphics 2009}, pages 7--13, 2009.
+
+\bibitem[Veach()]{monte_carlo_integration}
+E.~Veach.
+\newblock Chapter 2: Monte carlo integration.
+\newblock \url{https://www.ime.usp.br/~jmstern/wp-content/uploads/2020/04/EricVeach2.pdf}.
+
 \bibitem[Veach(1998{\natexlab{a}})]{monte_carlo_convergence}
 E.~Veach.
 \newblock \emph{Robust Monte Carlo methods for light transport simulation}.
@@ -104,5 +150,25 @@ E.~Veach.
 E.~Veach.
 \newblock \emph{Robust Monte Carlo methods for light transport simulation}.
 \newblock Stanford University, 1998{\natexlab{b}}.
+
+\bibitem[Vinkler et~al.(2014)Vinkler, Havran, and Bittner]{bvh_vs_kd_tree}
+M.~Vinkler, V.~Havran, and J.~Bittner.
+\newblock Bounding volume hierarchies versus kd-trees on contemporary many-core architectures.
+\newblock In \emph{Proceedings of the 30th Spring Conference on Computer Graphics}, pages 29--36, 2014.
+
+\bibitem[Wald et~al.(2001)Wald, Slusallek, Benthin, and Wagner]{ray_coherency}
+I.~Wald, P.~Slusallek, C.~Benthin, and M.~Wagner.
+\newblock Interactive rendering with coherent ray tracing.
+\newblock In \emph{Computer graphics forum}, volume~20, pages 153--165. Wiley Online Library, 2001.
+
+\bibitem[Weghorst et~al.(1984)Weghorst, Hooper, and Greenberg]{bvh_primer}
+H.~Weghorst, G.~Hooper, and D.~P. Greenberg.
+\newblock Improved computational methods for ray tracing.
+\newblock \emph{ACM Transactions on Graphics (TOG)}, 3\penalty0 (1):\penalty0 52--69, 1984.
+
+\bibitem[Wodniok and Goesele(2017)]{bvh_advantages}
+D.~Wodniok and M.~Goesele.
+\newblock Construction of bounding volume hierarchies with sah cost approximation on temporary subtrees.
+\newblock \emph{Computers \& Graphics}, 62:\penalty0 41--52, 2017.
 
 \end{thebibliography}

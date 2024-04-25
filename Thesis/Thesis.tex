@@ -316,7 +316,7 @@ In section \ref{sec:monte_carlo_and_variance_reduction_techniques} we will analy
 Last, in section \ref{sec:ray_tracing_acceleration_structures}, we will describe the state-of-the-art acceleration structure to make a fundamental ray tracing procedure (ray-scene intersection) faster.
 
 \section{Ray Tracing Principles} \label{sec:ray_tracing_principles}
-\subsection*{High Level Overview}
+\subsection{High Level Overview}
 Ray tracing is a family of rendering algorithms that is used in computer graphics to transition from a mathematical representation of a scene, to an image on the screen.
 
 Conceptually ray tracing is an extremely straightforward technique, that can be summarized in a few steps:
@@ -344,7 +344,7 @@ With ray tracing shadows are natively generated since, if a point is in shadow, 
     \label{fig:shadow_map}
 \end{figure}
 
-\subsection*{Use Cases}
+\subsection{Use Cases}
 Due to the highly realistic images ray tracing algorithms can produce, the technique has found a lot of success in many applications. We can subdivide the use cases into two macro-categories: real-time ray tracing and production ray tracing.
 
 The most prominent use of the second category is in movies. CGI effects and animated films are almost always produced by using ray tracing, in particular a very accurate algorithm called path tracing. In the first category we can find videogames.
@@ -353,7 +353,7 @@ The main difference between real-time and production ray tracing lies in the tim
 
 This starking difference makes it so that different techniques must be used depending on the scenario. In real-time ray tracing many approximations must be introduced in order to stay within the frame time budget, whereas in production ray tracing more accurate algorithms can be used, since time constraints are loose. Our work can benefit both categories, since the methods we will introduce can make ray tracing faster, in some situations, without introducing approximations.
 
-\subsection*{Optimizations Overview}
+\subsection{Optimizations Overview} \label{ssec:optimizations_overview}
 Until now we briefly highlighted the strong points of ray tracing, and greatly simplified it. The main issue with ray tracing is that it is computationally expensive to simulate light transport in a convincing way. The reason lies in the rendering equation, and will be explained in section \ref{sec:monte_carlo_and_variance_reduction_techniques}.
 
 In order to make ray tracing usable in the real world, the industry moved in two directions:
@@ -368,7 +368,7 @@ Some optimizations aim at improving the time needed to detect the first intersec
 
 The other family comprehends optimizations aimed at reducing the number of rays needed to produce a visually acceptable image. This work, while being part of the first family of optimizations, has its foundations in an artifact in the ray distribution in the scene caused by an optimization in this second family. This technique is called importance sampling, and will be discussed in section \ref{sec:monte_carlo_and_variance_reduction_techniques}.
 
-\subsection*{Backward Ray Tracing}
+\subsection{Backward Ray Tracing}
 Before going to the next section, it is important to introduce the concept of backward ray tracing\footnote{In some literature the term \textit{backward ray tracing} can also refer to the opposite family of algorithms, since the first ray tracing methods were indeed backward.}. 
 
 In backward ray tracing light rays don't start from light sources, but from the eye position. Starting from the eye, each ray will then hit a fictitious plane placed in front of the eye (the near plane), similar to what happens in a pinhole camera \ref{pinhole_camera}. The near plane can be subdivided into discrete units displaced in a regular grid, which we will consider the pixels of the final image. Each ray is therefore associated with the pixel it hits, and will contribute to its final color.
@@ -393,7 +393,7 @@ From this point on we will consider the scenario where rays are traced backwards
 \section{Monte-Carlo and Variance Reduction Techniques} \label{sec:monte_carlo_and_variance_reduction_techniques}
 In this section we will analyze the mathematical foundations of ray tracing, namely the Kajiya's rendering equation. Then we will present a statistical method to resolve the integrals appearing in the rendering equation, called Monte-Carlo. Finally, we will discuss a variance reduction technique, importance sampling, that can be used to obtain better approximations from the Monte-Carlo method without making it more expensive. We will see how this technique generates artifacts in the ray distribution in the scene, which is one of the hypotheses of our thesis.
 
-\subsection*{Kajiya's Rendering Equation}
+\subsection{Kajiya's Rendering Equation}
 $$
 L_o(\bar{x},\bar{\omega}_o) = L_e(\bar{x}, \bar{\omega}_o) + \int_\Omega BRDF(\bar{x}, \bar{\omega}_i, \bar{\omega}_o) \cdot \cos(\bar{n}, \bar{\omega}_i) \cdot L_i(\bar{x}, \bar{\omega}_i) d\bar{\omega}_i
 $$
@@ -413,15 +413,15 @@ The first part describes the light emitted $L_e(\bar{x}, \bar{\omega}_o)$, and i
 \begin{figure}[H]
     \centering
     \subfloat[Point light]{
-        \includegraphics[scale=0.35]{Images/TODO.png}
+        \includegraphics[width=\textwidth*\real{0.3}]{Images/TODO.png}
 	}
 	\qquad
 	\subfloat[Plane area light]{
-        \includegraphics[scale=0.35]{Images/TODO.png}
+        \includegraphics[width=\textwidth*\real{0.3}]{Images/TODO.png}
     }
 	\qquad
 	\subfloat[Spotlight]{
-        \includegraphics[scale=0.35]{Images/TODO.png}
+        \includegraphics[width=\textwidth*\real{0.3}]{Images/TODO.png}
     }
 	\caption{Three possible types of light sources.}
     \label{fig:light_sources}
@@ -458,7 +458,7 @@ In order to compute the $L_i$ term for one specific direction $\overline{\omega_
 
 The process we've just described only returns the amount of light incoming to $\overline{x}$ from an arbitrary direction $\overline{\omega_{\tilde{i}}}$. But, as we can see, in the rendering equation an integral over the hemisphere $\Omega$ is present, therefore, in order to have a mathematically correct result, we would need to cast an infinite amount of probe rays. This is not feasible, and leads us to the Monte-Carlo method.
 
-\subsection*{Monte-Carlo Integration}
+\subsection{Monte-Carlo Integration} 
 In this section we will provide an intuition of the Monte-Carlo integration method, and its basic mathematical foundations necessary to fully understand this work.
 
 Monte-Carlo integration \cite{monte_carlo_integration} is a method by which it is possible to compute the numerical integral of a function by using random samples.
@@ -468,15 +468,15 @@ Now, if we select a random point $k_0$ uniformly in the $[a,b]$ interval, we can
 \begin{figure}[H]
     \centering
     \subfloat[Area approximation with one sample.]{
-        \includegraphics[scale=0.35]{Images/TODO.png}
+        \includegraphics[width=\textwidth*\real{0.4}]{Images/TODO.png}
 	}
 	\qquad
 	\subfloat[Area approximation with 4 samples]{
-        \includegraphics[scale=0.35]{Images/TODO.png}
+        \includegraphics[width=\textwidth*\real{0.4}]{Images/TODO.png}
     }
 	\qquad
 	\subfloat[Area approximation with many samples]{
-        \includegraphics[scale=0.35]{Images/TODO.png}
+        \includegraphics[width=\textwidth*\real{0.4}]{Images/TODO.png}
     }
 	\caption{Monte-Carlo area approximation.}
     \label{fig:monte_carlo_area_approximation}
@@ -562,7 +562,7 @@ Going back to the case of the rendering equation, it is now clear that we can le
 
 Actually, in many ray tracing techniques, just one probe ray is cast, but the estimated light entering a point is temporally accumulated. This works because Monte-Carlo integration is unbiased.
 
-\subsection*{Variance Reduction Techniques}
+\subsection{Variance Reduction Techniques}
 In this section we will describe importance sampling, a variance reduction technique applicable to Monte-Carlo method to reduce the error of the estimate without increasing the number of samples. This technique is particularly relevant in ray tracing, since we have a very limited number of probe rays we can cast. Eventually, we will show how importance sampling can be applied to the ray tracing context, and how its usage generates artifacts in the ray distribution in the rendered scene.
 
 Variance reduction techniques, as the name suggests, are methods used in the Monte-Carlo context to reduce the variance of the estimator without increasing the computational effort.
@@ -596,16 +596,87 @@ Using BRDF sampling or light sampling in isolation as variance reduction PDFs ca
 
 On the contrary, in a scene with rough materials (such as concrete) and with few distant light sources, using light sampling would be beneficial, since many of the rays would be casted towards a light, instead of toward the void.
 
-To remedy the problem of choosing the right importance sampling technique based on the portion of the scene, a new technique has been developed, called multiple importance sampling (MIS). Since the technique is an extension to importance sampling, it will be described in appendix \ref*{ch:mis}.
+To remedy the problem of choosing the right importance sampling technique based on the portion of the scene, a new technique has been developed, called multiple importance sampling (MIS). Since the technique is an extension to importance sampling, it will be described in appendix \ref{ch:mis}.
 
-The key take away from this section is that with importance sampling we use a non-uniform PDF to sample probe rays. This creates artifacts in the ray distribution in the scene. In particular, if next event estimation is used, a big part of the rays will tend to go toward light sources. In chapter \ref*{ch:projected_area_heuristic} we will study how these artifacts in the ray distribution can be exploited to design a faster technique to traverse a bounding volume hierarchy, which is the main subject of the next sectipn \ref*{sec:ray_tracing_acceleration_structures}.
+The key take away from this section is that with importance sampling we use a non-uniform PDF to sample probe rays. This creates artifacts in the ray distribution in the scene. In particular, if next event estimation is used, a big part of the rays will tend to go toward light sources. In chapter \ref{ch:projected_area_heuristic} we will study how these artifacts in the ray distribution can be exploited to design a faster technique to traverse a bounding volume hierarchy, which is the main subject of the next section \ref{sec:ray_tracing_acceleration_structures}.
 
 \section{Ray Tracing Acceleration Structures} \label{sec:ray_tracing_acceleration_structures}
+In this section we will describe the first family of software optimizations we talked about in section \ref{ssec:optimizations_overview}. These optimizations aim at reducing the time needed to find the intersections between a ray and the geometry of the scene. Usually this is achieved by organizing the scene geometry in a spatial data structure, or by wisely choosing the order in which rays are cast, in order to improve the spatial coherency of the accesses data by the GPU \cite{ray_coherency}. We will focus on the state-of-the-art acceleration data structure, called bounding volume hierarchy (BVH), and present how it is constructed and traversed. We will eventually show how some of the assumptions on which the construction algorithm is based don't hold true, which will be the main subject of the novel approach we propose in the next chapter \ref{ch:projected_area_heuristic}.
+
+\subsection{The Need for Acceleration Structures}
+As we've seen throughout this chapter, in any of the algorithms of the ray tracing family, casting rays is the core of the procedure. Rays are primarily cast from the camera toward the scene, and subsequently, based on the specific algorithm used, they hit objects and bounce off of them. Until now, however, we have overlooked how, in a concrete scenario, the algorithm can detect what is the object hit by the ray. 
+
+Before delving into the algorithms that can be used to carry out this task, it is important to understand how an object is described in the world of computer graphics. In the history of computer graphics a lot of techniques to represent an object have been developed. Some examples are volumetric rendering with voxels \cite{voxel_rendering}, signed distance fields \cite{sdf} and implicit functions that work best with the ray marching algorithm \cite{ray_marching}, or point clouds. By the way, the most common method to represent 3D objects are polygonal meshes.
+
+A polygonal mesh describes an object by defining its surface via points, edges and faces (usually triangles). Meshes's success derived from the fact that they were one of the first representation proposed in the world of computer graphics. This led to a big part of the research converging to this specific representation form. For example, GPUs are specialized for the rendering of trianglular meshes via rasterization, even though in the last few years their architecture has been made more flexible.
+
+Meshes are also handy to create for graphic artists, and can be easily modeled to represent many kinds of objects, even though they are not suited to represent liquids of gases, such as clouds. Meshes, since they describe only the outside surface of an object, can prove difficult to use in applications where the interior is important, such as medical visualizations or games where objects can be dynamically destroyed. In these context it is usually preferred to employ voxels. Moreover meshes are a discrete representation, meaning that, once created, they cannot be used to visualize the details of the object at an arbitrary resolution, contrary to implicit functions. However, techniques to change the resolution based on the dynamic situation have been developed, such as LODing, tessellation \cite{tessellation} or more recent methods such as Nanite \cite{nanite}.
+
+Regardless of their advantages and disadvantages, triangular meshes are by far the most used representation, therefore in this work we decided to focus on them in the scenario where the rendering technique is an algorithm of the ray tracing family.
+
+In order to find the intersection between a ray and a list of meshes, we need to test the intersection between the ray and all the triangles making up the meshes, and keep the closest intersection\footnote{In some scenarios, such as when we just want to check for occlusion, it is not necessary to find the closest intersection, but just to find an intersection. In this case some optimizations can be developed, but the core concepts remain the same.}.
+
+The naive way of detecting the intersection is the brute-force solution to iterate over all of the triangles and storing the closest intersection found so far. The algorithm we used to detect the intersection between a ray and a triangle in our implementation can be found in appendix \ref{sec:ray_triangle_intersection}. Despite working, this method cannot be practically used either in real-time scenarios, nor in non-real-time ones. The problem resides in the fact that there are too many triangles to test against. Even in a non-real-time case this approach would be too expensive, because, even if the time budget for a frame is big, meshes created for non-real-time purposes usually have a way higher triangle resolution, and also way more rays to trace. From a complexity point of view, tracing a scene with $n$ triangles and $m$ rays in this way has complexity $\mathcal{O}(m\cdot n)$.
+
+This is the reason why acceleration structures have been developed. Most of the acceleration structures organize the triangle in a hierarchical fashion, so that it is possible to exclude a big chunk of them if a ray doesn't hit certain parts of the scene. One very simple example of acceleration structure would be to divide the scene into 2 parts, and, for each part, keeping track of what triangles reside on each one. Now, if a ray doesn't hit one of the 2 parts, it is possible to exclude all of the triangles contained in that area, without having to test them one by one.
+
+Acceleration structures can be divided into 2 categories:
+\begin{description}
+	\item[Space partitioning] The space is recursively subdivided into disjoint regions. Objects (triangles) can potentially appear in more than one region, if they are overlapping.
+	\item[Object partitioning] Objects are subdivided into disjoint sets, enclosed into spatial reigions. The regions can potentially be overlapping.  
+\end{description}
+
+Historically, initially the first family of acceleration structures has been used, but the todays state-of-the-art acceleration structure is the BVH, part of the second family. We will now very briefly list some of the most famous acceleration structures historically used for ray tracing, and, in the next section, we'll diffusely talk about the BVH.
+
+The first space partitioning acceleration structure developed is the fixed grid. In this structure the 3-dimensional space of the scene is subdivided into static fixed-sized cells in a regular pattern. Then, each triangle is assigned to all the cells it at least partially covers. This can be at least a single cell, to, potentially all the cells of the scene. When a ray is traced, first, a cell it intersects is found, and then, all the triangles inside this cell are tested against the ray. This is repeated for all the cells the ray hits in its path. If an intersection $P$ is found, then, all the cells that are at a further distance from the ray origin than $P$ can be discarded without testing individual triangles.
+
+The fixed grid, while being an improvement over the brute-force approach, still lacks adaptability. Based on how the scene is composed, it is possible for some cells to be empty and others overcrowded. Moreover, as in any space partitioning data structure, it is possible that a triangle is tested more than once if it overlaps more than one cell. This could be avoided by using some intersection caching techniquest, such as mailboxing \cite{mailboxing}.
+
+In order to solve the adaptability problem of the fixed grid, octrees started being used. An octree is another 3D spatial data structure, and it is a tree where each node has 8 children. To subdivide a node into 8 children, it is divided by 3 planes, one perpendicular to each dimension, passing from the center of the parent node. This process is recursively executed until a specified amount of objects (triangles) remains inside a single node, or until the depth of the tree gets past a threshold. Since the octree is a complete tree, and the size and center of each children can be automatically computed starting from the size of the root and the level\footnote{$size_{children} = size_{root} / 2^{level}$ given that the root has level $0$.}, it is possible to store the octree in an implicit array structure, making it more efficient both from an access and space point of view.
+
+It is important to note how octrees adapt better to the scene. Indeed, compared to fixed grids, they alleviate the \textit{teapot in the stadium} problem, namely the issue that appears when there is a scene with different densities of objects. For example, precisely what happens when we have a small but high resoultion object (a teapot), inside a big and mostly empty space (a stadium). With octrees this problem is handled by having few big and empty cells in the regions where there is a low density of triangles, and many small cells where there are high resolution objects. In this way less memory is wasted, and even traversal is improved. Indeed, if a ray passes through empty space, just few cells must be checked, instead of a bigger amount as in the case of a uniform structure like the fixed grid. Conversely, in case a ray goes through a dense region, fewer triangle tests will be carried out, because the cells the ray intersects are smaller and not overcrowded. Another advantage of octrees is that they are a tree data structure. This implies that if a node is not hit by a ray, all its children can be immediately discarded.
+
+Another structure that is a generalization of octrees and delivers similar performance are kd-trees. In 3D kd-trees each node is split into 2 children by a plane. At each level the plane is perpendicular to one of the dimensions, in a round-robin fashion (for example, at level 0 it is normal to $x$, at level 1 to $y$, at level 2 to $z$ and so on). Differently from octrees, the plane doesn't necessarily have to pass through the center of the parent node, making their construction even more flexible.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth*\real{0.5}]{Images/TODO.png}
+    \caption{A kd-tree}
+    \label{fig:kd_tree}
+\end{figure}
+
+These are the most prominent spatial data structures used for ray tracing. However, nowadays a object partition structure is used, called bounding volume hierarchy, which we will analyze in the next section.
+
+\subsection{The Bounding Volume Hierarchy}
+A BVH \cite{bvh_primer} is a binary tree\footnote{Technically it can be a tree with any breadth, but binary trees are the most common ones.} where each node wraps some of the triangles in the scene in a bounding volume, usually an axis-aligned bounding box (AABB). Given a node $A$ wrapping the triangles in the set $T_A$, then the two children of $A$, called $B$ and $C$ wrap the triangles in the sets $T_B$ and $T_C$ such that $T_B \cup T_C = T_A$. Thanks to this structure, if a ray doesn't intersect a bounding volume, we deduce that it will not intersect any of the triangles contained in the bounding volume too, making it possible to discard them without having to perform any additional intersection test. 
+
+Assuming the best case scenario where a ray always hits only one of the 2 children of a given node during traversal, if the BVH is balanced, then the complexity to find an intersection between a ray and the scene is $\mathcal{O}(log_2(n))$, where $n$ is the number of triangles. This is not always the case, since it often happens that a ray hits both the children of a given node. One of the heuristic that we propose in this thesis at chapter \ref{ch:splitting_plane_facing_technique}, aims at reducing the number of this expensive situations, by building the BVH in a smart way.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.4]{Images/TODO.png}
+    \caption{A 2-dimensional BVH.}
+    \label{fig:bvh_2d}
+\end{figure}
+
+Despite it is not clear that their raw performance is better than kd-trees', especially on large scenes \cite{bvh_vs_kd_tree}, BVHs became the state-of-the-art acceleration structure for many practical reasons.
+
+First of all, being a object partitioning data structure, they can solve the \textit{teapot in a stadium} problem even better than kd-trees. This is because it is possible to completely cut off empty space.
+
+Moreover, and this is especially relevant in a dynamic real-time scenario such as a videogame, BVHs are easier to update when the geometry of the scene changes \cite{bvh_update}.
+
+BVHs construction algorithm is also simpler than kd-trees', allowing a faster build-time, which can be crucial in highly dynamic real-time applications. And they also have a smaller memory footprint compared to kd-trees \cite{bvh_spatial_splitting} \cite{bvh_advantages}.
+
+\subsection{BVH Construction}
 
 
-% === Chapter 2 ... ===
-\chapter{Projected Area Heuristic} \label{ch:projected_area_heuristc}
+% === Projected Area Heuristic ===
+\chapter{Projected Area Heuristic} \label{ch:projected_area_heuristic}
 Chapter 2
+
+% === Splitting Plane Facing Technique ===
+\chapter{Splitting Plane Facing Technique} \label{ch:splitting_plane_facing_technique}
+Chapter 3
 
 
 % === Bibliography ===

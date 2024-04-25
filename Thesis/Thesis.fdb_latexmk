@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex Thesis"] 1713977554.51243 "Thesis.aux" "Thesis.bbl" "Thesis" 1713977555.06454 2
-  "./Bibliography.bib" 1713977543 7137 fe024b21599891cf2f39f7d098bc8736 ""
-  "Thesis.aux" 1713977552 47838 a860c8a5d58bf302103d15278ee8596e "pdflatex"
+["bibtex Thesis"] 1714068711.70408 "Thesis.aux" "Thesis.bbl" "Thesis" 1714068716.94607 0
+  "./Bibliography.bib" 1714067217 10631 f2eb19352c39d011e5eecb5f49058543 ""
+  "Thesis.aux" 1714068715 52907 d5ab86e4bc77cf9ffa8e936276e8c7ab "pdflatex"
   "p:/Program Files/texlive/2024/texmf-dist/bibtex/bst/natbib/abbrvnat.bst" 1711741124 26532 66bed5cc59495faaa3f9ae9af9fa5e42 ""
   (generated)
   "Thesis.bbl"
   "Thesis.blg"
   (rewritten before read)
-["pdflatex"] 1713977547.10225 "d:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/Thesis/Thesis.tex" "Thesis.pdf" "Thesis" 1713977555.06488 0
+["pdflatex"] 1714068712.19816 "d:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/Thesis/Thesis.tex" "Thesis.pdf" "Thesis" 1714068716.94684 0
   "Images/./raggiera_polimi.eps" 1711810612 1813066 68b21695bbcbb6d7e09839c06406f8f3 ""
   "Images/02_ING_IND_INFORMAZIONE_COL_POSITIVO.eps" 1711810612 1016894 50c9d95dbacdb6a7531ebeec13361098 ""
   "Images/TODO.png" 1713477428 1555 09f24c0bbc14c55fc00324caf9a1dd46 ""
@@ -30,15 +30,15 @@
   "Images/triangle_logo_thin.png" 1713477428 5445 7cd1d98f135bc94b8059ec20c58bd07c ""
   "Images/vertices_sorting.png" 1713477428 30952 6837b3c83fedc96634abfabf11186014 ""
   "PoliMi_MasterThesis.cls" 1713477428 4472 036eefb2d4a1cbcb2bfa3e194ef279b4 ""
-  "Thesis.aux" 1713977552 47838 a860c8a5d58bf302103d15278ee8596e "pdflatex"
-  "Thesis.bbl" 1713977555 4808 94144f437d89310e7b15a8c6e2acf2e7 "bibtex Thesis"
-  "Thesis.lof" 1713977552 5199 50f069e62ba566b093b6b02291ba249c "pdflatex"
-  "Thesis.lot" 1713977552 150 7460b00ca4c2d98f724b7acc062e00fd "pdflatex"
-  "Thesis.out" 1713977552 4929 f7897bae32f63c81064e6798dcc6faa3 "pdflatex"
-  "Thesis.tex" 1713977543 77938 71c6d68d6de2aa1d2a698de5c27a76e0 ""
-  "Thesis.toc" 1713977552 2449 55db6fa4e354dd8cc8a949c031657ed5 "pdflatex"
+  "Thesis.aux" 1714068715 52907 d5ab86e4bc77cf9ffa8e936276e8c7ab "pdflatex"
+  "Thesis.bbl" 1714068712 7987 118fba71bd1298f42915c9ad1b5c5d92 "bibtex Thesis"
+  "Thesis.lof" 1714068715 5413 7afdc350a2bc3f54f2be41d38535becb "pdflatex"
+  "Thesis.lot" 1714068715 170 5172fc40d96ddf0ade05c2687a3253b9 "pdflatex"
+  "Thesis.out" 1714068715 7075 4bd6098b0f6748b0016c8ca765f282ea "pdflatex"
+  "Thesis.tex" 1714068706 91037 e0425f12759237de17e905e238756be2 ""
+  "Thesis.toc" 1714068715 3608 8f93b7002628aa69a915cb13ec81c4e0 "pdflatex"
   "config.tex" 1711814360 2204 0a1f30f56ee90e210ed92d2e51617d7d ""
-  "d:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/Thesis/Thesis.tex" 1713977543 77938 71c6d68d6de2aa1d2a698de5c27a76e0 ""
+  "d:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/Thesis/Thesis.tex" 1714068706 91037 e0425f12759237de17e905e238756be2 ""
   "p:/Program Files/texlive/2024/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc" 1711737852 2971 def0b6c1f0b107b3b936def894055589 ""
   "p:/Program Files/texlive/2024/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc" 1711737852 2900 1537cc8184ad1792082cd229ecc269f4 ""
   "p:/Program Files/texlive/2024/texmf-dist/fonts/map/fontname/texfonts.map" 1711739095 3524 cb3e574dea2d1052e39280babc910dc8 ""
@@ -95,6 +95,7 @@
   "p:/Program Files/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb" 1711736942 36299 5f9df58c2139e7edcf37c8fca4bd384d ""
   "p:/Program Files/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb" 1711736942 36741 0ee9e374ec3e30da87cdfb0ea3575226 ""
   "p:/Program Files/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb" 1711736942 37166 8ab3487cbe3ab49ebce74c29ea2418db ""
+  "p:/Program Files/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb" 1711736942 36281 c355509802a035cadc5f15869451dcee ""
   "p:/Program Files/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb" 1711736942 35469 dcf3a5f2fc1862f5952e3ee5eb1d98c4 ""
   "p:/Program Files/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmmib10.pfb" 1711736942 36912 b448ef9ad9d7228ec3c6e71005136d55 ""
   "p:/Program Files/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb" 1711736942 35752 024fb6c41858982481f6968b5fc26508 ""
