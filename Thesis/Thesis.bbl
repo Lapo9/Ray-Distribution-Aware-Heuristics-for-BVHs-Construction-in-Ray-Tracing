@@ -1,9 +1,14 @@
-\begin{thebibliography}{31}
+\begin{thebibliography}{38}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
   \providecommand{\doi}[1]{doi: #1}\else
   \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Aila et~al.(2013)Aila, Karras, and Laine]{bvh_overlapping_metric}
+T.~Aila, T.~Karras, and S.~Laine.
+\newblock On quality metrics of bounding volume hierarchies.
+\newblock In \emph{Proceedings of the 5th High-Performance Graphics Conference}, pages 101--107, 2013.
 
 \bibitem[Akenine-M\"{o}ller et~al.(2018)Akenine-M\"{o}ller, Haines, Hoffman, Pesce, Iwanicki, and Hillaire]{separating_axis_test}
 T.~Akenine-M\"{o}ller, E.~Haines, N.~Hoffman, A.~Pesce, M.~Iwanicki, and S.~Hillaire.
@@ -64,6 +69,11 @@ A.~E. Kaufman and K.~Mueller.
 \newblock Overview of volume rendering.
 \newblock \emph{The visualization handbook}, 7:\penalty0 127--174, 2005.
 
+\bibitem[Keller et~al.(2015)Keller, Fascione, Fajardo, Georgiev, Christensen, Hanika, Eisenacher, and Nichols]{path_tracing_movies}
+A.~Keller, L.~Fascione, M.~Fajardo, I.~Georgiev, P.~Christensen, J.~Hanika, C.~Eisenacher, and G.~Nichols.
+\newblock The path tracing revolution in the movie industry.
+\newblock In \emph{ACM SIGGRAPH 2015 Courses}, pages 1--7. 2015.
+
 \bibitem[Kirk and Arvo(1991)]{mailboxing}
 D.~Kirk and J.~Arvo.
 \newblock Improved ray tagging for voxel-based ray tracing.
@@ -73,6 +83,11 @@ D.~Kirk and J.~Arvo.
 D.~Kopta, T.~Ize, J.~Spjut, E.~Brunvand, A.~Davis, and A.~Kensler.
 \newblock Fast, effective bvh updates for animated scenes.
 \newblock In \emph{Proceedings of the ACM SIGGRAPH Symposium on Interactive 3D Graphics and Games}, pages 197--204, 2012.
+
+\bibitem[Lafortune and Willems(1993)]{bidirectional_path_tracing}
+E.~P. Lafortune and Y.~D. Willems.
+\newblock Bi-directional path tracing.
+\newblock 1993.
 
 \bibitem[Lee and Lim(2017)]{shoelace_formula}
 Y.~Lee and W.~Lim.
@@ -166,9 +181,30 @@ H.~Weghorst, G.~Hooper, and D.~P. Greenberg.
 \newblock Improved computational methods for ray tracing.
 \newblock \emph{ACM Transactions on Graphics (TOG)}, 3\penalty0 (1):\penalty0 52--69, 1984.
 
+\bibitem[Wei()]{obb_construction}
+J.~Wei.
+\newblock Obb generation via principal component analysis.
+\newblock \url{https://hewjunwei.wordpress.com/2013/01/26/obb-generation-via-principal-component-analysis/}.
+\newblock Accessed: (02/02/2024).
+
 \bibitem[Wodniok and Goesele(2017)]{bvh_advantages}
 D.~Wodniok and M.~Goesele.
 \newblock Construction of bounding volume hierarchies with sah cost approximation on temporary subtrees.
 \newblock \emph{Computers \& Graphics}, 62:\penalty0 41--52, 2017.
+
+\bibitem[Woop et~al.(2014)Woop, Benthin, Wald, Johnson, and Tabellion]{obbs_for_bvhs}
+S.~Woop, C.~Benthin, I.~Wald, G.~S. Johnson, and E.~Tabellion.
+\newblock Exploiting local orientation similarity for efficient ray traversal of hair and fur.
+\newblock \emph{High Performance Graphics}, 3, 2014.
+
+\bibitem[Wynn(2000)]{brdf}
+C.~Wynn.
+\newblock An introduction to brdf-based lighting.
+\newblock \emph{Nvidia Corporation}, 4\penalty0 (3), 2000.
+
+\bibitem[Young(1989)]{pinhole_camera}
+M.~Young.
+\newblock The pinhole camera.
+\newblock \emph{The Phys. Teacher}, pages 648--655, 1989.
 
 \end{thebibliography}
