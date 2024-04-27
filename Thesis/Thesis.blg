@@ -4,58 +4,63 @@ The top-level auxiliary file: Thesis.aux
 The style file: abbrvnat.bst
 Database file #1: Bibliography.bib
 Warning--I didn't find a database entry for "curse_of_dimensionality"
+Warning--empty publisher in separating_axis_test
 Warning--empty year in importons
 Warning--empty year in sdf
+Warning--empty journal in real_time_path_guiding
+Warning--can't use both volume and number fields in distribution_aware_bvhs
 Warning--empty year in nanite
 Warning--empty publisher in path_tracing_movies
 Warning--empty journal in bidirectional_path_tracing
+Warning--empty publisher in multi_light_sampling
 Warning--empty year in convex_hull_culling
 Warning--empty year in monte_carlo_estimators_scratchapixel
 Warning--empty year in monte_carlo_properties
 Warning--empty year in ray_triangle_intersection
 Warning--empty year in lotus
 Warning--empty year in monte_carlo_integration
+Warning--empty publisher in path_guiding
 Warning--can't use both volume and number fields in ray_coherency
 Warning--empty year in obb_construction
-You've used 38 entries,
+You've used 44 entries,
             2773 wiz_defined-function locations,
-            808 strings with 10863 characters,
-and the built_in function-call counts, 16645 in all, are:
-= -- 1485
-> -- 881
-< -- 34
-+ -- 308
-- -- 267
-* -- 1188
-:= -- 2507
-add.period$ -- 129
-call.type$ -- 38
-change.case$ -- 200
-chr.to.int$ -- 35
-cite$ -- 89
-duplicate$ -- 805
-empty$ -- 1437
-format.name$ -- 319
-if$ -- 3554
+            836 strings with 11751 characters,
+and the built_in function-call counts, 19822 in all, are:
+= -- 1764
+> -- 1069
+< -- 42
++ -- 371
+- -- 324
+* -- 1438
+:= -- 2966
+add.period$ -- 149
+call.type$ -- 44
+change.case$ -- 236
+chr.to.int$ -- 41
+cite$ -- 106
+duplicate$ -- 969
+empty$ -- 1704
+format.name$ -- 385
+if$ -- 4248
 int.to.chr$ -- 4
 int.to.str$ -- 1
-missing$ -- 29
-newline$ -- 210
-num.names$ -- 152
-pop$ -- 504
+missing$ -- 35
+newline$ -- 238
+num.names$ -- 176
+pop$ -- 598
 preamble$ -- 1
-purify$ -- 165
+purify$ -- 195
 quote$ -- 0
-skip$ -- 611
+skip$ -- 730
 stack$ -- 0
-substring$ -- 487
-swap$ -- 121
-text.length$ -- 10
+substring$ -- 574
+swap$ -- 153
+text.length$ -- 16
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 403
-warning$ -- 13
-while$ -- 156
+type$ -- 469
+warning$ -- 18
+while$ -- 183
 width$ -- 0
-write$ -- 502
-(There were 14 warnings)
+write$ -- 575
+(There were 19 warnings)

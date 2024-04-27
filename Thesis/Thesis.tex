@@ -589,20 +589,33 @@ It is possible to note that the function is made up of 3 terms: the $BRDF$, the 
 	\item[Light sampling] The sampling PDF should be proportional to the $L_i$ term of the rendering equation.
 \end{description}
 
-Light sampling is particularly problematic because we almost never have an analytical form of the $L_i$ function. The most used form of light sampling is called next event estimation (NEE), and is achieved by casting rays towards direct light sources. The way in which the light source to sample is chosen can be completely random or require complex strategies, such as in the case described here. 
+Light sampling is particularly problematic because we almost never have an analytical form of the $L_i$ function. The most used form of light sampling is called next event estimation (NEE), and is achieved by casting rays towards direct light sources. The way in which the light source to sample is chosen can be completely random or require complex strategies, such as in the case described in this article in the book \textit{Ray Tracing Gems}: \cite{multi_light_sampling}.
 
-The main issue with next event estimation is that a direct light can be occluded by an object, or, conversely, a strong light could come from an indirect source, such as a reflection. For this reason, another technique, called path guiding, has been developed to consider mainly indirect lighting in the sampling PDF. Path guiding can be computationally expensive, therefore is often used in non-real-time scenarios, even though approximations have been proposed even for real-time ray tracing.
+The main issue with next event estimation is that a direct light can be occluded by an object, or, conversely, a strong light could come from an indirect source, such as a reflection. For this reason, another technique, called path guiding \cite{path_guiding}, has been developed to consider mainly indirect lighting in the sampling PDF. Path guiding can be computationally expensive, therefore is often used in non-real-time scenarios, even though approximations have been proposed even for real-time ray tracing, such as \cite{real_time_path_guiding}.
 
-Using BRDF sampling or light sampling in isolation as variance reduction PDFs can give better or worse results mainly based on the rendered section of the scene. For example, in an well illuminated scene with a mirror, using light sampling gives bad results. This happens because the BRDF of the mirror is null everywhere except for a spike in the perfect reflection direction. This means that its weight in the integrand is much more important than the weight of the $L_i$ term, which is almost constant being the scene well illuminated. If we use light sampling we will cast rays almost uniformly, and many of them will lose all of their energy as soon as they hit the mirror and reflect to a non-perfect-reflection direction.
+\begin{figure}[H]
+    \centering
+    \subfloat[Next event estimation]{
+        \includegraphics[width=\textwidth*\real{0.42}]{Images/noisy_image.jpeg}
+	}
+	\qquad
+	\subfloat[Path guiding]{
+        \includegraphics[width=\textwidth*\real{0.42}]{Images/less_noisy_image.png}
+    }
+	\caption{With NEE light is directly cast toward direct light sources. With path guiding, indirect illumination is taken into account in order to build a better sampling PDF, at a higher cost.}
+    \label{fig:nee_and _path_guiding}
+\end{figure}
 
-On the contrary, in a scene with rough materials (such as concrete) and with few distant light sources, using light sampling would be beneficial, since many of the rays would be casted towards a light, instead of toward the void.
+Using BRDF sampling or light sampling in isolation as variance reduction PDFs can give better or worse results mainly based on the rendered section of the scene. For example, in a well illuminated scene with a mirror, using light sampling gives bad results. This happens because the BRDF of the mirror is null everywhere except for a spike in the perfect reflection direction. This means that its weight in the integrand is much more important than the weight of the $L_i$ term, which is almost constant being the scene well illuminated. If we use light sampling we will cast rays almost uniformly, and many of them will lose all of their energy as soon as they hit the mirror and reflect to a non-perfect-reflection direction.
+
+On the contrary, in a scene with rough materials (such as concrete) and with few distant light sources, using light sampling would be beneficial, since many of the rays would be cast toward a light, instead of toward the void.
 
 To remedy the problem of choosing the right importance sampling technique based on the portion of the scene, a new technique has been developed, called multiple importance sampling (MIS). Since the technique is an extension to importance sampling, it will be described in appendix \ref{ch:mis}.
 
-The key take away from this section is that with importance sampling we use a non-uniform PDF to sample probe rays. This creates artifacts in the ray distribution in the scene. In particular, if next event estimation is used, a big part of the rays will tend to go toward light sources. In chapter \ref{ch:projected_area_heuristic} we will study how these artifacts in the ray distribution can be exploited to design a faster technique to traverse a bounding volume hierarchy, which is the main subject of the next section \ref{sec:ray_tracing_acceleration_structures}.
+The key take away from this section is that with importance sampling we use a non-uniform PDF to sample probe rays from. This creates artifacts in the ray distribution in the scene. In particular, if next event estimation is used, a big part of the rays will tend to go toward light sources. In chapter \ref{ch:projected_area_heuristic} we will study how these artifacts in the ray distribution can be exploited to design a faster technique to traverse a bounding volume hierarchy, which is the main subject of the next section \ref{sec:ray_tracing_acceleration_structures}.
 
 \section{Ray Tracing Acceleration Structures} \label{sec:ray_tracing_acceleration_structures}
-In this section we will describe the first family of software optimizations we talked about in section \ref{ssec:optimizations_overview}. These optimizations aim at reducing the time needed to find the intersections between a ray and the geometry of the scene. Usually this is achieved by organizing the scene geometry in a spatial data structure, or by wisely choosing the order in which rays are cast, in order to improve the spatial coherency of the accesses data by the GPU \cite{ray_coherency}. We will focus on the state-of-the-art acceleration data structure, called bounding volume hierarchy (BVH), and present how it is constructed and traversed. We will eventually show how some of the assumptions on which the construction algorithm is based don't hold true, which will be the main subject of the novel approach we propose in the next chapter \ref{ch:projected_area_heuristic}.
+In this section we will describe the first family of software optimizations we talked about in section \ref{ssec:optimizations_overview}. These optimizations aim at reducing the time needed to find the intersections between a ray and the geometry of the scene. Usually this is achieved by organizing the scene geometry in a spatial data structure, or by wisely choosing the order in which rays are cast, in order to improve the spatial coherency of the data accesses on the GPU \cite{ray_coherency}. After a brief description of older acceleration structures, we will focus on the state-of-the-art acceleration data structure, called bounding volume hierarchy (BVH), and present how it is constructed. We will eventually show the assumptions on which the construction algorithm is based, whose refutation will be the main subject of the novel approach we propose in the next chapter \ref{ch:projected_area_heuristic}.
 
 \subsection{The Need for Acceleration Structures}
 As we've seen throughout this chapter, in any of the algorithms of the ray tracing family, casting rays is the core of the procedure. Rays are primarily cast from the camera toward the scene, and subsequently, based on the specific algorithm used, they hit objects and bounce off of them. Until now, however, we have overlooked how, in a concrete scenario, the algorithm can detect what is the object hit by the ray. 
@@ -611,11 +624,18 @@ Before delving into the algorithms that can be used to carry out this task, it i
 
 A polygonal mesh describes an object by defining its surface via points, edges and faces (usually triangles). Meshes's success derived from the fact that they were one of the first representations proposed in the world of computer graphics. This led to a big part of the research converging to this specific representation form. For example, GPUs are specialized for the rendering of trianglular meshes via rasterization, even though in the last few years their architecture has been made more flexible.
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth*\real{0.7}]{Images/TODO.png}
+    \caption{A triangular mesh.}
+    \label{fig:triangular_mesh}
+\end{figure}
+
 Meshes are also handy to create for graphic artists, and can be easily modeled to represent many kinds of objects, even though they are not suited to represent liquids or gases, such as clouds. Meshes, since they describe only the outside surface of an object, can prove difficult to use in applications where the interior is important, such as medical visualizations or games where objects can be dynamically destroyed. In these context it is usually preferred to employ voxels. Moreover meshes are a discrete representation, meaning that, once created, they cannot be used to visualize the details of the object at an arbitrary resolution, contrary to implicit functions. However, techniques to change the resolution based on the dynamic situation have been developed, such as LODing, tessellation \cite{tessellation} or more recent methods such as Nanite \cite{nanite}.
 
 Regardless of their advantages and disadvantages, triangular meshes are by far the most used representation, therefore in this work we decided to focus on them in the scenario where the rendering technique is an algorithm of the ray tracing family.
 
-In order to find the intersection between a ray and a list of meshes, we need to test the intersection between the ray and all the triangles making up the meshes, and keep the closest intersection\footnote{In some scenarios, such as when we just want to check for occlusion, it is not necessary to find the closest intersection, but just to find an intersection. In this case some optimizations can be developed, but the core concepts remain the same.}.
+In order to find the intersection between a ray and a list of meshes making up a scene, we need to test the intersections between the ray and all the triangles making up the meshes, and keep the closest one\footnote{In some scenarios, such as when we just want to check for occlusion, it is not necessary to find the closest intersection, but just to find an intersection. In this case some optimizations can be developed, but the core concepts remain the same.}.
 
 The naive way of detecting the intersection is the brute-force solution to iterate over all of the triangles and storing the closest intersection found so far. The algorithm we used to detect the intersection between a ray and a triangle in our implementation can be found in appendix \ref{sec:ray_triangle_intersection}. Despite working, this method cannot be practically used either in real-time scenarios, nor in non-real-time ones. The problem resides in the fact that there are too many triangles to test against. Even in a non-real-time case this approach would be too expensive, because, even if the time budget for a frame is big, meshes created for non-real-time purposes usually have a way higher triangle resolution, and also way more rays to trace. From a complexity point of view, tracing a scene with $n$ triangles and $m$ rays in this way has complexity $\mathcal{O}(m\cdot n)$.
 
@@ -631,18 +651,39 @@ Historically, initially the first family of acceleration structures has been use
 
 The first space partitioning acceleration structure developed is the uniform grid. In this structure the 3-dimensional space of the scene is subdivided into static fixed-sized cells in a regular pattern. Then, each triangle is assigned to all the cells it at least partially covers. This can be at least a single cell, to, potentially all the cells of the scene. When a ray is traced, first, a cell it intersects is found, and then, all the triangles inside this cell are tested against the ray. This is repeated for all the cells the ray hits in its path. If an intersection $P$ is found, then, all the cells that are at a further distance from the ray origin than $P$ can be discarded without testing individual triangles.
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth*\real{0.5}]{Images/TODO.png}
+    \caption{The uniform grid in 2D.}
+    \label{fig:uniform_grid}
+\end{figure}
+
 The uniform grid, while being an improvement over the brute-force approach, still lacks adaptability. Based on how the scene is composed, it is possible for some cells to be empty and others overcrowded. Moreover, as in any space partitioning data structure, it is possible that a triangle is tested more than once if it overlaps more than one cell. This could be avoided by using some intersection caching techniques, such as mailboxing \cite{mailboxing}.
 
-In order to solve the adaptability problem of the uniform grid, octrees started being used. An octree is another 3D spatial data structure, and it is a tree where each node has 8 children. To subdivide a node into 8 children, it is divided by 3 planes, one perpendicular to each dimension, passing from the center of the parent node. This process is recursively executed until a specified amount of objects (triangles) remains inside a single node, or until the depth of the tree gets past a threshold. Since the octree is a complete tree, and the size and center of each child can be automatically computed starting from the size of the root and the level\footnote{$size_{children} = size_{root} / 2^{level}$ given that the root has level $0$.}, it is possible to store the octree in an implicit array structure, making it more efficient both from an access and space point of view.
-
-It is important to note how octrees adapt better to the scene. Indeed, compared to fixed grids, they alleviate the \textit{teapot in the stadium} problem, namely the issue that appears when there is a scene with different densities of objects. For example, precisely what happens when we have a small but high-resolution object (a teapot), inside a big and mostly empty space (a stadium). With octrees this problem is handled by having few big and empty cells in the regions where there is a low density of triangles, and many small cells where there are high-resolution objects. In this way less memory is wasted, and even traversal is improved. Indeed, if a ray passes through empty space, just few cells must be checked, instead of a bigger amount as in the case of a uniform structure like the fixed grid. Conversely, in case a ray goes through a dense region, fewer triangle tests will be carried out, because the cells the ray intersects are smaller and not overcrowded. Another advantage of octrees is that they are a tree data structure. This implies that if a node is not hit by a ray, all its children can be immediately discarded.
-
-Another structure that is a generalization of octrees and delivers similar performance are kd-trees. In 3D kd-trees each node is split into 2 children by a plane. At each level the plane is perpendicular to one of the dimensions, in a round-robin fashion (for example, at level 0 it is normal to $x$, at level 1 to $y$, at level 2 to $z$ and so on). Differently from octrees, the plane doesn't necessarily have to pass through the center of the parent node, making their construction even more flexible.
+In order to solve the adaptability problem of the uniform grid, octrees started being used. An octree is another 3D spatial data structure, and it is a tree where each node has 8 children. To subdivide a node into 8 children, it is divided by 3 planes, one perpendicular to each dimension, passing from the center of the parent node. This process is recursively executed until a specified amount of objects (triangles) remains inside a single node, or until the depth of the tree gets past a threshold. Since the octree is a complete tree, and the size and center of each child can be automatically computed starting from the size of the root and the level\footnote{$size_{children} = size_{root} / 2^{level}$ given that the root has level $0$.}, it is possible to store the octree in an implicit array structure, making it more efficient both from an access pattern and space point of view.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth*\real{0.5}]{Images/TODO.png}
-    \caption{A kd-tree}
+    \caption{A 2D octree..}
+    \label{fig:octree}
+\end{figure}
+
+It is important to note how octrees adapt better to the scene. Indeed, compared to fixed grids, they alleviate the \textit{teapot in the stadium} problem, namely the issue that appears when there is a scene with different densities of objects. For example, precisely what happens when we have a small but high-resolution object (a teapot), inside a big and mostly empty space (a stadium). With octrees this problem is handled by having few big and empty cells in the regions where there is a low density of triangles, and many small cells where there are high-resolution objects. In this way less memory is wasted, and even traversal is improved. Indeed, if a ray passes through empty space, just few cells must be checked, instead of a bigger amount as in the case of a uniform structure like the fixed grid. Conversely, in case a ray goes through a dense region, fewer triangle tests will be carried out, because the cells the ray intersects are smaller and not overcrowded. Another advantage of octrees is that they are a tree data structure. This implies that if a node is not hit by a ray, all its children can be immediately discarded.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth*\real{0.5}]{Images/TODO.png}
+    \caption{How an octree adapts to a \textit{teapot in the stadium} kind of scene.}
+    \label{fig:octree_teapot_stadium}
+\end{figure}
+
+Another structure that is a generalization of octrees and delivers similar performance is the kd-tree. In 3D kd-trees each node is split into 2 children by a plane. At each level the plane is perpendicular to one of the dimensions, in a round-robin fashion (for example, at level 0 it is normal to $x$, at level 1 to $y$, at level 2 to $z$ and so on). Differently from octrees, the plane doesn't necessarily have to pass through the center of the parent node, making their construction even more flexible.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth*\real{0.5}]{Images/TODO.png}
+    \caption{A kd-tree in 2D.}
     \label{fig:kd_tree}
 \end{figure}
 
@@ -655,13 +696,34 @@ Assuming the best-case scenario where a ray always hits only one of the 2 childr
 
 The bounding volume in which a BVH encloses triangles should have a form that is cheap to intersect with a ray, and also cheap to build given a set of triangles.
 
-A choice can be a sphere, which is easy to test against a ray. Moreover, building the tightest enclosing sphere given a set of triangles is as simple as finding the 2 triangles furthest away in each direction, computing the middle point and setting as radius the distance between the furthest triangle and the middle point. The negative aspect of using bounding sphere lies in the fact that a sphere extends equally in all directions in 3D space. This means that if the triangles are displaced in a way where they extend more in one direction than in other ones, the bounding sphere will present a lot of slack space, and won't enclose the triangles thightly. This is not ideal, because in the traversal step a non-tight bounding volume generates a lot of false positives, namely situations where the bounding volume is hit but no triangle is intersected.
+A choice can be a sphere, which is easy to test against a ray. Moreover, building the tightest enclosing sphere given a set of triangles is as simple as finding the 2 triangles furthest away in each direction, computing the middle point and setting as radius the distance between the furthest triangle and the middle point. The negative aspect of using bounding spheres lies in the fact that a sphere extends equally in all directions in 3D space. This means that if the triangles are displaced in a way where they extend more in one direction than in other ones, the bounding sphere will present a lot of slack space, and won't enclose the triangles thightly. This is not ideal, because in the traversal phase a non-tight bounding volume generates a lot of false positives, namely situations where the bounding volume is hit but no triangle is intersected.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth*\real{0.4}]{Images/TODO.png}
+    \caption{Bounding circle (2D bounding sphere) can present large slack spaces.}
+    \label{fig:bounding_sphere}
+\end{figure}
 
 At the opposite side of the spectrum there are polygonal bounding volumes. In this case they are able to thightly enclose the triangles, but building them is not easy, and intersecting them can prove as expensive as intersecting the set of triangles itself.
 
-Another option is using oriented bounding boxes (OBB). Oriented bounding boxes in 3D are rectangle parallelepiped. This means that they can have a different extension in 3 different arbitrary directions, making them better at tightly enclosing any distribution of triangles compared to spheres. However, computing a tightly enclosing OBB starting from the set of triangles involves using the principal component analysis \cite{obb_construction}, which can be too expensive in real-time scenarios. Moreover, intersecting a ray against an OBB involves a rotation transformation, which, again, can be too slow, especially during the traversal phase. In general OBBs are too slow in many scenarios, but, given their ability to tightly enclose triangles, can be used along with AABBs \cite{obbs_for_bvhs}.
+Another option is using oriented bounding boxes (OBB). Oriented bounding boxes in 3D are rectangle parallelepiped. This means that they can have a different extension in 3 different arbitrary directions (each one perpendicular to the remaining two), making them better at tightly enclosing any distribution of triangles compared to spheres. However, computing a tightly enclosing OBB starting from the set of triangles involves using the principal component analysis \cite{obb_construction}, which can be too expensive in real-time scenarios. Moreover, intersecting a ray against an OBB involves a rotation transformation, which, again, can be too slow, especially during the traversal phase. In general OBBs are too slow in many scenarios, but, given their ability to tightly enclose triangles, can be used along with AABBs \cite{obbs_for_bvhs}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth*\real{0.4}]{Images/TODO.png}
+    \caption{A 2D OBB.}
+    \label{fig:obb}
+\end{figure}
 
 Axis-aligned bounding boxes (AABB) are the most used bounding volumes. AABBs are OBBs that have no rotation, and are always aligned with the cartesian axes. This means that AABBs can indeed have a different extension in 3 directions, but the directions are limited to the ones of the cartesian axes. These limitations make them worse at tightly enclosing triangles than OBBs, but at the same time make it way easier to build them and intersect them with a ray. To build an AABB starting from a set of triangles, it suffices to iterate over all the triangles and keep track of the minimum and maximum point in all 3 dimensions. An AABB is then fully described by its minimum and maximum point. The algorithm to test whether a ray intersects an AABB is fast and can be implemented in a GPU-friendly branchless way, as described in appendix \ref{sec:ray_box_intersection}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth*\real{0.4}]{Images/TODO.png}
+    \caption{A 2D AABB.}
+    \label{fig:aabb}
+\end{figure}
 
 AABBs are the most used bounding volumes both in real-time and non-real-time ray tracing. For this reason, from now on, when we refer to a BVH we will always consider the case of a BVH based on AABBs.
 
@@ -674,14 +736,14 @@ AABBs are the most used bounding volumes both in real-time and non-real-time ray
 
 Despite it is not clear that BVHs' raw performance is better than kd-trees', especially on large scenes \cite{bvh_vs_kd_tree}, they became the state-of-the-art acceleration structure for many practical reasons.
 
-First of all, being an object partitioning data structure, they can solve the \textit{teapot in a stadium} problem even better than kd-trees. This is because it is possible to completely cut off empty space.
+First of all, being an object partitioning data structure, they can solve the \textit{teapot in a stadium} problem even better than kd-trees. This is because it is possible to completely cut off empty space, as it is possible to observe in figure \ref{fig:bvh_2d}.
 
 Moreover, and this is especially relevant in a dynamic real-time scenario such as a videogame, BVHs are easier to update when the geometry of the scene changes \cite{bvh_update}.
 
-BVHs construction algorithm is also simpler than kd-trees', allowing a faster build-time, which can be crucial in highly dynamic real-time applications. And they also have a smaller memory footprint compared to kd-trees \cite{bvh_spatial_splitting} \cite{bvh_advantages}.
+BVHs construction algorithm is also simpler than kd-trees', allowing a faster build-time, which can be crucial in highly dynamic real-time applications. And they also have a smaller memory footprint compared to kd-trees, as mentioned in \cite{bvh_spatial_splitting} and \cite{bvh_advantages}.
 
 \subsection{BVH Construction}
-Building the optimal BVH according to some metric is an NP-complete problem. In order to do so the algorithm would have to build all the possible BVHs given a set of triangles, compute the metric and keep the best one. The number of possible different binary trees grows factorially with the number of leaves. Given $n$ leaves, the number of possible binary trees is the $n-1$ Catalan number: $C_{n} = \frac{(2n)!}{(n+1)! \cdot n!}$. The number of possible BVHs is even bigger, because, since a leaf can contain more than one triangle, it is not a given that the number of leaves corresponds to the number of triangles.
+Building the optimal BVH according to some metric is an NP-complete problem. In order to do so the algorithm would have to build all the possible BVHs given a set of triangles, compute the metric and keep the best one. The number of possible different binary trees grows factorially with the number of leaves. Given $n$ leaves, the number of possible binary trees is the $n-1$ Catalan number \cite{catalan_numbers}: $C_{n} = \frac{(2n)!}{(n+1)! \cdot n!}$. The number of possible BVHs is even bigger, because, since a leaf can contain more than one triangle, it is not a given that the number of leaves corresponds to the number of triangles.
 
 Given that building the optimal BVH is not feasible even in a non-real-time scenario, research started studying methods to build a BVH with an acceptable quality faster. This resulted in the use of greedy algorithms and heuristics.
 
@@ -728,6 +790,13 @@ Given the set of triangles of the parent node, in this phase the algorithm tries
 
 In order to split the triangles into two subsets, a plane is chosen, and based on which side of the plane the barycenter of each triangle is, the triangle is assigned to one of the two subsets. This means that it is possible that a triangle has some vertices in the opposite semispace compared to the one it has been assigned to. This is one of the reasons why two children can have some of their volumes overlapping. 
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.4]{Images/TODO.png}
+    \caption{Triangles splitting via arbitrary plane.}
+    \label{fig:triangles_splitting}
+\end{figure}
+
 As shown by \cite{bvh_overlapping_metric} too much overlapping between children nodes leads to a decrease in the quality of the final BVH. For this reason, in chapter \ref{ch:splitting_plane_facing_technique} we propose a novel technique trying to take into account the overlapping during this phase of BVH construction.
 
 In order to choose which plane to use to split the triangles, some optimizations can be employed. In BVHs based on AABBs it is useful to try to split the triangles only in the 3 cartesian directions. Usually just one of the directions is chosen, in order to further optimize the process. The way in which the direction is chosen can vary based on the methods used. An often employed technique is to cut along the longest dimension of the parent AABB. Another one is to cut in a round-robin fashion, similar to what is done in kd-trees. In chapter \ref{ch:splitting_plane_facing_technique} we propose a novel method, as mentioned above.
@@ -736,9 +805,22 @@ Another advantage of using only the 3 cartesian directions is that in order to d
 
 After choosing a splitting direction, all possible cuts in that direction should be tested. Given an amount on $n$ triangles to be splitted, trying all the possible cuts in one direction means trying $n-1$ subdivisions, where the splitting plane is placed each time on the barycenter of a triangle. Since $n$ can be a big number, especially while running the algorithm on the first levels of the BVH where nodes are big, a technique called binning can be introduced.
 
-With binning, instead of trying every possible cut, a predefined number of cuts is attempted. The splitting plane is translated each time by a fixed length (a bin) along the chosen cutting direction from the position of the previous cut. By using binning it is possible to miss some of the possible cuts, especially in a region dense of triangles. However, the most relevant cuts are often positioned where there is a big gap in one direction between two consecutive triangles. This is because it is possible to leverage the big gap to cut off as much space as possible. Whereas, if the gap is small, it is likely that the resulting children nodes' AABBs overlaps. For this reason binning is an efficient approximation, especially in the higher levels of the BVH.
+With binning, instead of trying every possible cut, a predefined number of cuts is attempted. The splitting plane is translated each time by a fixed length (a bin) along the chosen cutting direction from the position of the previous cut. By using binning it is possible to miss some of the possible cuts, especially in a region dense of triangles. However, the most relevant cuts are often positioned where there is a big gap in one direction between two consecutive triangles. This is because it is possible to leverage the big gap to cut off as much space as possible. Whereas, if the gap is small, it is likely that the resulting children nodes' AABBs overlap. For this reason binning is an efficient approximation, especially in the higher levels of the BVH.
 
-After generating the two subsets of triangle, the enclosing AABBs must be built. The process to build an AABB from a set of triangles is straight-forward, and is summarized by this algorith:
+\begin{figure}[H]
+    \centering
+    \subfloat[Triangles splitting without binning]{
+        \includegraphics[width=\textwidth*\real{0.42}]{Images/TODO.png}
+	}
+	\qquad
+	\subfloat[Triangles splitting with binning]{
+        \includegraphics[width=\textwidth*\real{0.42}]{Images/TODO.png}
+    }
+	\caption{With binnin it is possible to lose some cuts, but the most relevant ones are always found.}
+    \label{fig:triangles_splitting_binning}
+\end{figure}
+
+After generating the two subsets of triangle, the enclosing AABBs must be built. The process to build an AABB from a set of triangles is straight-forward, and is summarized by this algorithm:
 \begin{algorithm}[H]
 	\caption{AABB building from triangles set.}
 	\begin{algorithmic}[1]
@@ -761,7 +843,7 @@ After generating the two subsets of triangle, the enclosing AABBs must be built.
 \end{algorithm} 
 
 \subsubsection{Cost Computation - Surface Area Heuristic}
-In the previous section we have described how a standard BVH construction algorithm can split the triangles of a node into two subsets, and compute the AABB for each one of them. In this section we will analyze how, the algorithm decides whether a split is better than another one.
+In the previous section we have described how a standard BVH construction algorithm can split the triangles of a node into two subsets, and compute the AABB for each one of them. In this section we will analyze how the algorithm decides whether a split is better than another one.
 
 To choose the best split, a BVH construction algorithm sorts the splits proposed by the splitting triangles phase by assigning to each one a value through a cost function. 
 
@@ -774,17 +856,25 @@ $$A=(max_x-min_x)\cdot (max_y-min_y) + (max_x-min_x)\cdot (max_z-min_z) + (max_y
 
 Now, we would like to have a cost function that is agnostic to the absolute size of the scene. For this reason, instead of using directly the surface area to compute the cost metric, we transform it into the probability that a ray hits a specific node.
 
-To do so SAH makes some reasonable assumptions on how some properties of the rays in the scene:
+To do so SAH makes some reasonable assumptions on some properties of the rays in the scene:
 \begin{itemize}
 	\item A ray always hits the AABB enclosing the whole scene;
-	\item Rays are uniformly distributed in their direction space;
-	\item All rays have origin outside the AABB enclosing the whole scene.
+	\item All rays have origin outside the AABB enclosing the whole scene, and their positions are uniformly distributed;
+	\item Rays never intersect any primitive, and are infinitely long;
+	\item Rays are uniformly distributed in their direction space.
 \end{itemize}
 
-With these assumptions in place, we can define the probability a ray hits a node $K$ as:
+With these assumptions in place, which we'll analyze better in section \ref{sec:sah_hypotheses_fall}, we can define the probability a ray hits a node $K$ as:
 $$p(ray\; hits\; K) = \frac{Area_K}{Area_{root}}$$
 
 Since all rays hit the root AABB, we can interpret it as the certain event. And since the rays' directions are uniformly distributed, the surface area can be mathematically interpreted as a measure of how likely it is for a ray to hit an AABB.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.5]{Images/TODO.png}
+    \caption{Visual relationship between AABB area and hit probability in 2D, under the assumption rays are uniformly distributed.}
+    \label{fig:area_probability_visual}
+\end{figure}
 
 Finally, in order to compute the cost function, we have to also take into account the cost of the intersection test between a ray and a triangle, and a ray and an AABB. In literature a cost of $1.2$ is assigned to the first test, and a cost of $1$ to the second one.
 
@@ -793,24 +883,63 @@ $$Cost_{SAH}(K) = \frac{Area_K}{Area_{root}} \cdot \#triangles_K \cdot 1.2$$
 
 The $\#triangles_K \cdot 1.2$ part tells us that when this node is hit by a ray, a ray-intersection test per triangle must be carried out. The term $\frac{Area_K}{Area_{root}}$ weights the cost of computing the ray-intersection tests with the probability that this node is actually hit. This means that, even if a node has a lot of triangles in it, if these triangles are all packed in a small region, the cost of the node will not be too high, because it is unlikely for a ray to hit the node in the first place.
 
-It is important to note that this formula returns the cost of a node in isolation. But the nodes we are dealing with are part of a BVH. In other words, when an internal node of a BVH is hit, this doesn't trigger a ray-triangle test for all of its triangles (as suggested by the formula), but only recursively triggers ray-AABB test against its two children. Only when this formula is used on leaf nodes, the returned cost actually reflects the real cost of a ray intersecting the node.
+It is important to note that this formula returns the cost of a node in isolation. But the nodes we are dealing with are part of a BVH. In other words, when an internal node of a BVH is hit, this doesn't trigger a ray-triangle test for all of its triangles (as suggested by the formula), but only recursively triggers ray-AABB tests against its two children. Only when this formula is used on leaf nodes, the returned cost actually reflects the real cost of a ray intersecting the node.
 
-Therefore why are we suggesting to use this formula? The answer is that we are building the BVH with a greedy algorithm. When we have to evaluate a node, we have no way to know how its children will be, therefore the only way is to estimate its cost as if it didn't have any children at all, as if it was a leaf node.
+Therefore why are we suggesting to use this formula? The answer is that we are building the BVH with a greedy algorithm. When we have to evaluate a node, we have no way of knowing how its children will be, therefore the only way is to estimate its cost as if it didn't have any children at all, as if it was a leaf node.
 
-However it is also useful to have a way to evaluate the cost of a BVH a-posteriori. In this case, based on the node type, we can have 2 situations:
+However it is also useful to have a way to evaluate the cost of a BVH a-posteriori. In this case, based on the node type, we can have two situations:
 \begin{description}
 	\item[Leaf node] The cost of a leaf node can be computed with the same formula we have analyzed, for the reasons we have stated above.
-	\item[Internal node] When an internal node is hit, the next step of the traversal is to perform a ray-AABB test with the two children. Therefore the cost is: $Cost_{SAH}(K_{intern}) = \frac{Area_K}{Area_{root}} \cdot 2 \cdot 1$. 
+	\item[Internal node] When an internal node is hit, the next step of the traversal is to perform a ray-AABB test with each one of the two children. Therefore the cost is: $Cost_{SAH}(K_{intern}) = \frac{Area_K}{Area_{root}} \cdot 2 \cdot 1$. 
 \end{description}
 
-By merging the formulae to compute the cost of leaf and internal nodes, the cost function of a BVH has this form:
+By merging the formulae to compute the cost of leaf and internal nodes, the cost function of a BVH assumes this form:
 $$Cost_{SAH}(BVH) = \sum_{L \in leaf\; nodes} \frac{Area_L}{Area_{root}} \cdot \#triangles_L \cdot 1.2 + \sum_{I \in internal\; nodes} \frac{Area_I}{Area_{root}} \cdot 2 \cdot 1$$
 
-
-
 % === Projected Area Heuristic ===
+
 \chapter{Projected Area Heuristic} \label{ch:projected_area_heuristic}
-Chapter 2
+In chapter \ref{ch:background_theory} we have described how ray tracing works. In particular, in section \ref{sec:monte_carlo_and_variance_reduction_techniques} we have seen how importance sampling generates artifacts in the ray distribution of the scene. In section \ref{sec:ray_tracing_acceleration_structures} we described how it is possible to build an acceleration structure to speed up the ray-scene intersection process, and we have shown how the surface area heuristic is the state-of-the-art method to build high-quality BVHs. In this section, we will show that some of the hypotheses of the SAH are not satisfied in a real-world scenario, due to the use of importance sampling. We will eventually propose a new heuristic called projected area heuristic (PAH), show the situations where it can be used to build BVHs, and describe our implementation of a BVH builder using it.
+
+\section{SAH Hypotheses Fall} \label{sec:sah_hypotheses_fall}
+In section \ref{sec:ray_tracing_acceleration_structures} we have seen that the surface area heuristic, used to build high-quality BVHs with the described greedy algorithm, works under these hypotheses:
+\begin{itemize}
+	\item A ray always hits the AABB enclosing the whole scene;
+	\item All rays have origin outside the AABB enclosing the whole scene, and their positions are uniformly distributed;
+	\item Rays never intersect any primitive, and are infinitely long;
+	\item Rays are uniformly distributed in their direction space.
+\end{itemize}
+
+In a standard situation, the first hypothesis can be considered true for all the rays. It is still possible, in some scenarios, that a part of the rays doesn't hit the scene. Examples can be found in the discussion on the test cases for our thesis in chapter \ref{ch:experimental_results}, however, in most scenarios all the rays hit the scene, because casting a ray away from the scene would be wasteful.
+
+For what concerns the second hypothesis, the situation is completely different. Indeed, in many applications the camera is inside the scene, therefore the rays' origin is inside the scene too. But even in a situation where the camera is placed outside the scene, still the majority of rays would have origin inside. This happens because in many algorithms of the ray tracing family, the primary rays (rays cast from the camera position) are in a much smaller number than the secondary rays. With secondary rays we refer to what we called in the previous chapter \textit{probe rays}, namely those rays originating after a ray-triangle intersection. As we have seen, generating probe rays to evaluate the rendering equation is a recursive process, and in order to obtain an image with an acceptable amount of noise, a lot of probe rays must be cast.
+
+Studies about this issue with the surface area heuristic have been carried out. For example, in this article \cite{sah_interior_rays}, Fabianowski et al. divide the scene into discrete regions, and try to evaluate the hit probabilities from the center of each one.
+
+The third and fourth hypotheses have both to do with how the rays are distributed in the 3D space of the scene. It is easy to see how the third hypothesis doesn't hold true in a real-world scenario. Of course primitives will block rays, thus potentially creating regions of the scene where few or no rays are present (imagine the region of space inside an opaque box, or even more in general, the space inside the boundaries of meshes). 
+
+For what concerns the last hypothesis, we have to remember how Monte-Carlo integration works. In theory, after a ray hits an object, there is an equal probability it bounces toward any direction in the hemisphere. This behavior, considering that the other hypotheses hold true, would create a uniform distribution of rays in the scene. However, as we have seen in section \ref{sec:monte_carlo_and_variance_reduction_techniques}, importance sampling makes it so that the probe rays distribution is not uniform. In particular, if direct light sampling is used, a lot of probe rays will tend to go toward light sources. This artifact in the ray distribution shows how not even the last SAH hypothesis holds true.
+
+Since rays are not distributed uniformly in the scene, it means that we cannot interpret the surface area of the AABB as related to the probability a ray hits it. For example, if an almost flat, but long AABB is present in a region where rays are parallel to the longest side of the AABB, the probability one of the ray hits it is very low. This wouldn't be reflected by the surface area of the AABB, which would assume a big value because of its long side. This can be visualized in the image below (\ref{fig:flat_long_aabb}).
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth*\real{0.5}]{Images/TODO.png}
+    \caption{A flat but long AABB in a region of rays parallel to its long side.}
+    \label{fig:flat_long_aabb}
+\end{figure}
+
+The first novel contribution of this works is based exactly on this simple observation, and on the refutation of the last hypothesis of surface area heuristic. In the next sections we will describe two relevant ray distributions that organically forms in the scenes, due to the use of direct light importance sampling.
+
+In the past other works on this same topic have been written, but the proposed solution was based on a very different approach. For example, in this paper \cite{distribution_aware_bvhs} Yan Gu et al. proposed to modify an already existing BVH based on some statistics harvested during the previous frames. In summary, if a node is rarely hit, its subtree is collapsed, and all the triangles in the subtree are directly placed in the node, which becomes a leaf. Conversely, frequently hit leaves become internal nodes, and are further divided.
+
+In our approach instead we try to directly build a BVH aware of the ray distribution. To achieve this we propose a new heuristic to calculate the probability that a node is hit by a ray: the projected area heuristic (PAH).
+
+\section{Parallel Ray Distribution} \label{sec:parallel_ray_distribution}
+
+
+
+
 
 % === Splitting Plane Facing Technique ===
 \chapter{Splitting Plane Facing Technique} \label{ch:splitting_plane_facing_technique}
