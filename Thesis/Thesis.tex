@@ -302,10 +302,6 @@ Point lights, instead, tend to generate a bundle of lines passing through a poin
 In this work we aim to show how this way of computing the cost function for the construction of a BVH can produce higher quality BVHs in some situations. We named this novel approach as \textbf{projected area heuristic (PAH)}.
 
 
-
-
-
-% === Chapter 1 ===
 \chapter{Background Theory}
 \label{ch:background_theory}
 In this chapter we will summarize the background knowledge needed to fully comprehend this work.
@@ -842,7 +838,7 @@ After generating the two subsets of triangle, the enclosing AABBs must be built.
 	\label{alg:aabb_creation}
 \end{algorithm} 
 
-\subsubsection{Cost Computation - Surface Area Heuristic}
+\subsubsection{Cost Computation - Surface Area Heuristic} \label{ssec:cost_computation}
 In the previous section we have described how a standard BVH construction algorithm can split the triangles of a node into two subsets, and compute the AABB for each one of them. In this section we will analyze how the algorithm decides whether a split is better than another one.
 
 To choose the best split, a BVH construction algorithm sorts the splits proposed by the splitting triangles phase by assigning to each one a value through a cost function. 
@@ -896,10 +892,8 @@ However it is also useful to have a way to evaluate the cost of a BVH a-posterio
 By merging the formulae to compute the cost of leaf and internal nodes, the cost function of a BVH assumes this form:
 $$Cost_{SAH}(BVH) = \sum_{L \in leaf\; nodes} \frac{Area_L}{Area_{root}} \cdot \#triangles_L \cdot 1.2 + \sum_{I \in internal\; nodes} \frac{Area_I}{Area_{root}} \cdot 2 \cdot 1$$
 
-% === Projected Area Heuristic ===
-
 \chapter{Projected Area Heuristic} \label{ch:projected_area_heuristic}
-In chapter \ref{ch:background_theory} we have described how ray tracing works. In particular, in section \ref{sec:monte_carlo_and_variance_reduction_techniques} we have seen how importance sampling generates artifacts in the ray distribution of the scene. In section \ref{sec:ray_tracing_acceleration_structures} we described how it is possible to build an acceleration structure to speed up the ray-scene intersection process, and we have shown how the surface area heuristic is the state-of-the-art method to build high-quality BVHs. In this section, we will show that some of the hypotheses of the SAH are not satisfied in a real-world scenario, due to the use of importance sampling. We will eventually propose a new heuristic called projected area heuristic (PAH), show the situations where it can be used to build BVHs, and describe our implementation of a BVH builder using it.
+In chapter \ref{ch:background_theory} we have described how ray tracing works. In particular, in section \ref{sec:monte_carlo_and_variance_reduction_techniques} we have seen how importance sampling generates artifacts in the ray distribution of the scene. In section \ref{sec:ray_tracing_acceleration_structures} we described how it is possible to build an acceleration structure to speed up the ray-scene intersection process, and we have shown how the surface area heuristic is the state-of-the-art method to build high-quality BVHs. In this chapter, we will show that some of the hypotheses of the SAH are not satisfied in a real-world scenario, due to the use of importance sampling. We will eventually propose a new heuristic called projected area heuristic (PAH), and show the situations where it can be used to build BVHs. In this chapter we will describe the problem and the solutions from a theoretical point of view; all the implementation details will be thoroughly discussed in section \ref{TODO}.
 
 \section{SAH Hypotheses Fall} \label{sec:sah_hypotheses_fall}
 In section \ref{sec:ray_tracing_acceleration_structures} we have seen that the surface area heuristic, used to build high-quality BVHs with the described greedy algorithm, works under these hypotheses:
@@ -910,7 +904,7 @@ In section \ref{sec:ray_tracing_acceleration_structures} we have seen that the s
 	\item Rays are uniformly distributed in their direction space.
 \end{itemize}
 
-In a standard situation, the first hypothesis can be considered true for all the rays. It is still possible, in some scenarios, that a part of the rays doesn't hit the scene. Examples can be found in the discussion on the test cases for our thesis in chapter \ref{ch:experimental_results}, however, in most scenarios all the rays hit the scene, because casting a ray away from the scene would be wasteful.
+In a standard situation, the first hypothesis can be considered true for all the rays. It is still possible, in some scenarios, that a part of the rays doesn't hit the scene. Examples can be found in the discussion on the test cases for our thesis in chapter \ref{TODO}, however, in most scenarios all the rays hit the scene, because casting a ray away from the scene would be wasteful.
 
 For what concerns the second hypothesis, the situation is completely different. Indeed, in many applications the camera is inside the scene, therefore the rays' origin is inside the scene too. But even in a situation where the camera is placed outside the scene, still the majority of rays would have origin inside. This happens because in many algorithms of the ray tracing family, the primary rays (rays cast from the camera position) are in a much smaller number than the secondary rays. With secondary rays we refer to what we called in the previous chapter \textit{probe rays}, namely those rays originating after a ray-triangle intersection. As we have seen, generating probe rays to evaluate the rendering equation is a recursive process, and in order to obtain an image with an acceptable amount of noise, a lot of probe rays must be cast.
 
@@ -920,7 +914,19 @@ The third and fourth hypotheses have both to do with how the rays are distribute
 
 For what concerns the last hypothesis, we have to remember how Monte-Carlo integration works. In theory, after a ray hits an object, there is an equal probability it bounces toward any direction in the hemisphere. This behavior, considering that the other hypotheses hold true, would create a uniform distribution of rays in the scene. However, as we have seen in section \ref{sec:monte_carlo_and_variance_reduction_techniques}, importance sampling makes it so that the probe rays distribution is not uniform. In particular, if direct light sampling is used, a lot of probe rays will tend to go toward light sources. This artifact in the ray distribution shows how not even the last SAH hypothesis holds true.
 
-Since rays are not distributed uniformly in the scene, it means that we cannot interpret the surface area of the AABB as related to the probability a ray hits it. For example, if an almost flat, but long AABB is present in a region where rays are parallel to the longest side of the AABB, the probability one of the ray hits it is very low. This wouldn't be reflected by the surface area of the AABB, which would assume a big value because of its long side. This can be visualized in the image below (\ref{fig:flat_long_aabb}).
+\begin{figure}[H]
+    \centering
+	\subfloat[Without importance sampling]{
+    	\includegraphics[width=\textwidth*\real{0.5}]{Images/TODO.png}
+	}
+	\subfloat[With importance sampling]{
+    	\includegraphics[width=\textwidth*\real{0.5}]{Images/TODO.png}
+	}
+    \caption{With importance sampling rays are not distributed uniformly in the scene.}
+    \label{fig:non_uniform_rays}
+\end{figure}
+
+Since rays are not distributed uniformly in the scene, it means that we cannot interpret the surface area of the AABB as related to the probability a ray hits it (figure \ref{fig:area_probability_visual}). For example, if an almost flat, but long AABB is present in a region where rays are parallel to the longest side of the AABB, the probability one of the ray hits it is very low. This wouldn't be reflected by the surface area of the AABB, which would assume a big value because of its long side. This can be visualized in the image below (\ref{fig:flat_long_aabb}).
 
 \begin{figure}[H]
     \centering
@@ -929,21 +935,88 @@ Since rays are not distributed uniformly in the scene, it means that we cannot i
     \label{fig:flat_long_aabb}
 \end{figure}
 
-The first novel contribution of this works is based exactly on this simple observation, and on the refutation of the last hypothesis of surface area heuristic. In the next sections we will describe two relevant ray distributions that organically forms in the scenes, due to the use of direct light importance sampling.
+The first novel contribution of this work is based exactly on this simple observation, and on the refutation of the last hypothesis of surface area heuristic. In the next sections we will describe two relevant ray distributions that organically form in the scenes, due to the use of direct light importance sampling.
 
 In the past other works on this same topic have been written, but the proposed solution was based on a very different approach. For example, in this paper \cite{distribution_aware_bvhs} Yan Gu et al. proposed to modify an already existing BVH based on some statistics harvested during the previous frames. In summary, if a node is rarely hit, its subtree is collapsed, and all the triangles in the subtree are directly placed in the node, which becomes a leaf. Conversely, frequently hit leaves become internal nodes, and are further divided.
 
-In our approach instead we try to directly build a BVH aware of the ray distribution. To achieve this we propose a new heuristic to calculate the probability that a node is hit by a ray: the projected area heuristic (PAH).
+In our approach, instead, we try to directly build a BVH aware of the ray distribution. To achieve this we propose a new heuristic to calculate the probability that a node is hit by a ray: the projected area heuristic (PAH).
 
 \section{Parallel Ray Distribution} \label{sec:parallel_ray_distribution}
+One of the relevant ray distributions that can naturally arise in a ray traced scene where light importance sampling is used, is the distribution where rays are all parallel among themselves. This ray distribution usually arises in proximity of plane area light sources.
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth*\real{0.5}]{Images/TODO.png}
+    \caption{Parallel rays distributions arise in proximity of plane area light sources.}
+    \label{fig:parallel_rays_distribution}
+\end{figure}
 
+In a 3-dimensional region with such a ray distribution, we can estimate the probability an AABB is hit by a ray by computing the area projected by the AABB on the plane having a normal vector parallel to the rays.
 
+Let us first analyze the case where the rays are parallel to one of the 3 cartesian axis, let's say $z$. In this case, the extension of an AABB in the $z$ direction is irrelevant, because it is impossible for a ray to hit the box on any face other than the $xy$ ones. Therefore, only the area of the $xy$ face is related to the probability that the AABB is hit.
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth*\real{0.5}]{Images/TODO.png}
+    \caption{If rays are parallel to a cartesian axis, the extension of the AABB in that dimension is irrelevant.}
+    \label{fig:rays_parallel_to_cartesian_dimension}
+\end{figure}
 
-% === Splitting Plane Facing Technique ===
+We can generalize this idea to the case where the rays are parallel to an arbitrary direction by orthographically projecting the AABB on the plane normal to the rays. The area of the orthographic projection is directly related to the probability a ray hits the AABB.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth*\real{0.5}]{Images/TODO.png}
+    \caption{Orthographic projection of an AABB.}
+    \label{fig:aabb_ortho_projection}
+\end{figure}
+
+The details of our implementation will be extensively discussed in section \ref{TODO}.
+
+\section{Point Ray Distribution} \label{sec:point_ray_distribution}
+Another ray distribution commonly found in proximity of point lights is what we call the point ray distribution. In this distribution, rays all pass through the same point in 3D space, creating a radial pattern over a solid angle, as it is shown in the figure below.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth*\real{0.5}]{Images/TODO.png}
+    \caption{Point rays distributions arise in proximity of point light sources.}
+    \label{fig:point_rays_distribution}
+\end{figure}
+
+Also in this case we can observe a relationship between the probability an AABB in this area is hit by a ray, and the area of the projection of said AABB. However, this time, the projection to estimate the hit probability is the perspective projection. The point all the rays in this region pass through can be interpreted as the focal point of the perspective. The projection plane can be placed at any distance from the focal point. Indeed, while it is true that by placing the plane at different positions we would get projections of different absolute sizes, it is also true that what we are really interested in is the relative area among the AABBs projected on the same plane. Indeed, as it is possible to see from the formula in section \ref{ssec:cost_computation} that we will report here:
+$$p(ray\; hits\; K) = \frac{Area_K}{Area_{root}}$$
+The hit probability $p$ is computed as the ratio between two areas.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth*\real{0.5}]{Images/TODO.png}
+    \caption{Perspective projection of an AABB.}
+    \label{fig:aabb_perspective_projection}
+\end{figure}
+
+\section{The Projected Area Heuristic} \label{sec:projected_area_heuristic}
+In the last two sections (\ref{sec:parallel_ray_distribution} and \ref{sec:point_ray_distribution}) we have seen how computing the projected area where there are certain ray distributions can be a better estimate for the probability that a ray hits an AABB, compared to the surface area. In simple words, this happens because some parts of the AABB are less likely (if at all) to be hit by a ray depending on their orientation compared to the rays present in that 3D region. 
+
+With this notion, it is now easy to define a heuristic to be used during BVH construction and another one for BVH evaluation. Indeed we can use the exact same formulae used for the surface area heuristic, but with the projected area in place of the surface area of the AABBs:
+$$Cost_{PAH}(K) = \frac{ProjArea_K}{ProjArea_{root}} \cdot \#triangles_K \cdot 1.2$$
+$$Cost_{PAH}(BVH) = \sum_{L \in leaf\; nodes} \frac{ProjArea_L}{ProjArea_{root}} \cdot \#triangles_L \cdot 1.2 + \sum_{I \in internal\; nodes} \frac{ProjArea_I}{ProjArea_{root}} \cdot 2 \cdot 1$$
+
+With this heuristic it is possible to build a BVH for a portion of the scene where there is a certain ray distribution. If there is a parallel ray distribution, the orthographic projected area will be used. Instead, if there is a point ray distribution, perspective projection should be used.
+
+However, in a scene, there likely is more than a single and global ray distribution. It is possible that ray distributions are localized in definite regions of the scene. This means that, rather than building a single and global BVH valid for all the scene, it is necessary to build partial and localized BVHs for specific regions. This is the main topic of the next chapter \ref{ch:multi_influence_areas}.
+
+\chapter{Multiple Influence Areas and the Top Level Structure} \label{ch:multi_influence_areas}
+In this chapter we will show how it is possible to deal with a scene where there are multiple localized ray distributions. We will first introduce the the problem in detail and with visual examples, then we will define some properties of the required solution, and eventually we will show how a scene with multiple ray distributions can be efficiently traversed by a ray. In this chapter we won't explain all the implementation details of the solution we propose, that will instead be discussed in section \ref{TODO}.
+
 \chapter{Splitting Plane Facing Technique} \label{ch:splitting_plane_facing_technique}
-Chapter 3
+
+\chapter{Implementation} \label{ch:implementation}
+
+\chapter{Experimental Results} \label{ch:experimental_results}
+
+\chapter{Use Cases} \label{ch:use_cases}
+
+\chapter{Conclusion and Future Developments} \label{ch:conclusion}
 
 
 % === Bibliography ===
