@@ -1,10 +1,11 @@
-This is BibTeX, Version 0.99d (TeX Live 2024)
+This is BibTeX, Version 0.99d (TeX Live 2023)
 Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
 The top-level auxiliary file: Thesis.aux
 The style file: abbrvnat.bst
 Database file #1: Bibliography.bib
 Warning--I didn't find a database entry for "curse_of_dimensionality"
 Warning--empty publisher in separating_axis_test
+Warning--empty year in kajiya_equation_drawing
 Warning--empty year in importons
 Warning--empty year in sdf
 Warning--empty journal in real_time_path_guiding
@@ -22,45 +23,45 @@ Warning--empty year in monte_carlo_integration
 Warning--empty publisher in path_guiding
 Warning--can't use both volume and number fields in ray_coherency
 Warning--empty year in obb_construction
-You've used 44 entries,
+You've used 45 entries,
             2773 wiz_defined-function locations,
-            836 strings with 11751 characters,
-and the built_in function-call counts, 19822 in all, are:
-= -- 1764
-> -- 1069
-< -- 42
-+ -- 371
-- -- 324
-* -- 1438
-:= -- 2966
-add.period$ -- 149
-call.type$ -- 44
-change.case$ -- 236
-chr.to.int$ -- 41
-cite$ -- 106
-duplicate$ -- 969
-empty$ -- 1704
-format.name$ -- 385
-if$ -- 4248
+            841 strings with 12045 characters,
+and the built_in function-call counts, 20124 in all, are:
+= -- 1791
+> -- 1079
+< -- 43
++ -- 375
+- -- 327
+* -- 1451
+:= -- 3012
+add.period$ -- 153
+call.type$ -- 45
+change.case$ -- 240
+chr.to.int$ -- 42
+cite$ -- 109
+duplicate$ -- 984
+empty$ -- 1736
+format.name$ -- 389
+if$ -- 4313
 int.to.chr$ -- 4
 int.to.str$ -- 1
 missing$ -- 35
-newline$ -- 238
-num.names$ -- 176
-pop$ -- 598
+newline$ -- 244
+num.names$ -- 180
+pop$ -- 614
 preamble$ -- 1
-purify$ -- 195
+purify$ -- 198
 quote$ -- 0
-skip$ -- 730
+skip$ -- 739
 stack$ -- 0
-substring$ -- 574
-swap$ -- 153
+substring$ -- 576
+swap$ -- 154
 text.length$ -- 16
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 469
-warning$ -- 18
-while$ -- 183
+type$ -- 480
+warning$ -- 19
+while$ -- 186
 width$ -- 0
-write$ -- 575
-(There were 19 warnings)
+write$ -- 588
+(There were 20 warnings)

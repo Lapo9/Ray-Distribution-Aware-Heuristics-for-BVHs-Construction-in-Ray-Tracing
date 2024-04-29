@@ -372,7 +372,7 @@ In backward ray tracing light rays don't start from light sources, but from the 
 
 \begin{figure}[H]
     \centering
-    \includegraphics[scale=0.4]{Images/TODO.png}
+    \includegraphics[width=\textwidth*\real{0.6}]{Images/backward_ray_tracing.png}
     \caption{How rays are cast in backward ray tracing.}
     \label{fig:pinhole_camera}
 \end{figure}
@@ -410,15 +410,15 @@ The first part describes the light emitted $L_e(\bar{x}, \bar{\omega}_o)$, and i
 \begin{figure}[H]
     \centering
     \subfloat[Point light]{
-        \includegraphics[width=\textwidth*\real{0.3}]{Images/TODO.png}
+        \includegraphics[width=\textwidth*\real{0.25}]{Images/point_light.png}
 	}
 	\qquad
 	\subfloat[Plane area light]{
-        \includegraphics[width=\textwidth*\real{0.3}]{Images/TODO.png}
+        \includegraphics[width=\textwidth*\real{0.25}]{Images/plane_light.png} 
     }
 	\qquad
 	\subfloat[Spotlight]{
-        \includegraphics[width=\textwidth*\real{0.3}]{Images/TODO.png}
+        \includegraphics[width=\textwidth*\real{0.22}]{Images/spot_light.png}
     }
 	\caption{Three possible types of light sources.}
     \label{fig:light_sources}
@@ -428,16 +428,16 @@ The second part of the equation presents an integral, and represents the light r
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.5}]{Images/TODO.png}
-    \caption{A visual representation of the integral term of the rendering equation.}
+    \includegraphics[width=\textwidth*\real{0.5}]{Images/kajiya_visual.png}
+    \caption{A visual representation of the Kajiya rendering equation from \cite{kajiya_equation_drawing}.}
     \label{fig:rendering_equation}
 \end{figure}
 
-The term $\cos(\bar{n}, \bar{\omega}_i)$ is called geometry term, and reflects a core property of light, independent of the $BRDF$. Indeed, based on the angle a beam of light intersects a surface, the beam of light will enlighten a smaller or bigger area of the surface. The smallest surface is illuminated when the direction of the beam of light and the normal to the surface are parallel. Since the energy carried by the beam of light is constant, we can deduce that, the bigger the enlightened surface, the lower the energy per area unit. In particular, if we let $L$ be the energy of the beam and $\alpha$ the angle between the beam direction and the normal, then the energy received per area unit equals to $L\cdot \cos(\alpha)$.
+The term $\cos(\bar{n}, \bar{\omega}_i)$ is called geometry term, and reflects a core property of light, independent of the $BRDF$. Indeed, based on the angle a beam of light intersects a surface, the beam of light will enlighten a smaller or bigger area of the surface. The smallest surface is illuminated when the direction of the beam of light and the normal to the surface are parallel. Since the energy carried by the beam of light is constant, we can deduce that, the bigger the enlightened surface, the lower the energy per area unit. In particular, if we let $L$ be the energy of the beam and $\alpha$ the angle between the beam direction and the normal, then the energy received per area unit equals to $L\cdot \cos(\alpha)$. 
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.5}]{Images/TODO.png}
+    \includegraphics[width=\textwidth*\real{0.7}]{Images/geometry_term.png}
     \caption{The geometry term.}
     \label{fig:geometry_term}
 \end{figure}
@@ -448,7 +448,7 @@ In order to compute the $L_i$ term for one specific direction $\overline{\omega_
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.5}]{Images/TODO.png}
+    \includegraphics[width=\textwidth*\real{0.5}]{Images/kajiya_recursive.png}
     \caption{Recursiveness of the integral term of the Kajiya rendering equation.}
     \label{fig:kajiya_recursiveness}
 \end{figure}
@@ -465,17 +465,13 @@ Now, if we select a random point $k_0$ uniformly in the $[a,b]$ interval, we can
 \begin{figure}[H]
     \centering
     \subfloat[Area approximation with one sample.]{
-        \includegraphics[width=\textwidth*\real{0.4}]{Images/TODO.png}
+        \includegraphics[width=\textwidth*\real{0.65}]{Images/monte_carlo_area_1x.png}
 	}
 	\qquad
 	\subfloat[Area approximation with 4 samples]{
-        \includegraphics[width=\textwidth*\real{0.4}]{Images/TODO.png}
+        \includegraphics[width=\textwidth*\real{0.65}]{Images/monte_carlo_area_4x.png}
     }
-	\qquad
-	\subfloat[Area approximation with many samples]{
-        \includegraphics[width=\textwidth*\real{0.4}]{Images/TODO.png}
-    }
-	\caption{Monte-Carlo area approximation.}
+	\caption{Monte-Carlo area approximation. When we hame many samples, sometimes the area will be overestimated, some other times underestimated.}
     \label{fig:monte_carlo_area_approximation}
 \end{figure}
 
@@ -592,11 +588,11 @@ The main issue with next event estimation is that a direct light can be occluded
 \begin{figure}[H]
     \centering
     \subfloat[Next event estimation]{
-        \includegraphics[width=\textwidth*\real{0.42}]{Images/noisy_image.jpeg}
+        \includegraphics[width=\textwidth*\real{0.45}]{Images/nee.png}
 	}
 	\qquad
 	\subfloat[Path guiding]{
-        \includegraphics[width=\textwidth*\real{0.42}]{Images/less_noisy_image.png}
+        \includegraphics[width=\textwidth*\real{0.45}]{Images/path_guiding.png}
     }
 	\caption{With NEE light is directly cast toward direct light sources. With path guiding, indirect illumination is taken into account in order to build a better sampling PDF, at a higher cost.}
     \label{fig:nee_and _path_guiding}
@@ -622,7 +618,7 @@ A polygonal mesh describes an object by defining its surface via points, edges a
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.7}]{Images/TODO.png}
+    \includegraphics[width=\textwidth*\real{0.7}]{Images/triangular_mesh.png}
     \caption{A triangular mesh.}
     \label{fig:triangular_mesh}
 \end{figure}
@@ -639,7 +635,7 @@ This is the reason why acceleration structures have been developed. Most of the 
 
 Acceleration structures can be divided into 2 categories:
 \begin{description}
-	\item[Space partitioning] The space is recursively subdivided into disjoint regions. Objects (triangles) can potentially appear in more than one region, if they are overlapping.
+	\item[Space partitioning] The space is recursively subdivided into disjoint regions. Objects (triangles) can potentially appear in more than one region, if they are overlapping. 
 	\item[Object partitioning] Objects are subdivided into disjoint sets, enclosed into spatial regions. The regions can potentially be overlapping.  
 \end{description}
 
@@ -917,10 +913,11 @@ For what concerns the last hypothesis, we have to remember how Monte-Carlo integ
 \begin{figure}[H]
     \centering
 	\subfloat[Without importance sampling]{
-    	\includegraphics[width=\textwidth*\real{0.5}]{Images/TODO.png}
+    	\includegraphics[width=\textwidth*\real{0.45}]{Images/TODO.png}
 	}
+	\qquad
 	\subfloat[With importance sampling]{
-    	\includegraphics[width=\textwidth*\real{0.5}]{Images/TODO.png}
+    	\includegraphics[width=\textwidth*\real{0.45}]{Images/TODO.png}
 	}
     \caption{With importance sampling rays are not distributed uniformly in the scene.}
     \label{fig:non_uniform_rays}
@@ -1005,8 +1002,88 @@ With this heuristic it is possible to build a BVH for a portion of the scene whe
 
 However, in a scene, there likely is more than a single and global ray distribution. It is possible that ray distributions are localized in definite regions of the scene. This means that, rather than building a single and global BVH valid for all the scene, it is necessary to build partial and localized BVHs for specific regions. This is the main topic of the next chapter \ref{ch:multi_influence_areas}.
 
+
 \chapter{Multiple Influence Areas and the Top Level Structure} \label{ch:multi_influence_areas}
-In this chapter we will show how it is possible to deal with a scene where there are multiple localized ray distributions. We will first introduce the the problem in detail and with visual examples, then we will define some properties of the required solution, and eventually we will show how a scene with multiple ray distributions can be efficiently traversed by a ray. In this chapter we won't explain all the implementation details of the solution we propose, that will instead be discussed in section \ref{TODO}.
+In this chapter we will show how it is possible to deal with a scene where there are multiple localized ray distributions. We will first introduce the problem in detail and with visual examples, then we will define the concept of ray affinity to region where a relevant ray distribution is present. Eventually we will show how a scene with multiple ray distributions can be traversed by a ray. In this chapter we won't explain all the implementation details of the solution we propose, that will instead be discussed in section \ref{TODO}.
+
+As we have touched on in the last chapter, while ray tracing a scene, it is likely that more than a single relevant ray distribution appears. It is even more likely that, even if only one relevant distribution is present, it doesn't cover the entirety of the scene. For cases like these, it is necessary to be able to recognize whether a ray is affine to a certain ray distribution present in a scene. In case the ray is affine, we can use the BVH built with PAH on that part of the scene to find the first intersection. In case it is not affine, we must fall back to a global BVH, covering the whole scene. The definition of the term \textit{affine} is given in the next few paragraphs.
+
+\begin{figure}[]
+    \centering
+    \includegraphics[width=\textwidth*\real{0.7}]{Images/TODO.png}
+    \caption{A scene with multiple relevant ray distributions.}
+    \label{fig:multiple_ray_distributions}
+\end{figure}
+
+From this point on, we will refer to a 3D region of a scene where a relevant ray distribution is present as influence area. If the ray distribution is parallel (section \ref{sec:parallel_ray_distribution}), we call the region plane influence area. If the ray distribution is radial (section \ref{sec:point_ray_distribution}), the influence area is qualified as point influence area. Each influence area has an associated BVH (also called local BVH) built with PAH, where the projection method (orthographic or perspective) is the corresponding one to the ray distribution of the influence area.
+
+Influence areas must first be localized in the scene. To do so, we decided to encode a plane influence area as an oriented bounding box. The rays start from one of the faces of the OBB, and are perpendicular to it. For what concerns point influence areas, the most natural bounding volume to localize them is 3D is a frustum. Rays start from the near plane of the frustum, and go toward the far plane. The direction of any of the ray can be obtained by connecting the origin of the ray on the near plane to the focal point of the frustum. In section \ref{TODO} it will be explained how we encoded the influence areas in our implementation.
+
+\begin{figure}[H]
+    \centering
+	\subfloat[Plane influence area]{
+    	\includegraphics[width=\textwidth*\real{0.45}]{Images/TODO.png}
+	}
+	\qquad
+	\subfloat[Point influence area]{
+    	\includegraphics[width=\textwidth*\real{0.45}]{Images/TODO.png}
+	}
+    \caption{Plane influence areas are described by OBBs, whereas point influence areas are described by frustums.}
+    \label{fig:affine_direction}
+\end{figure}
+
+\section{Ray-Influence Area Affinity} \label{sec:ray_influence_area_affinity}
+The first necessary condition to have a ray that is affine to an influence area, is that the origin of the ray is inside the influence area. To do so it is possible to use the algorithms described in appendices \ref{sec:point_inside_aabb} and \ref{sec:point_inside_frustum}, but can be made more efficient, as described in section \ref{sec:top_level_structure}.
+
+The second necessary condition is that the direction of the ray fits with the direction of the rays in the influence area. This is extremely simple to verify for plane influence areas, where all the rays must have the same direction. Verifying this second condition for point influence areas is more complex, but can be achieved by connecting the origin of the ray with the focal point, and checking that the direction of this vector is parallel with the direction of the ray, as it is possible to visualize in figure \ref{fig:affine_direction}.
+
+It is possible to introduce a tolerance in the verification of the second condition. The bigger the tolerance, the more rays ill be affine, but if the tolerance gets too large also rays that don't benefit from the BVH built with PAH will traverse it.
+
+If a ray is affine to an influence area, it can use the BVH associated with the influence area during traversal.
+
+\begin{figure}[H]
+    \centering
+	\subfloat[Plane influence area]{
+    	\includegraphics[width=\textwidth*\real{0.45}]{Images/TODO.png}
+	}
+	\qquad
+	\subfloat[Point influence area]{
+    	\includegraphics[width=\textwidth*\real{0.45}]{Images/TODO.png}
+	}
+    \caption{Visualization of the methods to verify if the direction of a ray is affine with an influence area.}
+    \label{fig:affine_direction}
+\end{figure}
+
+\section{Local and Global BVHs} \label{sec:local_and_global_bvhs}
+
+Since influence areas are localized in specific regions of the scene, it would be wasteful to build the associated PAH BVH on all the geometry present. The associated BVH is therefore built by considering only the triangles inside the influence area. It is important to note that a triangle is considered inside the influence area if at least one of its vertices or edges is inside. This conservative definition of the \textit{inside} concept is necessary to avoid errors in the traversal. Indeed, if we used a less restrictive definition, such as by considering the barycenter, it would be possible to find the wrong closest hit while tracing a ray, as it is possible to observe in figure \ref{fig:conservative_inside}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth*\real{0.7}]{Images/double_area.png}
+    \caption{Example of why it is necessary to use a conservative approach.}
+    \label{fig:conservative_inside}
+\end{figure}
+
+Influence areas do not guarantee to cover the whole scene. It is indeed more frequent that regions of the scene don't have any particular ray distribuition. In this case, those triangles that are not inside any influence area, would not be part of any BVH, and would therefore be invisible to rays. For this very reason, it is necessary to build a global BVH for the whole scene. In our implementation, this BVH is built by using surface area heuristic.
+
+When a ray traverses a local BVH and no hit is found, it is necessary to traverse the global BVH. It is indeed possible to find a hit with triangles that are not inside the influence area of the local BVH, as it can be observed in figure \ref{fig:outside_area}. However, if a ray is found in the local BVH, it is guaranteed for it to be the closest one, as shown in figure \ref{fig:conservative_inside}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth*\real{0.7}]{Images/outside_area.png}
+    \caption{Example of how it is possible that a hit is found in the global BVH, but not in the local one.}
+    \label{fig:outside_area}
+\end{figure}
+
+\section{Top Level Structure} \label{sec:top_level_structure}
+At the beginning of this chapter we stated that the first affinity criterion between a ray and an influence area is that the origin of the ray is inside the influence area. We have also seen how BVHs associated with influence areas contain only triangles that are inside the influence area. It is therefore of paramount importance to have a fast method to detect whether a point is inside a certain 3D region of the scene. 
+
+In our implementation we tried to tackle this problem by using two different approaches. We will now briefly describe them from a theoretical point of view. All the details of our implementation can be found in section \ref{TODO}.
+
+The first approach is to use algorithms described in appendices \ref{sec:point_inside_aabb} and \ref{sec:point_inside_frustum}. The complexity of this method linearly depends on the amount of influence areas present in the scene. Moreover, the algorithms to find out if a point is inside an OBB or a frustum are not cheap, especially in a scenario where they must be used for every single ray. On the other hand, all the influence areas can be easily stored in an array, therefore there is no overhead in building an ad-hoc structure.
+
+On the opposite side of the spectrum there is the second method we propose. In this case we build an octree, where each leaf contains the influence areas that overlap with it. Building such an octree is not trivial, and it is diffusely described in section \ref{TODO}. However, once the octree is built, it is extremely cheap to find out what are the influence areas containing any given 3D point.
 
 \chapter{Splitting Plane Facing Technique} \label{ch:splitting_plane_facing_technique}
 
