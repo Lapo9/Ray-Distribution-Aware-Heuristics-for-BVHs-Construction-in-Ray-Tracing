@@ -777,10 +777,10 @@ The stopping criterion phase decides whether the $BuildBvh$ function should make
 	\item BVH level
 \end{itemize}
 
-\subsubsection*{Triangles Splitting}
+\subsubsection*{Triangles Splitting} \label{ssec:triangles_splitting}
 Given the set of triangles of the parent node, in this phase the algorithm tries to split them into two subsets and build the enclosing bounding volumes.
 
-In order to split the triangles into two subsets, a plane is chosen, and based on which side of the plane the barycenter of each triangle is, the triangle is assigned to one of the two subsets. This means that it is possible that a triangle has some vertices in the opposite semispace compared to the one it has been assigned to. This is one of the reasons why two children can have some of their volumes overlapping. 
+In order to split the triangles into two subsets, a plane is chosen, and based on which side of the plane the barycenter of each triangle is, the triangle is assigned to one of the two subsets. This means that it is possible that a triangle has some vertices in the opposite half-space compared to the one it has been assigned to. This is one of the reasons why two children can have some of their volumes overlapping. 
 
 \begin{figure}[H]
     \centering
@@ -793,7 +793,7 @@ As shown by \cite{bvh_overlapping_metric} too much overlapping between children 
 
 In order to choose which plane to use to split the triangles, some optimizations can be employed. In BVHs based on AABBs it is useful to try to split the triangles only in the 3 cartesian directions. Usually just one of the directions is chosen, in order to further optimize the process. The way in which the direction is chosen can vary based on the methods used. An often employed technique is to cut along the longest dimension of the parent AABB. Another one is to cut in a round-robin fashion, similar to what is done in kd-trees. In chapter \ref{ch:splitting_plane_facing_technique} we propose a novel method, as mentioned above.
 
-Another advantage of using only the 3 cartesian directions is that in order to detect the semispace a point falls into, it is sufficient to compare one of its coordinates with the coordinates of a point the plane is passing through. This is an optimization compared to computing the cross-product like in the case where the plane has an arbitrary normal direction.
+Another advantage of using only the 3 cartesian directions is that in order to detect the half-space a point falls into, it is sufficient to compare one of its coordinates with the coordinates of a point the plane is passing through. This is an optimization compared to computing the cross-product like in the case where the plane has an arbitrary normal direction.
 
 After choosing a splitting direction, all possible cuts in that direction should be tested. Given an amount on $n$ triangles to be splitted, trying all the possible cuts in one direction means trying $n-1$ subdivisions, where the splitting plane is placed each time on the barycenter of a triangle. Since $n$ can be a big number, especially while running the algorithm on the first levels of the BVH where nodes are big, a technique called binning can be introduced.
 
@@ -887,6 +887,9 @@ However it is also useful to have a way to evaluate the cost of a BVH a-posterio
 
 By merging the formulae to compute the cost of leaf and internal nodes, the cost function of a BVH assumes this form:
 $$Cost_{SAH}(BVH) = \sum_{L \in leaf\; nodes} \frac{Area_L}{Area_{root}} \cdot \#triangles_L \cdot 1.2 + \sum_{I \in internal\; nodes} \frac{Area_I}{Area_{root}} \cdot 2 \cdot 1$$
+
+\subsubsection{TLAS and BLAS}
+TODO
 
 \chapter{Projected Area Heuristic} \label{ch:projected_area_heuristic}
 In chapter \ref{ch:background_theory} we have described how ray tracing works. In particular, in section \ref{sec:monte_carlo_and_variance_reduction_techniques} we have seen how importance sampling generates artifacts in the ray distribution of the scene. In section \ref{sec:ray_tracing_acceleration_structures} we described how it is possible to build an acceleration structure to speed up the ray-scene intersection process, and we have shown how the surface area heuristic is the state-of-the-art method to build high-quality BVHs. In this chapter, we will show that some of the hypotheses of the SAH are not satisfied in a real-world scenario, due to the use of importance sampling. We will eventually propose a new heuristic called projected area heuristic (PAH), and show the situations where it can be used to build BVHs. In this chapter we will describe the problem and the solutions from a theoretical point of view; all the implementation details will be thoroughly discussed in section \ref{TODO}.
@@ -1029,7 +1032,7 @@ Influence areas must first be localized in the scene. To do so, we decided to en
     	\includegraphics[width=\textwidth*\real{0.45}]{Images/TODO.png}
 	}
     \caption{Plane influence areas are described by OBBs, whereas point influence areas are described by frustums.}
-    \label{fig:affine_direction}
+    \label{fig:influence_areas}
 \end{figure}
 
 \section{Ray-Influence Area Affinity} \label{sec:ray_influence_area_affinity}
@@ -1077,7 +1080,7 @@ When a ray traverses a local BVH and no hit is found, it is necessary to travers
 \end{figure}
 
 \section{Top Level Structure} \label{sec:top_level_structure}
-At the beginning of this chapter we stated that the first affinity criterion between a ray and an influence area is that the origin of the ray is inside the influence area. We have also seen how BVHs associated with influence areas contain only triangles that are inside the influence area. It is therefore of paramount importance to have a fast method to detect whether a point is inside a certain 3D region of the scene. 
+At the beginning of this chapter, we stated that the first affinity criterion between a ray and an influence area is that the origin of the ray is inside the influence area. We have also seen how BVHs associated with influence areas contain only triangles that are inside the influence area. It is therefore of paramount importance to have a fast method to detect whether a point is inside a certain 3D region of the scene. 
 
 In our implementation we tried to tackle this problem by using two different approaches. We will now briefly describe them from a theoretical point of view. All the details of our implementation can be found in section \ref{TODO}.
 
@@ -1085,7 +1088,98 @@ The first approach is to use algorithms described in appendices \ref{sec:point_i
 
 On the opposite side of the spectrum there is the second method we propose. In this case we build an octree, where each leaf contains the influence areas that overlap with it. Building such an octree is not trivial, and it is diffusely described in section \ref{TODO}. However, once the octree is built, it is extremely cheap to find out what are the influence areas containing any given 3D point.
 
-\chapter{Splitting Plane Facing Technique} \label{ch:splitting_plane_facing_technique}
+\chapter{Splitting Plane Facing Heuristic} \label{ch:splitting_plane_facing_heuristic}
+In chapter \ref{ch:projected_area_heuristic} we described the first heuristic we propose in this thesis. With PAH it is possible to estimate better the probability a ray hits AABBs in a region of the scene where relevant ray distributions are present. This enables us to have more accurate information on how to split a node at each level, during BVH construction. However, as we stated in section \ref{ssec:triangles_splitting}, another important step in building high-quality BVHs is the choosing of the orientation of the splitting plane. In this chapter we will propose a novel method to select the splitting plane, whose main aim is to reduce the overlapping of the projected area of the children nodes. Its name is splitting plane facing heuristic (SPFH).
+
+As extensively discussed in section \ref{ssec:triangles_splitting}, in today's BVH builders, during the triangles splitting phase, usually only one plane orientation is selected. With this strategy it is possible to trade build time for accuracy, indeed less splitting planes must be tried at each step, but, at the same time, it is possible to miss some relevant splits. Moreover, since the majority of BVHs uses AABBs, the possible splitting plane orientations among which to choose one are only 3, parallel to each cartesian axis.
+
+Before continuing to the next paragraph, it is important to talk about the language we will use. In particular, the expression \textit{cut along the $K$ axis} means that the plane we are using to split the AABB into two children has a normal that is parallel to the specified axis $K$. Furthermore, we use the expression \textit{$K$ axis plane} to denote a plane whose normal is parallel to the $K$ cartesian axis.
+
+The most used heuristic to choose the splitting plane orientation, is to cut along the longest dimension of the AABB. The main idea behind this method is that, the longer the axis of the AABB, the more chances there are to cut off space effectively.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth*\real{0.6}]{Images/TODO.png}
+    \caption{A lot of space is cut off by using longest axis splitting.}
+    \label{fig:longest_axis_splitting}
+\end{figure}
+
+Our idea instead, based on \cite{bvh_overlapping_metric}, is to use the information about the ray directions in a specific region of the scene, in order to divide a node such that it is less likely that its two children can be hit by the same ray. We can quantify the likeliness that two AABBs are hit by the same ray, by computing the projection of the overlapped area between the two. The projection, as we described in chapter \ref{ch:projected_area_heuristic} is an orthographic projection in case of a plane influence area, and a perspective projection in case of a point influence area.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth*\real{0.6}]{Images/TODO.png}
+    \caption{Overlapping projected area between two nodes' AABBs.}
+    \label{fig:overlapping_projected_area}
+\end{figure}
+
+It is possible to compute the overlapping area between two AABBs projections with the algorithm described in appendix \ref{sec:2dHull_culling}, however doing so for each possible triangles split would be too expensive from a computational point of view.
+
+We therefore decided to use a heuristic to find out which is the best cartesian axis to cut along so that it is most likely to have splits with not much overlapping. We found out that, the more the ray direction of the influence area is perpendicular to the normal of the splitting plane, the less likely it is for the two children's AABBs to have a large overlapping area.
+
+We can first analyze the simplest case (figure \ref{fig:ray_facing_simplest_case}), where there is a plane influence area with rays direction parallel to the $z$ axis. In this case, the ray direction is perpendicular to the $x$ and $y$ cartesian axes, which define two possible splitting plane orientations. Instead, it is parallel to the $z$ cartesian axis, which defines the last possible plane orientation (considering we use the optimization where only the 3 cartesian planes are used). If we consider a uniform distribution of the triangles in the father node, it is clear that, if we divide its AABB with the $z$ axis plane, it is extremely likely for a single ray to hit both of the children. At the same time, it is almost impossible for a ray to hit both children if we use the other two planes to split the father node's AABB. Indeed, in this last case, the only possible source of overlapping is given by the fact that triangles are not point-like entities, but have an extension; therefore it is possible that the splitting plane, which partitions the triangles based on their barycenter, splits the vertices of a triangle in both the half-spaces generated by the plane, as we discussed in section \ref{ssec:triangles_splitting} and as it is possible to observe in figure \ref{fig:triangle_splitting_extension}.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\textwidth*\real{0.6}]{Images/TODO.png}
+	\caption{Overlapping caused by the triangle extension.}
+	\label{fig:triangle_splitting_extension}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+	\subfloat[$x$ axis plane]{
+    	\includegraphics[width=\textwidth*\real{0.45}]{Images/TODO.png}
+	}
+	\qquad
+	\subfloat[$y$ axis plane]{
+    	\includegraphics[width=\textwidth*\real{0.45}]{Images/TODO.png}
+	}
+	\qquad
+	\subfloat[$z$ axis plane]{
+    	\includegraphics[width=\textwidth*\real{0.45}]{Images/TODO.png}
+	}
+    \caption{Visual illustration of the possible splitting plane orientations and how a ray can hit the children AABBs.}
+    \label{fig:ray_facing_simplest_case}
+\end{figure}
+
+The same reasoning can be carried out with influence areas with arbitrary rays direction, however, it is important to understand that, if there isn't a clear cartesian axis the rays are perpendicular to, using SPFH to choose the splitting plane direction becomes useless. Let's imagine a case in 2 dimensions where the rays have an angle of 45°. In this case, if we adapt the reasoning in the last paragraph to the 2D scenario, we can see that choosing to cut along the $x$ or $y$ makes no difference. In such a case it is better to fall back to a known heuristic, such as the longest axis one.
+
+For this reason, in our implementation, we decided to assign a quality value to each one of the three possible orientations of the splitting plane. We then use it to decide which is the best orientation to choose, or, in case none is good enough, to fall back to the longest axis heuristic.
+
+The function to compute the quality value for the three cartesian axes takes into account how much the influence area's rays direction is parallel to each one of them. Given that the ray direction is named $v$:
+\begin{align*}
+	quality\;of\;x\;axis &= \frac{|v_x|}{|v_x|+|v_y|+|v_z|} \\
+	quality\;of\;y\;axis &= \frac{|v_y|}{|v_x|+|v_y|+|v_z|} \\
+	quality\;of\;z\;axis &= \frac{|v_z|}{|v_x|+|v_y|+|v_z|}
+\end{align*}
+
+In other words, we compute how much each cartesian axis direction is parallel to the rays direction, in percentage. In this way we can clearly quantify how much rays are parallel to each cartesian axis. At this point, it is possible to set a threshold over which a cartesian axis is deemed \textit{too much parallel} to the direction of the rays to be a good choice for the splitting plane. If all the cartesian axes are over the threshold, we can fall back to the longest axis heuristic.
+
+It is also possible that two cartesian axes have a very low quality value. In the example of the simplest case scenario that can be found a few paragraphs above, the quality values are $0\%$ for the $x$ and $y$ axes and $100\%$ for the $z$ axis. In this case, since both axes are good candidates for the splitting plane, one is chosen arbitrarily. After a split is found, if the cost of the two children nodes is above a certain threshold, then also the second axis is tried. The threshold can be dynamically adjusted based on the quality of the axes in contention. For example, if instead of a quality value of $0\%$, as in the example above, the two axes had a quality value of $10\%$, then the threshold could be adjusted to a higher value, because it is less likely to find a good split with a quality value of $10\%$ rather than $0\%$.
+
+The same concept can be applied to the use of the fallback method. Before we stated that the fallback method is used when the quality values of all the axes are above a certain static threshold. However, it is also possible to set our implementation so that the fallback method is also used when, after a split, the two children nodes have a cost over a customizable fallback threshold.
+
+A more in-depth explanation of our algorithm can be found in chapter \ref{ch:implementation}.
+
+Thanks to the customizable thresholds it is possible to make our algorithm more or less accurate in the choosing of the splitting plane. Having a more accurate algorithm can yield higher-quality BVHs, at the cost of a higher construction time.
+
+Another important factor in the effectiveness of SPFH is the type of influence area. Until now we talked about \textit{the rays direction of the influence area}. If this definition can be unequivocably given to plane influence areas, where all the rays face the same direction (\ref{ch:multi_influence_areas}), the same cannot be stated for point influence areas, where the rays face many different directions. In the case of point influence area, the central direction can be considered as the direction of all the rays. However, if the point influence area have a large spread in its rays' directions, then this approximation doesn't hold. In such cases, it is not possible to use SPFH effectively, and it is therefore advised to fall back to the longest area heuristic.
+
+\begin{figure}[H]
+    \centering
+	\subfloat[Good approximation]{
+    	\includegraphics[width=\textwidth*\real{0.45}]{Images/TODO.png}
+	}
+	\qquad
+	\subfloat[Bad approximation]{
+    	\includegraphics[width=\textwidth*\real{0.45}]{Images/TODO.png}
+	}
+    \caption{For spread out point influence areas, approximating the rays' directions to the central direction is not a good approximation.}
+    \label{fig:point_influence_areas_central_dir_approx}
+\end{figure}
+
+The discussion about the quality of the BVHs built with the splitting plane facing heuristic (SPFH) can be found in chapter \ref{ch:experimental_results}.
 
 \chapter{Implementation} \label{ch:implementation}
 

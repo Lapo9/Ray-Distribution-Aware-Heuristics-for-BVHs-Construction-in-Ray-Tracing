@@ -420,7 +420,7 @@ namespace pah {
 			using namespace std;
 			using namespace utilities;
 
-			Vector3 dir = influenceArea->getRayDirection(node.aabb); //TODO this will not work for point influence areas, we need to think about them
+			Vector3 dir = influenceArea->getRayDirection(node.aabb); //TODO this will not work so well for wide point influence areas
 			float xAbs = abs(dir.x), yAbs = abs(dir.y), zAbs = abs(dir.z);
 			Vector3 percs{ xAbs / (xAbs + yAbs + zAbs), yAbs / (xAbs + yAbs + zAbs), zAbs / (xAbs + yAbs + zAbs) };
 
