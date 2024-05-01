@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex Thesis"] 1714587430 "Thesis.aux" "Thesis.bbl" "Thesis" 1714587436 0
+["bibtex Thesis"] 1714600611 "Thesis.aux" "Thesis.bbl" "Thesis" 1714600617 0
   "./Bibliography.bib" 1714422647 14312 4fb8154956d87ef2981359b21817217b ""
-  "Thesis.aux" 1714587435 87147 05a4f9e3facc1efbfe23792ebd93edae "pdflatex"
+  "Thesis.aux" 1714600616 91063 ca255686a8da1240a21e145275b0ee38 "pdflatex"
   "p:/Program Files/texlive/2023/texmf-dist/bibtex/bst/natbib/abbrvnat.bst" 1689594196 26532 66bed5cc59495faaa3f9ae9af9fa5e42 ""
   (generated)
   "Thesis.bbl"
   "Thesis.blg"
   (rewritten before read)
-["pdflatex"] 1714587430 "d:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/Thesis/Thesis.tex" "Thesis.pdf" "Thesis" 1714587436 0
+["pdflatex"] 1714600611 "d:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/Thesis/Thesis.tex" "Thesis.pdf" "Thesis" 1714600617 0
   "Images/./raggiera_polimi.eps" 1712141936 1813066 68b21695bbcbb6d7e09839c06406f8f3 ""
   "Images/02_ING_IND_INFORMAZIONE_COL_POSITIVO.eps" 1712141936 1016894 50c9d95dbacdb6a7531ebeec13361098 ""
   "Images/TODO.png" 1713377561 1555 09f24c0bbc14c55fc00324caf9a1dd46 ""
@@ -44,15 +44,15 @@
   "Images/triangular_mesh.png" 1714426251 33317 7346bcfa791764bcb7aa15e14c0616a8 ""
   "Images/vertices_sorting.png" 1712596422 30952 6837b3c83fedc96634abfabf11186014 ""
   "PoliMi_MasterThesis.cls" 1712863111 4472 036eefb2d4a1cbcb2bfa3e194ef279b4 ""
-  "Thesis.aux" 1714587435 87147 05a4f9e3facc1efbfe23792ebd93edae "pdflatex"
-  "Thesis.bbl" 1714587430 11345 b6ca7cf14314e45fc682d220cb13f315 "bibtex Thesis"
-  "Thesis.lof" 1714587435 11622 002cb4f00df11906932908cb2f965175 "pdflatex"
-  "Thesis.lot" 1714587435 270 634014215239961ef22015ac6f9b33c9 "pdflatex"
-  "Thesis.out" 1714587435 9214 1f0b2c47a3db8383cea1b5e2546433d4 "pdflatex"
-  "Thesis.tex" 1714587423 141543 65648a0063e3fd4ddb23b4b776d3e415 ""
-  "Thesis.toc" 1714587435 4776 a4f37dc301d9d7e09cf4f6b170adba52 "pdflatex"
+  "Thesis.aux" 1714600616 91063 ca255686a8da1240a21e145275b0ee38 "pdflatex"
+  "Thesis.bbl" 1714600611 11345 b6ca7cf14314e45fc682d220cb13f315 "bibtex Thesis"
+  "Thesis.lof" 1714600616 11622 5a40f4e2d5a170235909c26b9cbc850b "pdflatex"
+  "Thesis.lot" 1714600616 270 634014215239961ef22015ac6f9b33c9 "pdflatex"
+  "Thesis.out" 1714600616 11269 cc96443ce654d441200af5e06eefd3b9 "pdflatex"
+  "Thesis.tex" 1714600604 142591 2328046cc2608631dcd6cacaa6243404 ""
+  "Thesis.toc" 1714600616 5953 30271cfd3fa97dc92aa532bf45ec3446 "pdflatex"
   "config.tex" 1712141936 2274 0a1f30f56ee90e210ed92d2e51617d7d ""
-  "d:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/Thesis/Thesis.tex" 1714587423 141543 65648a0063e3fd4ddb23b4b776d3e415 ""
+  "d:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/Thesis/Thesis.tex" 1714600604 142591 2328046cc2608631dcd6cacaa6243404 ""
   "p:/Program Files/texlive/2023/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc" 1689590650 2971 def0b6c1f0b107b3b936def894055589 ""
   "p:/Program Files/texlive/2023/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc" 1689590650 2900 1537cc8184ad1792082cd229ecc269f4 ""
   "p:/Program Files/texlive/2023/texmf-dist/fonts/map/fontname/texfonts.map" 1689592215 3524 cb3e574dea2d1052e39280babc910dc8 ""

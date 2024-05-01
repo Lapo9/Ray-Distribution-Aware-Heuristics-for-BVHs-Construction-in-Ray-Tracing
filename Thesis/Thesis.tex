@@ -1182,6 +1182,30 @@ Another important factor in the effectiveness of SPFH is the type of influence a
 The discussion about the quality of the BVHs built with the splitting plane facing heuristic (SPFH) can be found in chapter \ref{ch:experimental_results}.
 
 \chapter{Implementation} \label{ch:implementation}
+\section{BVH} \label{sec:bvh}
+-paramters, functions (build, traverse, split, ...)
+
+\subsection{Splitting Plane Facing Implementation} \label{ssec:splitting_plane_facing_implementation}
+\subsection{Termination Criteria Implementation} \label{ssec:termination_criteria_implementation}
+\subsection{Traversal} \label{ssec:traversal}
+
+\section{BVH Analyzer} \label{sec:bvh_analyzer}
+-traversal with analyzer actions, custom json
+
+\section{Regions} \label{sec:regions}
+\subsection{Axis Aligned Bounding Box} \label{ssec:aabb}
+\subsection{Oriented Bounding Box} \label{ssec:obb}
+\subsection{AABB for OBB} \label{ssec:aabb_for_obb}
+\subsection{Frustum} \label{ssec:frustum}
+
+\section{Influence Areas} \label{sec:influence_areas}
+\subsection{Plane Influence Area} \label{ssec:plane_influence_area}
+-underlying object (i.e. plane or fov), projection algorithms, how to find the external hull, ...
+-Random ray generation
+\subsection{Point Influence Area} \label{ssec:point_influence_area}
+
+\section{Test Scene} \label{sec:test_scene}
+
 
 \chapter{Experimental Results} \label{ch:experimental_results}
 
@@ -1574,7 +1598,7 @@ We are now left with the task of verifying whether the found intersection point 
     \centering
     \includegraphics[scale=0.4]{Images/segments_intersection.png} 
     \caption{In this example segments do not collide because $max(M_x, N_x) = N_x \ngeq K_x$ or $max(M_y, N_y) \ngeq K_y$}
-    \label{fig:segments:intersection}
+    \label{fig:segments_intersection}
 \end{figure}
 
 \subsection{Vertices ordering}
