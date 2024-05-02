@@ -67,6 +67,8 @@
 \usepackage{algorithmicx}
 \usepackage{algpseudocodex}
 \newcommand*\Let[2]{\State #1 $\gets$ #2}
+\newcommand*\Class[1]{\State $\textbf{class} \;$ #1}
+\newcommand*\Member[2]{\State $\qquad$ #1 $:$ #2}
 \newcommand*\AAnd{\textbf{ and }}
 \newcommand*\AOr{\textbf{ or }}
 \newcommand*\ANot{\textbf{not }}
@@ -260,7 +262,7 @@ In summary, a BVH is a binary tree\footnote{Technically it can be a tree with an
 Given the definition and the advantages of a BVH over the naive algorithm, we now have to build a BVH starting from the primitives in the scene.
 Building the optimal BVH is an NP-complete problem since, for each level of the BVH, we would have to try all the possible ways to subdivide the triangles into 2 AABBs, recursively, until all the branches are leaves; then measure the quality of the BVHs and take the best one.
 
-In a real-world scenario a greedy algorithm is used instead, where, at each level, some of the possible ways to subdivide the triangles are tried, and the best one with reference to a cost metric function is greedily taken. This means that, even if in the next level it is found out that the split in a previous level was not optimal, the algorithm proceeds without changing the previous decision.
+In a real-world scenario a greedy algorithm is used instead, where, at each level, some of the possible ways to subdivide the triangles are attempted, and the best one with reference to a cost metric function is greedily taken. This means that, even if in the next level it is found out that the split in a previous level was not optimal, the algorithm proceeds without changing the previous decision.
 
 The quality of the trees built with such an algorithm depends on many factors, but two of the most relevant ones are the cost function and how the algorithm tries to split the triangles at each level.
 
@@ -681,7 +683,7 @@ Another structure that is a generalization of octrees and delivers similar perfo
 
 These are the most prominent spatial data structures used for ray tracing. However, nowadays an object partition structure is used, called bounding volume hierarchy, which we will analyze in the next section.
 
-\subsection{The Bounding Volume Hierarchy}
+\subsection{The Bounding Volume Hierarchy} \label{ssec:the_bounding_volume_hierarchy}
 A BVH \cite{bvh_primer} is a binary tree\footnote{Technically it can be a tree with any breadth, but binary trees are the most common ones.} where each node wraps some of the triangles in the scene in a bounding volume. Given a node $A$ wrapping the triangles in the set $T_A$, then the two children of $A$, called $B$ and $C$, wrap the triangles in the sets $T_B$ and $T_C$ such that $T_B \cup T_C = T_A$. Thanks to this structure, if a ray doesn't intersect a bounding volume, we deduce that it will not intersect any of the triangles contained in the bounding volume too, making it possible to discard them without having to perform any additional intersection test.
 
 Assuming the best-case scenario where a ray always hits only one of the 2 children of a given node during traversal, if the BVH is balanced and has one triangle per leaf, then the complexity of finding an intersection between a ray and the scene is $\mathcal{O}(log_2(n))$, where $n$ is the number of triangles. This is not always the case, since it often happens that a ray hits both the children of a given node. One of the heuristics that we propose in this thesis in chapter \ref{ch:splitting_plane_facing_technique}, aims at reducing the number of this expensive situation, by building the BVH in a smart way.
@@ -734,7 +736,7 @@ Moreover, and this is especially relevant in a dynamic real-time scenario such a
 
 BVHs construction algorithm is also simpler than kd-trees', allowing a faster build-time, which can be crucial in highly dynamic real-time applications. And they also have a smaller memory footprint compared to kd-trees, as mentioned in \cite{bvh_spatial_splitting} and \cite{bvh_advantages}.
 
-\subsection{BVH Construction}
+\subsection{BVH Construction} \label{ssec:bvh_construction}
 Building the optimal BVH according to some metric is an NP-complete problem. In order to do so the algorithm would have to build all the possible BVHs given a set of triangles, compute the metric and keep the best one. The number of possible different binary trees grows factorially with the number of leaves. Given $n$ leaves, the number of possible binary trees is the $n-1$ Catalan number \cite{catalan_numbers}: $C_{n} = \frac{(2n)!}{(n+1)! \cdot n!}$. The number of possible BVHs is even bigger, because, since a leaf can contain more than one triangle, it is not a given that the number of leaves corresponds to the number of triangles.
 
 Given that building the optimal BVH is not feasible even in a non-real-time scenario, research started studying methods to build a BVH with an acceptable quality faster. This resulted in the use of greedy algorithms and heuristics.
@@ -747,7 +749,7 @@ The base algorithm fo building a BVH can be summarized in these steps:
 		\Let{$leftNode$}{[\;]}
 		\Let{$rightNode$}{[\;]}
 		\Let{$cost$}{$\infty$}
-		\Loop{$\;cost < threshold \AOr all\;possible\;splits\;tried$}
+		\Loop{$\;cost < threshold \AOr all\;possible\;splits\;attempted$}
 			\Let{$[leftNodeTmp, rightNodeTmp]$}{$SplitTriangles(triangles, howToSplit)$}
 			\Let{$costTmp$}{$ComputeCost(leftNodeTmp, rightNodeTmp)$}
 			\If{$costTmp < cost$}
@@ -1091,7 +1093,7 @@ On the opposite side of the spectrum there is the second method we propose. In t
 \chapter{Splitting Plane Facing Heuristic} \label{ch:splitting_plane_facing_heuristic}
 In chapter \ref{ch:projected_area_heuristic} we described the first heuristic we propose in this thesis. With PAH it is possible to estimate better the probability a ray hits AABBs in a region of the scene where relevant ray distributions are present. This enables us to have more accurate information on how to split a node at each level, during BVH construction. However, as we stated in section \ref{ssec:triangles_splitting}, another important step in building high-quality BVHs is the choosing of the orientation of the splitting plane. In this chapter we will propose a novel method to select the splitting plane, whose main aim is to reduce the overlapping of the projected area of the children nodes. Its name is splitting plane facing heuristic (SPFH).
 
-As extensively discussed in section \ref{ssec:triangles_splitting}, in today's BVH builders, during the triangles splitting phase, usually only one plane orientation is selected. With this strategy it is possible to trade build time for accuracy, indeed less splitting planes must be tried at each step, but, at the same time, it is possible to miss some relevant splits. Moreover, since the majority of BVHs uses AABBs, the possible splitting plane orientations among which to choose one are only 3, parallel to each cartesian axis.
+As extensively discussed in section \ref{ssec:triangles_splitting}, in today's BVH builders, during the triangles splitting phase, usually only one plane orientation is selected. With this strategy it is possible to trade build time for accuracy, indeed less splitting planes must be attempted at each step, but, at the same time, it is possible to miss some relevant splits. Moreover, since the majority of BVHs uses AABBs, the possible splitting plane orientations among which to choose one are only 3, parallel to each cartesian axis.
 
 Before continuing to the next paragraph, it is important to talk about the language we will use. In particular, the expression \textit{cut along the $K$ axis} means that the plane we are using to split the AABB into two children has a normal that is parallel to the specified axis $K$. Furthermore, we use the expression \textit{$K$ axis plane} to denote a plane whose normal is parallel to the $K$ cartesian axis.
 
@@ -1173,36 +1175,302 @@ Another important factor in the effectiveness of SPFH is the type of influence a
 	}
 	\qquad
 	\subfloat[Bad approximation]{
-    	\includegraphics[width=\textwidth*\real{0.45}]{Images/TODO.png}
-	}
-    \caption{For spread out point influence areas, approximating the rays' directions to the central direction is not a good approximation.}
-    \label{fig:point_influence_areas_central_dir_approx}
+		\includegraphics[width=\textwidth*\real{0.45}]{Images/TODO.png}
+		}
+		\caption{For spread out point influence areas, approximating the rays' directions to the central direction is not a good approximation.}
+		\label{fig:point_influence_areas_central_dir_approx}
 \end{figure}
-
+	
 The discussion about the quality of the BVHs built with the splitting plane facing heuristic (SPFH) can be found in chapter \ref{ch:experimental_results}.
 
 \chapter{Implementation} \label{ch:implementation}
-\section{BVH} \label{sec:bvh}
--paramters, functions (build, traverse, split, ...)
+In this chapter we will analyze how we built the framework that allowed us to test the novel techniques we explained in previous chapters, and to compare the results with other methods.
+We will explain all the implementation details we skipped in previous chapters, however we won't dwell on the performance, which is the main subject of chapter \ref{ch:experimental_results}.
 
-\subsection{Splitting Plane Facing Implementation} \label{ssec:splitting_plane_facing_implementation}
-\subsection{Termination Criteria Implementation} \label{ssec:termination_criteria_implementation}
+At the beginning of the implementation we used to write prototipes in C\#, in order to be able to immediately visualize the results in Unity. However, as we were convinced of the validity of our ideas, we decided to write code in C++, in order to have more control over it and be independent from a specific engine for visualization purposes. The code of our project can be found on this GitHub repository: \url{TODO}. Furthermore, it is possible to read the documentation of our code, generated with Doxygen \footnote{\url{https://www.doxygen.nl/}}, at this address: \url{TODO}. We decided to provide the documentation in order to help future developments. As explained in the next chapters, we tried to make the framework generic and flexible, in order to be able to test different algorithms without completely rewriting the system.
+
+In parallel with the development of the framework to test our algorithms, we also developed an independent visualizer in Unity. The visualizer receives a JSON generated by the C++ framework, and shows the generated data structures over a scene (usually BVHs). We decided to build the Unity visualizer in order to help us graphically visualize the results of our algorithms. This approach proved very useful to fix bugs and identify pitfalls in our approaches. We won't describe the Unity visualizer in this thesis, but the code can be found at this address: \url{TODO}.
+
+Despite the framework being written in C++, in the next sections we will present the algorithms in a language-agnostic way: our focus is on the concepts rather than the idiosyncrasies of a specific language.
+
+\section{BVH} \label{sec:bvh}
+In this section, we will present the concepts about the class that in our implementation is responsible for representing, building and traversing a BVH.
+
+The main data members of our $Bvh$ class are the following:
+\begin{algorithm}[H]
+	\begin{algorithmic}
+		\Class{$Bvh$}
+		\Member{$root$}{$Node$}
+		\Member{$influenceArea$}{$InfluenceArea*$}
+		\Member{$computeCost$}{$function*$}
+		\Member{$chooseSplittingPlanes$}{$function*$}
+		\Member{$shouldStop$}{$function*$}
+		\Member{$properties$}{$Properties[]$}
+	\end{algorithmic}
+\end{algorithm} 
+
+We store the influence area the BVH is associated to. The pointer can be left $null$ in case the BVH is not associated with any influence area, such as for the scene-global BVH.
+
+The three functions are customizable, and are customization point for the BVH construction, as explained in the algorithm in section \ref{ssec:bvh_construction}.
+
+We also store the root node of the BVH. Each node is a member of the $Node$ class, whose main members are:
+\begin{algorithm}[H]
+	\begin{algorithmic}
+		\Class{$Node$}
+		\Member{$aabb$}{$Aabb$}
+		\Member{$leftChild$}{$Node*$}
+		\Member{$rightChild$}{$Node*$}
+		\Member{$triangles$}{$Triangle$}
+	\end{algorithmic}
+\end{algorithm} 
+
+Since a BVH is a complete tree, a leaf node can be detected by the absence of its children.
+
+An important note is that in our framework we are also interested in getting information about the timing and performance of the BVH builder. For this purpose it is possible to add time information to a $Node$, collected during construction, by enabling a C++ macro. The information in each node can later be analyzed, as it is explained in section \ref{sec:bvh_analyzer}.
+
+The $properies$ are values upon which depends how th BVH is built. We will now list and explain some of them:
+\begin{description} 
+	\item[\boldmath$maxLeafCost$] If a node has a cost (PAH or SAH depending on the cost strategy used) less than this, it is a leaf.
+	\item[\boldmath$maxLeafArea$] If a node has an area (projected or surface depending on the cost strategy used) less than this, it is a leaf.
+	\item[\boldmath$maxLeafHitProbability$] If the hit probability (\ref{ssec:cost_computation}) of this node is less than this, it is a leaf.
+	\item[\boldmath$maxTrianglesPerLeaf$] If a node has fewer triangles than this, it is a leaf.
+	\item[\boldmath$maxLevels$] If a node is at a level higher than this, it is a leaf.
+	\item[\boldmath$bins$] How many cuts to try to split a node into its children. A higher value makes more accurate BVHs, but is is also more expensive (\ref{ssec:triangles_splitting}).
+	\item[\boldmath$maxNonFallbackLevels$] If a node is at a level higher than this, the specified fallback strategies will be used. This can be used to avoid using an expensive strategy (such as PAH) even at deep levels, where there is less to gain (\ref{TODO}).
+	\item[\boldmath$splitPlaneQualityThreshold$] $[0, 1]$. If the quality of the split plane (\ref{ch:splitting_plane_facing_heuristic}) is less than this value, two things can happen: if a satisfactory split plane has already been found (look at the next two properties), it is used; if not, use the fallback strategy to find the splitting plane. A low value will leave the algorithm find the best splitting plane more times, but will slow the construction down. More details in section \ref{ssec:splitting_plane_implementation}.
+	\item[\boldmath$acceptableChildrenFatherHitProbabilityRatio$] Defined as $\frac{leftChildHit\% + rightChildHit\%}{fatherHit\%}$. This value is used to determine if a splitting plane cut is acceptable when no more planes with the minimum quality are present. The value is used to approximate the overlapping of the two children nodes: in the ideal case (no overlapping) this value is less than 1. A low value forces the algorithm to use the fallback strategy more often, therefore will also slow the construction down. More details in section \ref{ssec:splitting_plane_implementation}.
+	\item[\boldmath$excellentChildrenFatherHitProbabilityRatio$] Same as above, but in this case this value is compared with the best children found after each splitting plane cut: if such value is lower than this, no more splitting planes are attempted, even if they had the required quality. This allows an early out during the search for the splitting plane. More details in section \ref{ssec:splitting_plane_implementation}.
+\end{description}
+	
+A $Bvh$ can be built with the member $build$ function, which takes an array of $Triangles$ representing scene as argument. The function has already been described in section \ref{ssec:bvh_construction}. Here we limit ourself to remember that the function builds the BVH recursively, and uses the three customization functions cited above to decide how to build the BVH.
+
+To traverse a $Bvh$ it is possible to use the $traverse$ function, which takes a $Ray$ as argument. The process will be detailed in section \ref{ssec:traversal}.
+
+
+\subsection{Splitting Plane Search Implementation} \label{ssec:splitting_plane_implementation}
+In this section we will analyze in more detail how the selection of the best splitting plane for each node is implemented.
+
+The function $chooseSplittingPlanes$ is required to return a list of cartesian axes associated with their quality value. This function always return all the 3 axes, even if the quality of some of them is extremely low. More info about this topic can be found in chapter \ref{ch:splitting_plane_facing_heuristic}.
+
+In the $build$ function of the $Bvh$, we iterate over the axes returned by the $chooseSplittingPlanes$ function, and, for each one of them, we use the binned approach to look for a good way of splitting the node into two children. However, some of the properties listed above, can influence what axes returned by $chooseSplittingPlanes$ are actually used:
+
+\begin{algorithm}[H]
+	\caption{How the $build$ function chooses what axes to use to look for the best split.}
+	\begin{algorithmic}[1]
+		\State{$...$}
+		\Let{$axes$}{$chooseSplittingPlanes(...)$}
+		\ForAll{$\langle axis, quality \rangle \in axes$}
+			\Let{$bestCutSoFarQuality$}{$\frac{bestLeftCostSoFar.hitProbability + bestRightCostSoFar.hitProbability}{fatherHitProbability}$}
+			\If{$bestCutSoFarQuality \leq excellentChildrenFatherHitProbabilityRatio$}
+				\State{$\textbf{break}$}
+				\EndIf
+				\Let{$forceFallback$}{$false$}
+				\If{$quality < splitPlaneQualityThreshold$}
+					\If{$bestCutSoFarQuality \leq acceptableChildrenFatherHitProbRatio$}
+						\State{$\textbf{break}$}
+					\EndIf
+				\EndIf
+				\Let{$forceFallback$}{$true$}
+				\Let{$axis$}{$chooseSplittingPlanes(forceFallback, ...)[0]$}
+			\State{$.$}\Comment{start of the binned search phase with $axis$ as splitting plane normal...}
+		\EndFor
+	\end{algorithmic}
+\end{algorithm} 
+
+In simple words, if an axis is \textit{excellent}, meaning that a very good triangle split has been found by using it, no more cuts are attempted, no matter what (line 5).
+
+Instead, if no more axes are good enough (based on the threshold at line 8), then if a cut has alredy been found in previous steps, and its quality is \textit{acceptable} (line 9), then it is used as splitting plane. Otherwise the fallback method (always SAH in our test cases) is used to find a splitting plane (line 11 and 12).
+
+It is recommended that the $build$ function often looks for the best split by using just one plane, as we suggested in section \ref{ssec:triangles_splitting}. It is possible to achieve this by choosing a not too high bar for what is considered an \textit{acceptable} cut, or by rising the $splitPlaneQualityThreshold$ to discern a good splitting plane from a bad one. Using more than one splitting plane should happen only in exceptional cases if this algorithm is to be used in a real-time scenario.
+
 \subsection{Traversal} \label{ssec:traversal}
+The BVH traversal process is more straightforward than the build process. The main data structure used to traverse the BVH is the queue:
+
+\begin{algorithm}[H]
+	\caption{How the $build$ function chooses what axes to use to look for the best split.}
+	\begin{algorithmic}[1]
+		\Function{traverse}{$ray$}
+		\Let{$closestHitTriangle$}{$null$}
+		\Let{$closestHitDist$}{$\infty$}
+		\Let{$toVisit$}{$queue$}
+		\State{$toVisit.push(root)$}
+		\While{$\ANot toVisit.empty()$}
+			\Let{$current$}{$toVisit.pop()$}
+			\Let{$hitInfo$}{$collision(ray, current)$}
+			\If{$hitInfo \neq null \AAnd hitInfo.distance < closestHit$}
+				\If{$current.isLeaf()$}
+					\ForAll{$triangle \in current.triangles$}
+						\Let{$triangleHitInfo$}{$collision(ray, triangle)$} \Comment{abbreviated to $thi$}
+						\If{$thi \neq null \AAnd thi.distance < closestHit$}
+							\Let{$closestHitTriangle$}{$triangle$}
+							\Let{$closestHitDist$}{$thi.distance$}
+						\EndIf
+					\EndFor
+				\Else
+					\State{$toVisit.push(current.leftChild$)}
+					\State{$toVisit.push(current.rightChild$)}
+				\EndIf
+			\EndIf
+		\EndWhile
+		\State \Return{$\langle closestHitTriangle, closestHitDist \rangle$}
+		\EndFunction
+	\end{algorithmic}
+\end{algorithm} 
+
+In our implementation we are interested in analyzing whether the BVH cost is accurate. For this reason we made some addition to the presented algorithm to artificially compute the real cost of the traversal of a BVH. In particular, we introduce a variable to kkep track of the cost of the traversal which simulates the SAH or PAH. When we enter a leaf node, the value is incremented by $current.triangles.size() \cdot 1$. When a non leaf node is hit the value is incremented by $2 \cdot 1.2$. It is possible to observe the similarities with what we discussed in section \ref{ssec:cost_computation}.
 
 \section{BVH Analyzer} \label{sec:bvh_analyzer}
--traversal with analyzer actions, custom json
+In this section we will describe the class used to analyze a BVH and produce a JSON output that can be passed to the Unity visualizer or to other analyzing tools.
+
+One of the core points in our implementation of the BVH builder was to avoid as much as possible to introduce overhead caused by procedures collecting data about the BVH. Nonetheless collecting information about the BVH was one of the most relevant interests of our research. To let these two necessities cohexist we decided to write a class that receives a BVH as input, along with some functions to analyze it, fully traverses it breadth-first, and outputs a JSON representing the BVH and the required information.
+
+The most challenging part has been to let the user of the framework write its own data-collecting functions, and make it so that it was possible to collect virtually any statistic about the BVH by using these functions. At the end of the day we adopted an approach where the user must specify two functions for each category of data he or she wants to collect:
+\begin{description}
+	\item[Per-node functions] These functions are executed at each node during the traversal. They take as input the node itself and an object of a data type chosen by the user. This object is stored as a data member of the $BvhAnalyzer$ class\footnote{To achieve this in practice we store a C++ tuple as data member of the $BvhAnalyzer$. At compile time, by leveraging template metaprogramming, the user can specify what data types he or she wants to store inside this tuple.}, therefore it is persistent across the invocations on different nodes.
+	\item[Final actions] These functions are executed at the end of the traversal of the BVH, and take as input the same object the corresponding per-node function uses. In this way, the per-node functions can store data on a \textit{BVH-global} variable, and this data can be processed at the end of the traversal.  
+\end{description}
+
+An example of per-node/final action pair is to calculate the PAH or SAH cost of a BVH: each per-node function computes the PAH or SAH cost for the node, appends it to the JSON of the current node, and adds its value to a global total cost. The final action reads the global total cost and outputs it to the JSON.
+
+The same logic can be used for example to count the number of triangles (per-node and total), compute the siblings overlapping area (per-node and average, \ref{ch:splitting_plane_facing_heuristic}), save information about performance or simply count nodes.
 
 \section{Regions} \label{sec:regions}
-\subsection{Axis Aligned Bounding Box} \label{ssec:aabb}
+In this section we will describe some of the data structures we used to describe regions of 3D space. These structures are then used in many parts of the codebase, such as in th BVH, as influence areas or in the top level structure. 
+
+All the presented structures derive from the base $Region$ structure. This allows us to be able to interchange them easily. The $Region$ structure contains the following methods to be overridden:
+\begin{description}
+	\item[\boldmath$contains(point)$] Returns whether a point is inside the region.
+	\item[\boldmath$enclosingAabb()$] Returns the tightest AABB enclosing the region.
+	\item[\boldmath$isCollidingWith(aabb)$] Returns whether the region is intersecting the specified AABB.
+	\item[\boldmath$fullyContains(aabb)$] Returns whether the region is fully enclosing the specified AABB.
+\end{description}
+
+These methods are fundamental in different parts of our codebase, such as in the construction of the top level structure or the BVH building and traversal.
+
 \subsection{Oriented Bounding Box} \label{ssec:obb}
+An oriented bounding box is a region of 3D space enclosed in a rectangle parallelepiped. As mentioned in section \ref{ssec:the_bounding_volume_hierarchy}, OBBs can be used as bounding volume in a BVH. While providing a good approximation of the volume occupied by the primitives in many situations, they are quite expensive to intersect with a ray, therefore are not often employed as bounding boxes in state-of-the-art BVH builders. In our implementation we use them to describe a plane influence area, as shown in section \ref{ssec:plane_influence_area}.
+
+In our implementation we describe a bounding box in this way:
+\begin{algorithm}[H]
+	\begin{algorithmic}
+		\Class{$Obb$}
+		\Member{$center$}{$Vector3$}
+		\Member{$forward$}{$Vector3*$}
+		\Member{$right$}{$Vector3*$}
+		\Member{$up$}{$Vector3$}
+		\Member{$halfSize$}{$Vector3$}
+	\end{algorithmic}
+\end{algorithm} 
+
+We decided to store all the three main axis of the OBB because they are used in the SAT algorithm, as described in section \ref{sec:frustum_aabb_intersection}, and also in the algorithm to detect if a point is inside the OBB.
+
+The $halfSize$ member stores the extents of the OBB starting from the center and toward the 3 main directions.
+
+\subsubsection*{$contains(point)$}
+In order to detect if a point is inside an OBB, we project its distance vector from the center, with a dot product, to all the 3 main axis: if all three projections are shorter than the half size in the corrsponding direction, the point is inside.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth*\real{0.5}]{Images/TODO.png}
+    \caption{Check to detect if a point is inside an OBB.}
+    \label{fig:oobb_contains}
+\end{figure}
+
+\subsubsection*{$enclosingAabb()$}
+To compute the tightest enclosing AABB we iterate over all the 8 vertices of the OBB and compute the maximum and minimum in every dimension.
+
+\subsubsection*{$isCollidingWith(aabb)$}
+We use a simplified version the separanting axis test (\ref{sec:frustum_aabb_intersection}).
+
+\subsubsection*{$fullyContains(aabb)$}
+To check if an AABB is fully contained in the OBB, we simply check that all the vertices of the AABB are inside the OBB, by using the $contains(point)$ method.
+
+\subsection{Axis Aligned Bounding Box} \label{ssec:aabb}
+An axis-aligned bounding box (AABB) is an OBB where the 3 main directions are constrained to the 3 cartesian axes of the reference system. AABBs are the most used 3D in our implementation. They are the key element of a BVH (\ref{sec:bvh}), and are also used in the octree top level structure (\ref{ssec:top_level_octree}).
+
+The fact that AABB are, indeed, axis aligned, make them worse than OBBs as bounding volumes, however make them extremely fast to intersect with a ray in a GPU-frienly way (\ref{sec:ray_box_intersection}), and also extremely space-effiecient to store:
+\begin{algorithm}[H]
+	\begin{algorithmic}
+		\Class{$Aabb$}
+		\Member{$min$}{$Vector3$}
+		\Member{$max$}{$Vector3*$}
+	\end{algorithmic}
+\end{algorithm} 
+
+AABBs can indeed be thought as a 3D analogous to a 1D segment. To describe the set of points of a segment, it is sufficient to know the start point and the end point. The same can be said for the AABB in 3 dimensions. We store the minimum and maximum point in all 3 dimensions, and every point within the min-max range in all 3 dimensions is by definition part of the AABB.
+
+\subsubsection*{$contains(point)$}
+To check if a point is inside an AABB, it is sufficient to check that the point is inside the min-max range in all three directions.
+
+\subsubsection*{$enclosingAabb()$}
+The AABB itself is the tightest enclosing AABB.
+
+\subsubsection*{$isCollidingWith(aabb)$}
+The algorithm to check if two AABBs are colliding is described in section \ref{sec:aabb_aabb_intersection}. It is way less expensive than the separating axis test.
+
+\subsubsection*{$fullyContains(aabb)$}
+To check if the an AABB is fully contained in another AABB it is enough to check that the minimum of the enclosing AABB is smaller in all dimensions than the minimum of the enclosed AABB, and that the maximum of the enclosing AABB is greater in all dimensions than the maximum of the enclosed AABB:
+
+\begin{subequations}
+	\begin{align*}[left=\empheqlbrace]
+		A.min_x \leq& B.min_x \\
+		A.max_x \geq& B.max_x \\
+		A.min_y \leq& B.min_y \\
+		A.max_y \geq& B.max_y \\
+		A.min_z \leq& B.min_z \\
+		A.max_z \geq& B.max_z
+	\end{align*}
+\end{subequations}
+
 \subsection{AABB for OBB} \label{ssec:aabb_for_obb}
+AABBs for OBBs are a data structure that optimize the ray-OBB intersection test cost in some scenarios, at the expense of a bigger memory footprint. As the name suggests, an AABB for OBB is an OBB where the tightest enclosing AABB is cached the first time it is computed:
+\begin{algorithm}[H]
+	\begin{algorithmic}
+		\Class{$AabbForObb$}
+		\Member{$obb$}{$Obb$}
+		\Member{$aabb$}{$Aabb*$}
+	\end{algorithmic}
+\end{algorithm} 
+
+In our implementation, virtually every time we could use an $Obb$, we instead use an $AabbForObb$. In all the predicate functions derived from $Region$, the $Aabb$ implementation works as refutation test. It means that a negative response from the $Aabb$ implementation implies a negative response from the $Obb$ implementation too. In symbols:
+
+$$~Aabb.function \implies ~Obb.function$$
+
+The condition is only sufficient, but not necessary. It is thus needed to fall back to the more expensive $Obb$'s implementations in case the $Aabb$'s implementation give a positive response.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth*\real{0.6}]{Images/TODO.png}
+    \caption{If the point (purple) is outside the AABB, it is necessarily outside the OBB too. The inverse (blue and light blue) is not guaranteed.}
+    \label{fig:aabb_for_obb_contains}
+\end{figure}
+
+
 \subsection{Frustum} \label{ssec:frustum}
+TODO
+
+Analogous to what happens with the $AabbForObb$, even with the $Frustum$ we cache the tightest enclosing AABB and use its implementation of the predicate functions derived from $Region$ as refutation tests. However, if the refutation fails, the $Frustum$ implementation can be even more expensive than the $Obb$'s ones.
+
+\subsubsection*{$contains(point)$}
+After the AABB refutation test fails, we use the algorithm described in section \ref{sec:point_inside_frustum} to detect whether a point is inside the frustum.
+
+\subsubsection*{$enclosingAabb()$}
+To compute the tightest enclosing AABB, we iterate over all the 8 vertices of the frustum and compute the maximum and minimum in every dimension. However, after the first time it is computed, the AABB is cached.
+
+\subsubsection*{$isCollidingWith(aabb)$}
+After the AABB refutation test failure, we use a simplified version the separanting axis test (\ref{sec:frustum_aabb_intersection}).
+
+\subsubsection*{$fullyContains(aabb)$}
+In case the AABB refutation test fails, we check that all the vertices of the AABB are inside the frustum, by using the $contains(point)$ method.
 
 \section{Influence Areas} \label{sec:influence_areas}
 \subsection{Plane Influence Area} \label{ssec:plane_influence_area}
 -underlying object (i.e. plane or fov), projection algorithms, how to find the external hull, ...
 -Random ray generation
 \subsection{Point Influence Area} \label{ssec:point_influence_area}
+
+\section{TopLevel} \label{sec:top_level}
+\subsection{AABBs for OBBs} \label{ssec:top_level_aabbs}
+\subsection{Octree} \label{ssec:top_level_octree}
 
 \section{Test Scene} \label{sec:test_scene}
 

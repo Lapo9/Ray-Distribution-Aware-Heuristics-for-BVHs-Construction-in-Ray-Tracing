@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex Thesis"] 1714600611 "Thesis.aux" "Thesis.bbl" "Thesis" 1714600617 0
-  "./Bibliography.bib" 1714422647 14312 4fb8154956d87ef2981359b21817217b ""
-  "Thesis.aux" 1714600616 91063 ca255686a8da1240a21e145275b0ee38 "pdflatex"
+["bibtex Thesis"] 1714686054 "Thesis.aux" "Thesis.bbl" "Thesis" 1714686565 0
+  "./Bibliography.bib" 1714667798 14312 4fb8154956d87ef2981359b21817217b ""
+  "Thesis.aux" 1714686564 110418 0e42602a46311cbd23256c1956c8c412 "pdflatex"
   "p:/Program Files/texlive/2023/texmf-dist/bibtex/bst/natbib/abbrvnat.bst" 1689594196 26532 66bed5cc59495faaa3f9ae9af9fa5e42 ""
   (generated)
   "Thesis.bbl"
   "Thesis.blg"
   (rewritten before read)
-["pdflatex"] 1714600611 "d:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/Thesis/Thesis.tex" "Thesis.pdf" "Thesis" 1714600617 0
+["pdflatex"] 1714686559 "d:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/Thesis/Thesis.tex" "Thesis.pdf" "Thesis" 1714686565 0
   "Images/./raggiera_polimi.eps" 1712141936 1813066 68b21695bbcbb6d7e09839c06406f8f3 ""
   "Images/02_ING_IND_INFORMAZIONE_COL_POSITIVO.eps" 1712141936 1016894 50c9d95dbacdb6a7531ebeec13361098 ""
   "Images/TODO.png" 1713377561 1555 09f24c0bbc14c55fc00324caf9a1dd46 ""
@@ -44,15 +44,15 @@
   "Images/triangular_mesh.png" 1714426251 33317 7346bcfa791764bcb7aa15e14c0616a8 ""
   "Images/vertices_sorting.png" 1712596422 30952 6837b3c83fedc96634abfabf11186014 ""
   "PoliMi_MasterThesis.cls" 1712863111 4472 036eefb2d4a1cbcb2bfa3e194ef279b4 ""
-  "Thesis.aux" 1714600616 91063 ca255686a8da1240a21e145275b0ee38 "pdflatex"
-  "Thesis.bbl" 1714600611 11345 b6ca7cf14314e45fc682d220cb13f315 "bibtex Thesis"
-  "Thesis.lof" 1714600616 11622 5a40f4e2d5a170235909c26b9cbc850b "pdflatex"
-  "Thesis.lot" 1714600616 270 634014215239961ef22015ac6f9b33c9 "pdflatex"
-  "Thesis.out" 1714600616 11269 cc96443ce654d441200af5e06eefd3b9 "pdflatex"
-  "Thesis.tex" 1714600604 142591 2328046cc2608631dcd6cacaa6243404 ""
-  "Thesis.toc" 1714600616 5953 30271cfd3fa97dc92aa532bf45ec3446 "pdflatex"
+  "Thesis.aux" 1714686564 110418 0e42602a46311cbd23256c1956c8c412 "pdflatex"
+  "Thesis.bbl" 1714686055 11345 b6ca7cf14314e45fc682d220cb13f315 "bibtex Thesis"
+  "Thesis.lof" 1714686564 11978 464e7bcc4549948b44ba20d31e9fd9f8 "pdflatex"
+  "Thesis.lot" 1714686564 270 634014215239961ef22015ac6f9b33c9 "pdflatex"
+  "Thesis.out" 1714686564 11351 030028035928d2cee46f9224227c916a "pdflatex"
+  "Thesis.tex" 1714686558 164804 8f58c7a96e4cd2d866f5f5afca6267de ""
+  "Thesis.toc" 1714686564 6078 e53c31a3144f7c34357391d0188cbd7b "pdflatex"
   "config.tex" 1712141936 2274 0a1f30f56ee90e210ed92d2e51617d7d ""
-  "d:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/Thesis/Thesis.tex" 1714600604 142591 2328046cc2608631dcd6cacaa6243404 ""
+  "d:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/Thesis/Thesis.tex" 1714686558 164804 8f58c7a96e4cd2d866f5f5afca6267de ""
   "p:/Program Files/texlive/2023/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc" 1689590650 2971 def0b6c1f0b107b3b936def894055589 ""
   "p:/Program Files/texlive/2023/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc" 1689590650 2900 1537cc8184ad1792082cd229ecc269f4 ""
   "p:/Program Files/texlive/2023/texmf-dist/fonts/map/fontname/texfonts.map" 1689592215 3524 cb3e574dea2d1052e39280babc910dc8 ""
@@ -107,6 +107,7 @@
   "p:/Program Files/texlive/2023/texmf-dist/fonts/tfm/public/cm/cmsy10.tfm" 1689590478 1124 6c73e740cf17375f03eec0ee63599741 ""
   "p:/Program Files/texlive/2023/texmf-dist/fonts/tfm/public/cm/cmsy6.tfm" 1689590478 1116 933a60c408fc0a863a92debe84b2d294 ""
   "p:/Program Files/texlive/2023/texmf-dist/fonts/tfm/public/cm/cmsy8.tfm" 1689590478 1120 8b7d695260f3cff42e636090a8002094 ""
+  "p:/Program Files/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb" 1689589768 32080 340ef9bf63678554ee606688e7b5339d ""
   "p:/Program Files/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb" 1689589768 30251 6afa5cb1d0204815a708a080681d4674 ""
   "p:/Program Files/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb" 1689589768 36299 5f9df58c2139e7edcf37c8fca4bd384d ""
   "p:/Program Files/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb" 1689589768 36741 0ee9e374ec3e30da87cdfb0ea3575226 ""
