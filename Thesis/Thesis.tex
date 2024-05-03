@@ -894,7 +894,7 @@ $$Cost_{SAH}(BVH) = \sum_{L \in leaf\; nodes} \frac{Area_L}{Area_{root}} \cdot \
 TODO
 
 \chapter{Projected Area Heuristic} \label{ch:projected_area_heuristic}
-In chapter \ref{ch:background_theory} we have described how ray tracing works. In particular, in section \ref{sec:monte_carlo_and_variance_reduction_techniques} we have seen how importance sampling generates artifacts in the ray distribution of the scene. In section \ref{sec:ray_tracing_acceleration_structures} we described how it is possible to build an acceleration structure to speed up the ray-scene intersection process, and we have shown how the surface area heuristic is the state-of-the-art method to build high-quality BVHs. In this chapter, we will show that some of the hypotheses of the SAH are not satisfied in a real-world scenario, due to the use of importance sampling. We will eventually propose a new heuristic called projected area heuristic (PAH), and show the situations where it can be used to build BVHs. In this chapter we will describe the problem and the solutions from a theoretical point of view; all the implementation details will be thoroughly discussed in section \ref{TODO}.
+In chapter \ref{ch:background_theory} we described how ray tracing works. In particular, in section \ref{sec:monte_carlo_and_variance_reduction_techniques} we have seen how importance sampling generates artifacts in the ray distribution of the scene. In section \ref{sec:ray_tracing_acceleration_structures} we described how it is possible to build an acceleration structure to speed up the ray-scene intersection process, and we have shown how the surface area heuristic is the state-of-the-art method to build high-quality BVHs. In this chapter, we will show that some of the hypotheses of the SAH are not satisfied in a real-world scenario, due to the use of importance sampling. We will eventually propose a new heuristic called projected area heuristic (PAH), and show the situations where it can be used to build BVHs. In this chapter we will describe the problem and the solutions from a theoretical point of view; all the implementation details will be thoroughly discussed in chapter \ref{ch:implementation}.
 
 \section{SAH Hypotheses Fall} \label{sec:sah_hypotheses_fall}
 In section \ref{sec:ray_tracing_acceleration_structures} we have seen that the surface area heuristic, used to build high-quality BVHs with the described greedy algorithm, works under these hypotheses:
@@ -905,7 +905,7 @@ In section \ref{sec:ray_tracing_acceleration_structures} we have seen that the s
 	\item Rays are uniformly distributed in their direction space.
 \end{itemize}
 
-In a standard situation, the first hypothesis can be considered true for all the rays. It is still possible, in some scenarios, that a part of the rays doesn't hit the scene. Examples can be found in the discussion on the test cases for our thesis in chapter \ref{TODO}, however, in most scenarios all the rays hit the scene, because casting a ray away from the scene would be wasteful.
+In a standard situation, the first hypothesis can be considered true for all the rays. It is still possible, in some scenarios, that a part of the rays doesn't hit the scene. Examples can be found in the discussion on the test cases for our thesis in chapter \ref{ch:experimental_results}, however, in most scenarios, all the rays hit the scene, because casting a ray away from the scene would be wasteful.
 
 For what concerns the second hypothesis, the situation is completely different. Indeed, in many applications the camera is inside the scene, therefore the rays' origin is inside the scene too. But even in a situation where the camera is placed outside the scene, still the majority of rays would have origin inside. This happens because in many algorithms of the ray tracing family, the primary rays (rays cast from the camera position) are in a much smaller number than the secondary rays. With secondary rays we refer to what we called in the previous chapter \textit{probe rays}, namely those rays originating after a ray-triangle intersection. As we have seen, generating probe rays to evaluate the rendering equation is a recursive process, and in order to obtain an image with an acceptable amount of noise, a lot of probe rays must be cast.
 
@@ -1009,9 +1009,9 @@ However, in a scene, there likely is more than a single and global ray distribut
 
 
 \chapter{Multiple Influence Areas and the Top Level Structure} \label{ch:multi_influence_areas}
-In this chapter we will show how it is possible to deal with a scene where there are multiple localized ray distributions. We will first introduce the problem in detail and with visual examples, then we will define the concept of ray affinity to region where a relevant ray distribution is present. Eventually we will show how a scene with multiple ray distributions can be traversed by a ray. In this chapter we won't explain all the implementation details of the solution we propose, that will instead be discussed in section \ref{TODO}.
+In this chapter we will show how it is possible to deal with a scene where there are multiple localized ray distributions. We will first introduce the problem in detail and with visual examples, then we will define the concept of ray affinity to region where a relevant ray distribution is present. Eventually we will show how a scene with multiple ray distributions can be traversed by a ray. In this chapter we won't explain all the implementation details of the solution we propose, that will instead be discussed in section \ref{sec:top_level}.
 
-As we have touched on in the last chapter, while ray tracing a scene, it is likely that more than a single relevant ray distribution appears. It is even more likely that, even if only one relevant distribution is present, it doesn't cover the entirety of the scene. For cases like these, it is necessary to be able to recognize whether a ray is affine to a certain ray distribution present in a scene. In case the ray is affine, we can use the BVH built with PAH on that part of the scene to find the first intersection. In case it is not affine, we must fall back to a global BVH, covering the whole scene. The definition of the term \textit{affine} is given in the next few paragraphs.
+As we have touched on in the last chapter, while ray tracing a scene, it is likely that more than a single relevant ray distribution appears. It is even more likely that, even if only one relevant distribution is present, it doesn't cover the entirety of the scene. For cases like these, it is necessary to be able to recognize whether a ray is affine to a certain ray distribution present in a scene. In case the ray is affine, we can use the BVH built with PAH on that part of the scene to find the first intersection. In case it is not affine, we must fall back to a global BVH, covering the whole scene. The definition of the term \textit{affine} is given in the next section (\ref{sec:ray_influence_area_affinity}).
 
 \begin{figure}[]
     \centering
@@ -1022,7 +1022,7 @@ As we have touched on in the last chapter, while ray tracing a scene, it is like
 
 From this point on, we will refer to a 3D region of a scene where a relevant ray distribution is present as influence area. If the ray distribution is parallel (section \ref{sec:parallel_ray_distribution}), we call the region plane influence area. If the ray distribution is radial (section \ref{sec:point_ray_distribution}), the influence area is qualified as point influence area. Each influence area has an associated BVH (also called local BVH) built with PAH, where the projection method (orthographic or perspective) is the corresponding one to the ray distribution of the influence area.
 
-Influence areas must first be localized in the scene. To do so, we decided to encode a plane influence area as an oriented bounding box. The rays start from one of the faces of the OBB, and are perpendicular to it. For what concerns point influence areas, the most natural bounding volume to localize them is 3D is a frustum. Rays start from the near plane of the frustum, and go toward the far plane. The direction of any of the ray can be obtained by connecting the origin of the ray on the near plane to the focal point of the frustum. In section \ref{TODO} it will be explained how we encoded the influence areas in our implementation.
+Influence areas must first be localized in the scene. To do so, we decided to encode a plane influence area as an oriented bounding box (section \ref{ssec:obb}). The rays start from one of the faces of the OBB, and are perpendicular to it. For what concerns point influence areas, the most natural bounding volume to localize them is 3D is a frustum (section \ref{ssec:frustum}). Rays start from the near plane of the frustum, and go toward the far plane. The direction of any of the ray can be obtained by connecting the origin of the ray on the near plane to the focal point of the frustum.
 
 \begin{figure}[H]
     \centering
@@ -1042,20 +1042,14 @@ The first necessary condition to have a ray that is affine to an influence area,
 
 The second necessary condition is that the direction of the ray fits with the direction of the rays in the influence area. This is extremely simple to verify for plane influence areas, where all the rays must have the same direction. Verifying this second condition for point influence areas is more complex, but can be achieved by connecting the origin of the ray with the focal point, and checking that the direction of this vector is parallel with the direction of the ray, as it is possible to visualize in figure \ref{fig:affine_direction}.
 
-It is possible to introduce a tolerance in the verification of the second condition. The bigger the tolerance, the more rays ill be affine, but if the tolerance gets too large also rays that don't benefit from the BVH built with PAH will traverse it.
+It is possible to introduce a tolerance in the verification of the second condition. The bigger the tolerance, the more rays will be affine, but if the tolerance gets too large also rays that don't benefit from the BVH built with PAH will traverse it.
 
 If a ray is affine to an influence area, it can use the BVH associated with the influence area during traversal.
 
-\begin{figure}[H]
+\begin{figure}[]
     \centering
-	\subfloat[Plane influence area]{
-    	\includegraphics[width=\textwidth*\real{0.45}]{Images/TODO.png}
-	}
-	\qquad
-	\subfloat[Point influence area]{
-    	\includegraphics[width=\textwidth*\real{0.45}]{Images/TODO.png}
-	}
-    \caption{Visualization of the methods to verify if the direction of a ray is affine with an influence area.}
+    \includegraphics[width=\textwidth*\real{0.6}]{Images/TODO.png}
+    \caption{Visualization of the method to verify if the direction of a ray is affine with a point influence area.}
     \label{fig:affine_direction}
 \end{figure}
 
@@ -1070,7 +1064,7 @@ Since influence areas are localized in specific regions of the scene, it would b
     \label{fig:conservative_inside}
 \end{figure}
 
-Influence areas do not guarantee to cover the whole scene. It is indeed more frequent that regions of the scene don't have any particular ray distribuition. In this case, those triangles that are not inside any influence area, would not be part of any BVH, and would therefore be invisible to rays. For this very reason, it is necessary to build a global BVH for the whole scene. In our implementation, this BVH is built by using surface area heuristic.
+Influence areas do not guarantee to cover the whole scene. It is indeed more frequent that regions of the scene don't have any particular ray distribuition. In this case, those triangles that are not inside any influence area, would not be part of any BVH, and would therefore be invisible to rays during traversal. For this very reason, it is necessary to build a global BVH for the whole scene. In our implementation, this BVH is built by using surface area heuristic.
 
 When a ray traverses a local BVH and no hit is found, it is necessary to traverse the global BVH. It is indeed possible to find a hit with triangles that are not inside the influence area of the local BVH, as it can be observed in figure \ref{fig:outside_area}. However, if a ray is found in the local BVH, it is guaranteed for it to be the closest one, as shown in figure \ref{fig:conservative_inside}.
 
@@ -1084,11 +1078,11 @@ When a ray traverses a local BVH and no hit is found, it is necessary to travers
 \section{Top Level Structure} \label{sec:top_level_structure}
 At the beginning of this chapter, we stated that the first affinity criterion between a ray and an influence area is that the origin of the ray is inside the influence area. We have also seen how BVHs associated with influence areas contain only triangles that are inside the influence area. It is therefore of paramount importance to have a fast method to detect whether a point is inside a certain 3D region of the scene. 
 
-In our implementation we tried to tackle this problem by using two different approaches. We will now briefly describe them from a theoretical point of view. All the details of our implementation can be found in section \ref{TODO}.
+In our implementation we tried to tackle this problem by using two different approaches. We will now briefly describe them from a theoretical point of view. All the details of our implementation can be found in section \ref{sec:top_level}.
 
-The first approach is to use algorithms described in appendices \ref{sec:point_inside_aabb} and \ref{sec:point_inside_frustum}. The complexity of this method linearly depends on the amount of influence areas present in the scene. Moreover, the algorithms to find out if a point is inside an OBB or a frustum are not cheap, especially in a scenario where they must be used for every single ray. On the other hand, all the influence areas can be easily stored in an array, therefore there is no overhead in building an ad-hoc structure.
+The first approach is to use algorithms described in appendices \ref{sec:point_inside_aabb} and \ref{sec:point_inside_frustum}, and each time we want to check if a point is inside any influence area, iterate over all the influence areas present in the scene. The complexity of this method linearly depends on the amount of influence areas present in the scene. Moreover, the algorithms to find out if a point is inside an OBB or a frustum are not cheap, especially in a scenario where they must be used for every single ray. On the other hand, all the influence areas can be easily stored in an array, therefore there is no overhead in building an ad-hoc structure.
 
-On the opposite side of the spectrum there is the second method we propose. In this case we build an octree, where each leaf contains the influence areas that overlap with it. Building such an octree is not trivial, and it is diffusely described in section \ref{TODO}. However, once the octree is built, it is extremely cheap to find out what are the influence areas containing any given 3D point.
+On the opposite side of the spectrum there is the second method we propose. In this case we build an octree, where each leaf contains the influence areas that overlap with it. Building such an octree is not trivial, and it is diffusely described in section \ref{ssec:top_level_octree}. However, once the octree is built, it is extremely cheap to find out what are the influence areas containing any given 3D point. It is indeed succifient to traverse the octree and read the data in the leaf. Considering that it is not necessary to have extremely fine-grained octrees to achieve good results with PAH, we consider octrees the better choice as top level structure. More on the performance can be found in chapter \ref{ch:experimental_results}.
 
 \chapter{Splitting Plane Facing Heuristic} \label{ch:splitting_plane_facing_heuristic}
 In chapter \ref{ch:projected_area_heuristic} we described the first heuristic we propose in this thesis. With PAH it is possible to estimate better the probability a ray hits AABBs in a region of the scene where relevant ray distributions are present. This enables us to have more accurate information on how to split a node at each level, during BVH construction. However, as we stated in section \ref{ssec:triangles_splitting}, another important step in building high-quality BVHs is the choosing of the orientation of the splitting plane. In this chapter we will propose a novel method to select the splitting plane, whose main aim is to reduce the overlapping of the projected area of the children nodes. Its name is splitting plane facing heuristic (SPFH).
@@ -1097,7 +1091,7 @@ As extensively discussed in section \ref{ssec:triangles_splitting}, in today's B
 
 Before continuing to the next paragraph, it is important to talk about the language we will use. In particular, the expression \textit{cut along the $K$ axis} means that the plane we are using to split the AABB into two children has a normal that is parallel to the specified axis $K$. Furthermore, we use the expression \textit{$K$ axis plane} to denote a plane whose normal is parallel to the $K$ cartesian axis.
 
-The most used heuristic to choose the splitting plane orientation, is to cut along the longest dimension of the AABB. The main idea behind this method is that, the longer the axis of the AABB, the more chances there are to cut off space effectively.
+The most used heuristic to choose the splitting plane orientation, is to cut along the longest dimension of the AABB. The main idea behind this method is that, the longer the axis of the AABB, the more chances there are to cut off space effectively. This happens because, under the assumption that triangles are uniformly distributed in the volume of the AABB, the longer the range, the smaller the density of triangles along the direction of the range.
 
 \begin{figure}[H]
     \centering
@@ -1106,7 +1100,7 @@ The most used heuristic to choose the splitting plane orientation, is to cut alo
     \label{fig:longest_axis_splitting}
 \end{figure}
 
-Our idea instead, based on \cite{bvh_overlapping_metric}, is to use the information about the ray directions in a specific region of the scene, in order to divide a node such that it is less likely that its two children can be hit by the same ray. We can quantify the likeliness that two AABBs are hit by the same ray, by computing the projection of the overlapped area between the two. The projection, as we described in chapter \ref{ch:projected_area_heuristic} is an orthographic projection in case of a plane influence area, and a perspective projection in case of a point influence area.
+Our idea instead, based on \cite{bvh_overlapping_metric}, is to use the information about the ray directions in a specific region of the scene, in order to divide a node such that it is less likely that its two children can be hit by the same ray. We can quantify the likeliness that two AABBs are hit by the same ray, by computing the projection of the overlapped area between the two. The projection, as we described in chapter \ref{ch:projected_area_heuristic}, is an orthographic projection in case of a plane influence area, and a perspective projection in case of a point influence area.
 
 \begin{figure}[H]
     \centering
@@ -1115,9 +1109,9 @@ Our idea instead, based on \cite{bvh_overlapping_metric}, is to use the informat
     \label{fig:overlapping_projected_area}
 \end{figure}
 
-It is possible to compute the overlapping area between two AABBs projections with the algorithm described in appendix \ref{sec:2dHull_culling}, however doing so for each possible triangles split would be too expensive from a computational point of view.
+It is possible to compute the overlapping area between two AABBs projections with the algorithm described in appendix \ref{sec:2dHull_culling}, however, doing so for each possible triangles split at each BVH level would be too expensive from a computational point of view.
 
-We therefore decided to use a heuristic to find out which is the best cartesian axis to cut along so that it is most likely to have splits with not much overlapping. We found out that, the more the ray direction of the influence area is perpendicular to the normal of the splitting plane, the less likely it is for the two children's AABBs to have a large overlapping area.
+We therefore decided to use a heuristic to find out which is the best cartesian axis to cut along, so that it is most likely to have splits with not much overlapping. We found out that, the more the ray direction of the influence area is perpendicular to the normal of the splitting plane, the less likely it is for the two children's AABBs to have a large overlapping area.
 
 We can first analyze the simplest case (figure \ref{fig:ray_facing_simplest_case}), where there is a plane influence area with rays direction parallel to the $z$ axis. In this case, the ray direction is perpendicular to the $x$ and $y$ cartesian axes, which define two possible splitting plane orientations. Instead, it is parallel to the $z$ cartesian axis, which defines the last possible plane orientation (considering we use the optimization where only the 3 cartesian planes are used). If we consider a uniform distribution of the triangles in the father node, it is clear that, if we divide its AABB with the $z$ axis plane, it is extremely likely for a single ray to hit both of the children. At the same time, it is almost impossible for a ray to hit both children if we use the other two planes to split the father node's AABB. Indeed, in this last case, the only possible source of overlapping is given by the fact that triangles are not point-like entities, but have an extension; therefore it is possible that the splitting plane, which partitions the triangles based on their barycenter, splits the vertices of a triangle in both the half-spaces generated by the plane, as we discussed in section \ref{ssec:triangles_splitting} and as it is possible to observe in figure \ref{fig:triangle_splitting_extension}.
 
@@ -1145,7 +1139,7 @@ We can first analyze the simplest case (figure \ref{fig:ray_facing_simplest_case
     \label{fig:ray_facing_simplest_case}
 \end{figure}
 
-The same reasoning can be carried out with influence areas with arbitrary rays direction, however, it is important to understand that, if there isn't a clear cartesian axis the rays are perpendicular to, using SPFH to choose the splitting plane direction becomes useless. Let's imagine a case in 2 dimensions where the rays have an angle of 45°. In this case, if we adapt the reasoning in the last paragraph to the 2D scenario, we can see that choosing to cut along the $x$ or $y$ makes no difference. In such a case it is better to fall back to a known heuristic, such as the longest axis one.
+The same reasoning can be carried out with influence areas with arbitrary rays direction, however, it is important to understand that, if there isn't a clear cartesian axis the rays are perpendicular to, using SPFH to choose the splitting plane direction becomes useless. Let's imagine a case in 2 dimensions where the rays have an angle of 45°. In this case, if we adapt the reasoning in the last paragraph to the 2D scenario, we can see that choosing to cut along the $x$ or $y$ axes makes no difference. In such a case it is better to fall back to a known heuristic, such as the longest axis one.
 
 For this reason, in our implementation, we decided to assign a quality value to each one of the three possible orientations of the splitting plane. We then use it to decide which is the best orientation to choose, or, in case none is good enough, to fall back to the longest axis heuristic.
 
@@ -1158,15 +1152,15 @@ The function to compute the quality value for the three cartesian axes takes int
 
 In other words, we compute how much each cartesian axis direction is parallel to the rays direction, in percentage. In this way we can clearly quantify how much rays are parallel to each cartesian axis. At this point, it is possible to set a threshold over which a cartesian axis is deemed \textit{too much parallel} to the direction of the rays to be a good choice for the splitting plane. If all the cartesian axes are over the threshold, we can fall back to the longest axis heuristic.
 
-It is also possible that two cartesian axes have a very low quality value. In the example of the simplest case scenario that can be found a few paragraphs above, the quality values are $0\%$ for the $x$ and $y$ axes and $100\%$ for the $z$ axis. In this case, since both axes are good candidates for the splitting plane, one is chosen arbitrarily. After a split is found, if the cost of the two children nodes is above a certain threshold, then also the second axis is tried. The threshold can be dynamically adjusted based on the quality of the axes in contention. For example, if instead of a quality value of $0\%$, as in the example above, the two axes had a quality value of $10\%$, then the threshold could be adjusted to a higher value, because it is less likely to find a good split with a quality value of $10\%$ rather than $0\%$.
+It is also possible that two cartesian axes have a very low quality value. In the example of the simplest case scenario that can be found a few paragraphs above, the quality values are $0\%$ for the $x$ and $y$ axes and $100\%$ for the $z$ axis. In this case, since both $x$ and $y$ are good candidates for the splitting plane, one is chosen arbitrarily. After a split is found, if the cost of the two children nodes is above a certain threshold, then also the second axis is tried. The threshold can be dynamically adjusted based on the quality of the axes in contention. For example, if instead of a quality value of $0\%$, as in the example above, the two axes had a quality value of $10\%$, then the threshold could be adjusted to a higher value, because it is less likely to find a good split with a quality value of $10\%$ rather than $0\%$.
 
 The same concept can be applied to the use of the fallback method. Before we stated that the fallback method is used when the quality values of all the axes are above a certain static threshold. However, it is also possible to set our implementation so that the fallback method is also used when, after a split, the two children nodes have a cost over a customizable fallback threshold.
 
-A more in-depth explanation of our algorithm can be found in chapter \ref{ch:implementation}.
+A more in-depth explanation of our algorithm can be found in section \ref{ssec:splitting_plane_implementation}.
 
 Thanks to the customizable thresholds it is possible to make our algorithm more or less accurate in the choosing of the splitting plane. Having a more accurate algorithm can yield higher-quality BVHs, at the cost of a higher construction time.
 
-Another important factor in the effectiveness of SPFH is the type of influence area. Until now we talked about \textit{the rays direction of the influence area}. If this definition can be unequivocably given to plane influence areas, where all the rays face the same direction (\ref{ch:multi_influence_areas}), the same cannot be stated for point influence areas, where the rays face many different directions. In the case of point influence area, the central direction can be considered as the direction of all the rays. However, if the point influence area have a large spread in its rays' directions, then this approximation doesn't hold. In such cases, it is not possible to use SPFH effectively, and it is therefore advised to fall back to the longest area heuristic.
+Another important factor in the effectiveness of SPFH is the type of influence area. Until now we talked about \textit{the rays direction of the influence area}. If this definition can be unequivocably given to plane influence areas, where all the rays face the same direction (chapter \ref{ch:multi_influence_areas}), the same cannot be stated for point influence areas, where the rays face many different directions. In the case of point influence area, the central direction can be considered as the direction of all the rays. However, if the point influence area have a large spread in its rays' directions, then this approximation doesn't hold. In such cases, it is not possible to use SPFH effectively, and it is therefore advised to fall back to the longest area heuristic.
 
 \begin{figure}[H]
     \centering
@@ -1393,7 +1387,7 @@ The fact that AABB are, indeed, axis aligned, make them worse than OBBs as bound
 	\begin{algorithmic}
 		\Class{$Aabb$}
 		\Member{$min$}{$Vector3$}
-		\Member{$max$}{$Vector3*$}
+		\Member{$max$}{$Vector3$}
 	\end{algorithmic}
 \end{algorithm} 
 
@@ -1434,7 +1428,7 @@ AABBs for OBBs are a data structure that optimize the ray-OBB intersection test 
 
 In our implementation, virtually every time we could use an $Obb$, we instead use an $AabbForObb$. In all the predicate functions derived from $Region$, the $Aabb$ implementation works as refutation test. It means that a negative response from the $Aabb$ implementation implies a negative response from the $Obb$ implementation too. In symbols:
 
-$$~Aabb.function \implies ~Obb.function$$
+$$\neg Aabb.function \implies \neg Obb.function$$
 
 The condition is only sufficient, but not necessary. It is thus needed to fall back to the more expensive $Obb$'s implementations in case the $Aabb$'s implementation give a positive response.
 \begin{figure}[H]
@@ -1446,9 +1440,36 @@ The condition is only sufficient, but not necessary. It is thus needed to fall b
 
 
 \subsection{Frustum} \label{ssec:frustum}
-TODO
+A frustum represents the 3D region of space contained in a truncated rectangle pyramid. A frustum is used in computer graphics to represent the area of the scene visible from a pinhole camera. Due to its main usage, the two parallel planes of the frustum are called near plane and far plane.
 
-Analogous to what happens with the $AabbForObb$, even with the $Frustum$ we cache the tightest enclosing AABB and use its implementation of the predicate functions derived from $Region$ as refutation tests. However, if the refutation fails, the $Frustum$ implementation can be even more expensive than the $Obb$'s ones.
+A frustum can be defined by specifying its orientation in space, an origin point, the distance of the near and far planes from the origin point along the orientation direction, and a horizontal and vertical fields of view.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth*\real{0.6}]{Images/TODO.png}
+    \caption{How a frustum can be defined.}
+    \label{fig:frustum}
+\end{figure}
+
+Moreover we can define a perspective projection matrix associated with the frustum. With this matrix it is possible to project a point in the frustum to its near plane. This aspect is particularly relevant in our implementation, since we use frustums to define the region of relevantce of point influence areas (\ref{ssec:point_influence_area}).
+
+In our implementation the frustum is described as an object of the following class:
+\begin{algorithm}[H]
+	\begin{algorithmic}
+		\Class{$Frustum$}
+		\Member{$vertices$}{$Vector3\;[\;]$}
+		\Member{$edgesDirections$}{$Vector3\;[\;]$}
+		\Member{$facesNormals$}{$Vector3\;[\;]$}
+		\Member{$projectionMatrix$}{$Matrix4x4$}
+		\Member{$enclosingAabb$}{$Aabb$}
+	\end{algorithmic}
+\end{algorithm} 
+
+Even though it is redundant to store vertices, edges and faces, we opted to compute and store them during the initialization phase because they are often used in the $Frustum$ interface, such as in the $isCollidingWith(aabb)$ function. 
+
+We also decided to store the matrix because we use frustums as point influence areas, therefore we often need to be able to project points to the near plane, such as during the computation of PAH. Furthermore, in the $contains(point)$ function, it is necessary to project the point to detect whether it is inside the frustum, as explained in section \ref{sec:point_inside_frustum}.
+
+Analogous to what happens with the $AabbForObb$ structure, also with the $Frustum$ we cache the tightest enclosing AABB and use its implementation of the predicate functions derived from $Region$ as refutation tests. However, if the refutation fails, the $Frustum$ implementations can be even more expensive than the $Obb$ ones.
 
 \subsubsection*{$contains(point)$}
 After the AABB refutation test fails, we use the algorithm described in section \ref{sec:point_inside_frustum} to detect whether a point is inside the frustum.
@@ -1457,7 +1478,7 @@ After the AABB refutation test fails, we use the algorithm described in section 
 To compute the tightest enclosing AABB, we iterate over all the 8 vertices of the frustum and compute the maximum and minimum in every dimension. However, after the first time it is computed, the AABB is cached.
 
 \subsubsection*{$isCollidingWith(aabb)$}
-After the AABB refutation test failure, we use a simplified version the separanting axis test (\ref{sec:frustum_aabb_intersection}).
+After the AABB refutation test failure, we use a simplified version the separanting axis test (\ref{sec:frustum_aabb_intersection}) to detect if the frustum id intersecting an AABB.
 
 \subsubsection*{$fullyContains(aabb)$}
 In case the AABB refutation test fails, we check that all the vertices of the AABB are inside the frustum, by using the $contains(point)$ method.
