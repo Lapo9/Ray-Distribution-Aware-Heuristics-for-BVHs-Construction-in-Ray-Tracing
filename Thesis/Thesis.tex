@@ -1663,8 +1663,35 @@ Differently from the orthographic case there are no shortcuts to compute the are
 
 The first step is discussed in the next section; how to compute the area of a 2D polygon is detailed in section \ref{sec:2dHull_area_computation}.
 
+\subsection*{$getProjectedHull(aabb)$}
+The idea to compute the projected hull of an AABB in the case where the projection is a perspective, is extremely similar to the one discussed in sectiom \ref{ssec:plane_influence_area}. Indeed, even in this case, we first have to detect what points of the AABB, after the perspective projection, will end up being contour points. The only difference is that now this set of points can be computed by knowing the relative position of the eye and the AABB; in this case the forward direction of the $Pov$ is irrelevant. 
 
+For this reason, we can use the same structure we used for $PlaneInfluenceArea$s with $PointInfluenceArea$s too, namely the $hullTable$. In this case, though, when need to compute what index of the $hullTable$ to read, we must use a different algorithm:
 
+\begin{algorithm}[H]
+	\caption{Given the eye position and the AABB, returns the corresponding index in the $hullTable$}
+	\begin{algorithmic}[1]
+		\Function{FindHullTableIndex}{$eye, aabb$}
+		\Let{$i$}{0}
+		\State{$\textbf{if}\; eye.x < aabb.min.x \; \textbf{then} \; i |= 1$}
+		\State{$\textbf{else\;if}\; eye.x > aabb.max.x \; \textbf{then} \; i |= 2$}
+		\State{$\textbf{if}\; eye.y < aabb.min.y \; \textbf{then} \; i |= 4$}
+		\State{$\textbf{else\;if}\; eye.y > aabb.max.y \; \textbf{then} \; i |= 8$}
+		\State{$\textbf{if}\; eye.z < aabb.min.z \; \textbf{then} \; i |= 32$}
+		\State{$\textbf{else\;if}\; eye.z > aabb.max.z \; \textbf{then} \; i |= 16$}
+		\State \Return{$i$}
+		\EndFunction
+	\end{algorithmic}
+\end{algorithm} 
+
+What the above algorith does, is to check if the eye position is inside the min-max range in each dimension. If it is inside in a specific dimension, we deduce that from the eye position we cannot see the faces that are perpendicular to the considered dimension direction. If we repeat this process for all three dimensions, we obtain the set of visible faces, and therefore the contour points. This idea can be visualized in figure \ref{fig:visible_faces_from_eye}.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\textwidth*\real{0.7}]{Images/TODO.png}
+	\caption{Considering the $x$ dimension, the blue eye is inside the range of the AABB, whereas the purple one is not. The purple eye can also see the right face.}
+	\label{fig:visible_faces_from_eye}
+\end{figure}
 
 \section{TopLevel} \label{sec:top_level}
 \subsection{AABBs for OBBs} \label{ssec:top_level_aabbs}
