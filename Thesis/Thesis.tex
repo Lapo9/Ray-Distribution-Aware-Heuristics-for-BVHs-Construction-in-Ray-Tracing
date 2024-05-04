@@ -1578,10 +1578,10 @@ In our implementation, we hold an dictionary-like structure, called $hullTable$,
 
 In order to be able to perform a fast look-up of the $hullTable$, we decided to implement the structure as an array, with a particular indexing rule. The indexing rule states that each position of the array is a binary encoding of the relative position from which the AABB is looked-at. We show the rule in the following table:
 
-\begin{tabular}{| c | c | c | c | c | c |}
+\begin{tabular}{| c | c | c | c | c | c | c |}
 	\hline
-	\textbf{5} & \textbf{4} & \textbf{3} & \textbf{2} & \textbf{1} & \textbf{0} \\
-	back & front & top & bottom & right & left \\
+	\textbf{bit} & \textbf{5} & \textbf{4} & \textbf{3} & \textbf{2} & \textbf{1} & \textbf{0} \\
+	\textbf{look from} & back & front & top & bottom & right & left \\
 	\hline
 \end{tabular}
 
@@ -1692,6 +1692,18 @@ What the above algorith does, is to check if the eye position is inside the min-
 	\caption{Considering the $x$ dimension, the blue eye is inside the range of the AABB, whereas the purple one is not. The purple eye can also see the right face.}
 	\label{fig:visible_faces_from_eye}
 \end{figure}
+
+Once the contour points are detected, it is possible to project them with the view-projection matrix.
+
+\subsection*{$getRayDirection(aabb)$}
+In case of radial rays distribution, it is not possible to obtain a univocal direction for the rays that hit an AABB, because an AABB is not a point-like entity. However, obtaining even an approximate rays direction is important in the splitting plane facing heuristic (SPFH), as described in chapter \ref{ch:splitting_plane_facing_heuristic}. We therefore decided in our implementation to approximate the direction of the rays that hit an AABB with the direction of the ray that hits the center of said AABB:
+
+$$ray\; direction = center_{AABB} - eye$$
+
+\subsection*{$isDirectionAffine(ray)$}
+As already discussed in section \ref{sec:ray_influence_area_affinity}, to verify that a ray direction if affine to a point influence area, we can connect the origin of the ray with the eye position, and verify that this vector is parallel to the direction of the ray. Anso in this case it is possible to introduce a tolerance. This method only works if the origin of the ray is inside the frustum of the point influence area, however, since the first affinity is condition is exactly this one, it is never a problem.
+
+$$origin_{ray} - eye \parallel direction_{ray}$$
 
 \section{TopLevel} \label{sec:top_level}
 \subsection{AABBs for OBBs} \label{ssec:top_level_aabbs}
@@ -1886,6 +1898,7 @@ For the AABB another optimization is possible, where we detect what points will 
 
 \begin{figure}[H]
     \centering
+	\caption{}
     \subfloat[AABB vertices layout.]{
         \raisebox{-0.1\height}{\includegraphics[scale=0.35]{Images/aabb.png}}
     }
