@@ -147,7 +147,7 @@ namespace pah::projection {
 		//	0	0	f+n	-fn
 		//	0	0	-1	0
 
-		//this is a view-perspective matrix
+		//this is a perspective matrix
 		//  2n/(r-l)    0           -(r+l)/(r-l)		0
 		//  0           2n/(t-b)    -(t+b)/(t-b)		0
 		//  0           0           (f+n)/(f-n)		-2fn/(f-n)

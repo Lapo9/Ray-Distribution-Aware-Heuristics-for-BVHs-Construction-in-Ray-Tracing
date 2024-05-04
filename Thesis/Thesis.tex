@@ -1422,7 +1422,7 @@ AABBs for OBBs are a data structure that optimize the ray-OBB intersection test 
 	\begin{algorithmic}
 		\Class{$AabbForObb$}
 		\Member{$obb$}{$Obb$}
-		\Member{$aabb$}{$Aabb*$}
+		\Member{$aabb$}{$Aabb$}
 	\end{algorithmic}
 \end{algorithm} 
 
@@ -1484,10 +1484,187 @@ After the AABB refutation test failure, we use a simplified version the separant
 In case the AABB refutation test fails, we check that all the vertices of the AABB are inside the frustum, by using the $contains(point)$ method.
 
 \section{Influence Areas} \label{sec:influence_areas}
+Influence areas, as described in chapter \ref{ch:multi_influence_areas}, in our implementation are those objects responsible for defining a 3D region of space where there is a relevant ray distribution. The main task of an influence area is to provide an interface that can be queried to retrieve information related to its associated ray distribution. The most important methods, present in the base $InfluenceArea$ class, are:
+\begin{description}
+	\item[\boldmath$getProjectedArea(aabb)$] Returns the area projected by an AABB based on the associated ray distribution of the influence area: an orthographic projection for a plane influence area, and a perspective projection for a point influence area.
+	\item[\boldmath$getProjectedHull(aabb)$] Returns an array of 2D points, representing the projection of the contour points of an AABB as seen  from the point of view of the influence area.
+	\item[\boldmath$getRayDirection(aabb)$] Returns the direction of a ray intersecting the center of the specified AABB. 
+	\item[\boldmath$isDirectionAffine(ray)$] Returns whether the ray direction is affine to the underlying ray distribution. Affinity is a concept explained in section \ref{sec:ray_influence_area_affinity}. 
+\end{description}
+
+Moreover, each $InfluenceArea$ holds a $Region$ as data member. The $Region$ is used to define the 3D volume of space where the relevant ray distribution is present.
+
+In the next sections we will explain the details of the functions listed above for two concrete influence areas: plane and point ones.
+
 \subsection{Plane Influence Area} \label{ssec:plane_influence_area}
--underlying object (i.e. plane or fov), projection algorithms, how to find the external hull, ...
--Random ray generation
+As explained in chapter \ref{ch:multi_influence_areas}, plane influence areas describe regions of space where a distribution of parallel rays is present. As detailed in section \ref{sec:parallel_ray_distribution}, we can associate an orthographic projection to this kind of distribution, and use it to better estimate the probability an AABB is hit by a ray, by using PAH.
+
+In order to build a $PlaneInfluenceArea$ it is necessary to specify a plane (namely a direction, a point it passes through and a 2D extent to specify the size of the plane) and a forward size, which describes how long the influence area is along the plane normal direction. Starting from this information, it is possible to create an $Obb$ delimiting the region of 3D space where the relevant ray distribution is located. It is also possible to generate an orthographic projection matrix and a view matrix, that can then be multiplied to a view-projection matrix.
+
+Given the extents of the plane ($top$, $bottom$, $right$ and $left$) and the range in the forward direction ($0$ to $far$), the orthographic projection matrix can be built in this way \cite{TODO}.
+
+\begin{equation}
+	\begin{bmatrix}
+		\frac{2}{right - left} & 0 & 0 & \frac{left + right}{2} \\
+		0 & \frac{2}{top - bottom} & 0 & \frac{top + bottom}{2} \\
+		0 & 0 & \frac{-2}{far} & -1 \\
+		0 & 0 & 0 & 1
+	\end{bmatrix}
+\end{equation}
+
+With this matrix we transform the rectangle parallelepiped viewing volume to the canonical view volume, which is the unit cube.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth*\real{0.6}]{Images/TODO.png}
+    \caption{Visualization of the orthographic projection matrix: it shrinks the rectangle parallelepiped viewing volume to the canonical view volume.}
+    \label{fig:canonical_view_volume}
+\end{figure}
+
+The view matrix can be calculated starting from the $eye$ position (the point the plane passes through), a $forward$ direction (the normal of the plane), and a $worldUp$ direction, which in our implementation is always $\langle 0, 1, 0 \rangle$.
+
+We want to create a matrix to transform a point's coordinates from the global coordinate system, to the coordinate system centered on the $eye$ position and looking at the $forward$ direction. To do so, we must first compute the $right$ and $up$ directions starting from the $forward$ and $up_{world}$ directions, and then translate the origin of the global system to the $eye$ position.
+
+We know that the $right$ direction is perpendicular to the $forward$-$up_{world}$ plane, therefore we can use a cross product to compute it: $right = up_{world} \times forward$.
+
+Then, we can use the same logic to compute the $up$ direction: $up = forward \times right$.
+
+Finally, we must compute the translation vector in the new coordinate system: $$translation = \langle right \cdot eye, up \cdot eye, forward \cdot eye \rangle$$.
+
+The view matrix now is:
+\begin{equation}
+	\begin{bmatrix}
+		right_x & right_y & right_z & -translation_x \\
+		up_x & up_y & up_z & -translation_y \\
+		forward_x & forward_y & forward_z & -translation_z \\
+		0 & 0 & 0 & 1
+	\end{bmatrix}
+\end{equation}
+
+\subsubsection*{$getProjectedArea(aabb)$}
+In order to compute the area orthographically projected by an AABB to a plane, we can observe that, regardless of the orientation of the plane, the projected hull can be subdivided into 3 parallelograms\footnote{It is possible that some parallelograms degenerate to a segment, for example in the casw where the plane is parallel to one of the faces of the AABB. The computations handle this case, since the area of a degenerate parallelgoram is 0.}, as it is possible to observe in figure \ref{fig:aabb_parallelograms}. The algorithm to compute the projected area follows the following steps:
+
+\begin{enumerate}
+	\item Choose any vertex of the AABB, let's say vertex $A$.
+	\item Select the adjacent vertices to $A$, called $B$, $C$ and $D$.
+	\item Project the 4 vertices to the plane: $A' = viewProjectionMatrix \cdot A$.
+	\item Compute the $\overrightarrow{A'B'}$, $\overrightarrow{A'C'}$ and $\overrightarrow{A'D'}$ vectors.
+	\item Compute the areas of the three parallelograms. To do so it is possible to use the fact that the length of the cross product of two vectors equals the area of the parallelogram they generate: $Area\; parallelogram = |v \times u|$.
+	\item Sum the three areas.
+\end{enumerate}
+
+This method of computing the area consists in only projecting 4 points and computing 3 cross products. The alternate method would be to compute the external hull of the AABB as seen by the plane point of view (explained in next section), projecting all the contour points and computing the area of the resulting 2D polygon by using the algorithm in section \ref{sec:2dHull_area_computation}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth*\real{0.6}]{Images/TODO.png}
+    \caption{The orthographically projected hull of an AABB can be subdivided in 3 parallelograms.}
+    \label{fig:aabb_parallelograms}
+\end{figure}
+
+\subsubsection*{$getProjectedHull(aabb)$} \label{ssec:parallel_getProjectedHull}
+The projected hull of an AABB is defined as a 2D polygon formed by the silhouette of the AABB projected to a plane. We can define each point that, after the projection, is part of the hull as contour points; if instead a projected point is not part of the hull, and is thus internal to it, we call it internal point (figure \ref{fig:aabb_ortho_hull}). 
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\textwidth*\real{0.6}]{Images/TODO.png}
+	\caption{The projected hull of an AABB. The blue points are contour points, the purple points are internal points.}
+	\label{fig:aabb_ortho_hull}
+\end{figure}
+
+In order to compute the projected hull, we first have to detect what points of the AABB will be contour points after the projection. This is to avoid projecting more points (the internal points) than necessary. We can observe that, given a plane where to project the AABB, the points making up the projected hull can be determined by simply looking at the normal direction to the plane. In particular, it is sufficient to know the sign of each component of the normal direction to define what points will be contour points, and what points will be internal ones.
+
+In our implementation, we hold an dictionary-like structure, called $hullTable$, which, at each element, stores a list of vertices. The list of vertices stored as elements of the array tells us what are the contour points of a projected AABB if it is observed by a certain point of view relative to the AABB itself. For example, if the AABB is seen from a point of view directly above the center of the AABB and looking directly down, the projected hull will have as contour points the vertices of the top face of the AABB. If instead the AABB is seen from the top-left, then the contour points will be those of the top and left faces.
+
+In order to be able to perform a fast look-up of the $hullTable$, we decided to implement the structure as an array, with a particular indexing rule. The indexing rule states that each position of the array is a binary encoding of the relative position from which the AABB is looked-at. We show the rule in the following table:
+
+\begin{tabular}{| c | c | c | c | c | c |}
+	\hline
+	\textbf{5} & \textbf{4} & \textbf{3} & \textbf{2} & \textbf{1} & \textbf{0} \\
+	back & front & top & bottom & right & left \\
+	\hline
+\end{tabular}
+
+For example, at index $9$, which in binary is $001001$, we will store the projected contour points in the case the AABB is seen from top and left. Of course in the $hullTable$ array there will be some empty positions, since it is impossible, for example, to look at an AABB from top and bottom at the same time.
+
+In order to be able to identify the vertices of am AABB, we use the conventional layout shown in figure \ref{fig:aabb_projected_extremes} in section \ref{ssec:1d_projection_overlapping_test}.
+
+With the indexing of the $hullTable$ array in place, it is now possible to compute the index of the array where the contour points are store only based on the normal direction of the projection plane like this:
+
+\begin{algorithm}[H]
+	\caption{Given the direction of the normal to the projection plane, returns the corresponding index in the $hullTable$}
+	\begin{algorithmic}[1]
+		\Function{FindHullTableIndex}{$dir$}
+		\Let{$i$}{0}
+		\State{$\textbf{if}\; dir.x > 0 \; \textbf{then} \; i |= 1$}
+		\State{$\textbf{else\;if}\; dir.x < 0 \; \textbf{then} \; i |= 2$}
+		\State{$\textbf{if}\; dir.y > 0 \; \textbf{then} \; i |= 4$}
+		\State{$\textbf{else\;if}\; dir.y < 0 \; \textbf{then} \; i |= 8$}
+		\State{$\textbf{if}\; dir.z > 0 \; \textbf{then} \; i |= 32$}
+		\State{$\textbf{else\;if}\; dir.z < 0 \; \textbf{then} \; i |= 16$}
+		\State \Return{$i$}
+		\EndFunction
+	\end{algorithmic}
+\end{algorithm} 
+
+The found contour points can then be projected via the view-projection matrix.
+
+\subsubsection*{$getRayDirection(aabb)$}
+Regardless of the AABB, the ray direction is always parallel to the forward direction of the $Obb$ stored as $Region$.
+
+\subsubsection*{$isDirectionAffine(ray)$}
+To check if the ray direction is affine to this influence area, as defined in section \ref{sec:ray_influence_area_affinity}, we must check that the ray direction and the forward direction of the $Obb$ are parallel. It is possible to introduce a tolerance while checking for the parallelity of the two directions.
+
 \subsection{Point Influence Area} \label{ssec:point_influence_area}
+A point influence area describes a region of the scene where there is a radial distribution of rays. As shown in section \ref{sec:point_ray_distribution}, the rays part of a point influence area can be seen as the rays generated by a pinhole camera. For this reason a perspective projection can be associated to such a ray distribution, and it can be used to project the AABBs of the BVH associated with this influence area, to calculate the projected area heuristic. As anticipated in section \ref{ssec:frustum}, a $Frustum$ is the ideal bounding volume to delimit the area of relevance of a point influence area.
+
+To create a $PointInfluenceArea$, it is required to specify a $Pov$ and a pair of distances along the $Pov$ forward direction where the near and far planes of the $Frustum$ will be placed. A $Pov$ is a class that represents a point of view. As such, it stores an eye position, a forward direction, and a pair of horizontal and vertical fields of view:
+
+\begin{algorithm}[H]
+	\begin{algorithmic}
+		\Class{$Pov$}
+		\Member{$eye$}{$Vector3\;[\;]$}
+		\Member{$forward$}{$Vector3\;[\;]$}
+		\Member{$fovX$}{$Matrix4x4$}
+		\Member{$fovY$}{$Aabb$}
+	\end{algorithmic}
+\end{algorithm} 
+
+Given a $Pov$ and a near and far planes it is possible to directly compute the view-perspective matrix and the view matrix, that are then combined in a view-projection matrix via multiplication.
+
+To compute the perspective projection matrix, we need the bounds of the frustum the projection matrix is associated with. We already have the $near$ and $far$ planes, but we lack the $right$, $left$, $top$ and $bottom$ limits. We can compute them starting from the the horizontal and vertical fields of view, as it is possible to visualize in figure \ref{fig:fov_to_right}:
+
+\begin{align*}
+	&right = near \cdot tan(\frac{fovX}{2}) \\
+	&left = -right \\
+	&top = near \cdot tan(\frac{fovY}{2}) \\
+	&bottom = -top
+\end{align*}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\textwidth*\real{0.6}]{Images/TODO.png}
+	\caption{Geometrical visualization of how to compute the right plane starting from the horizontal field of view and the near plane.}
+	\label{fig:fov_to_right}
+\end{figure}
+
+Now we can calculate the perspective projection matrix \cite{TODO}:
+\begin{equation}
+	\begin{bmatrix}
+		\frac{2\cdot near}{right-left} & 0 & -\frac{right+left}{right-left} & 0 \\
+		0 & \frac{2\cdot near}{top-bottom} & -\frac{top+bottom}{top-bottom} & 0 \\
+		0 & 0 & \frac{far+near}{far-near} & -\frac{2\cdot far \cdot near}{far-near}
+		0 & 0 & -1 & 0
+	\end{bmatrix}
+\end{equation}
+
+\subsubsection*{$getProjectedArea(aabb)$}
+Differently from the orthographic case there are no shortcuts to compute the area of the perspective projection of an AABB. We must compute the contour points of the projected hull, and calculate the area of the resulting polygon.
+
+The first step is discussed in the next section; how to compute the area of a 2D polygon is detailed in section \ref{sec:2dHull_area_computation}.
+
+
+
 
 \section{TopLevel} \label{sec:top_level}
 \subsection{AABBs for OBBs} \label{ssec:top_level_aabbs}
@@ -1676,7 +1853,7 @@ the number of checks is reduced to $(3 + 5)_{normals} + (3\cdot 6)_{cross\: prod
 \end{figure}
 
 
-\subsection{1D Projections Overlapping Test}
+\subsection{1D Projections Overlapping Test} \label{ssec:1d_projection_overlapping_test}
 In order to detect if the 1D projections of the 3D hulls are overlapping, we identify the outermost points of each projection (namely $A_{min}, A_{max}, B_{min}, B_{max}$) and check that $B_{min} \leq A_{max} \And B_{max} \geq A_{min}$.\\
 For the AABB another optimization is possible, where we detect what points will be the outermost after the projection without actually projecting them, based on the direction of the axis:
 
