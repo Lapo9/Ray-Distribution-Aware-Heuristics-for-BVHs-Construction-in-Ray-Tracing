@@ -179,6 +179,7 @@ Abstract Italiano
 
 % === Intro ===
 \chapter*{Introduction}
+\iffalse TODO
 \large \textbf{Why ray tracing?} \normalsize\\
 In the field of computer graphics, we refer to ray tracing as a family of rendering algorithms that simulate light transport in order to transition from a mathematical representation of a scene to an image on the screen. 
 
@@ -302,6 +303,21 @@ Area lights tend to generate regions where rays are parallel. This means that we
 Point lights, instead, tend to generate a bundle of lines passing through a point, and therefore the projected area can be computed with a perspective projection.
 
 In this work we aim to show how this way of computing the cost function for the construction of a BVH can produce higher quality BVHs in some situations. We named this novel approach as \textbf{projected area heuristic (PAH)}.
+\fi
+\section*{Structure}
+\begin{itemize}
+	\item In chapter \ref{ch:background_theory} we will introduce the research context our thesis is part of, and we will explain the theory that is needed to fully understand our work. The focus will be on the parts that are operationally relevant, and we will try to highlight them with concrete examples, along with more rigorous mathematical proofs where needed. In particular we talk about the foundations of ray tracing, the Monte Carlo integration method and a variance reduction technique called importance sampling. Eventually we will explain what a ray tracing acceleration structure is, and why BVHs are the most popular.
+	\item In chapters \ref{ch:projected_area_heuristic}, \ref{ch:multi_influence_areas} and \ref{ch:splitting_plane_facing_heuristic} we will expose our novel heuristics to improve the building of BVHs in some specific scenarios. In these chapters we will mainly explain the theory, and we will only briefly talk about our implementation. The implementation will be diffusely discussed in chapter \ref{ch:implementation}.
+	\begin{itemize}
+		\item In chapter \ref{ch:projected_area_heuristic} we will detail the first novel heuristic we propose: the surface area heuristic (SAH). SAH aims at better estimating the quality of a BVH, in order to be able to make better decisions during the building phase.
+		\item In chapter \ref{ch:multi_influence_areas} we will describe the data structures needed to enable the use of SAH, from a theoretical point of view.
+		\item In chapter \ref{ch:splitting_plane_facing_heuristic} we will explain the second novel heuristic, called splitting plane facing heuristic (SPFH). SPFH is focused on the selection of the best plane to split the triangles during BVH construction.
+	\end{itemize}
+	\item In chapter \ref{ch:implementation} we will extensively explain the implementation details we omitted from the previous three chapters. We decided to subdivide the thesis like this for two main reasons: do not overload the theory chapters, in order to be able to coincisely get to the core concepts; and leave the reader with a section where all the implementation details are concentrated, so that, in case he or she wants to try our framework, can use this section as a reference.
+	\item In chapter \ref{ch:experimental_results} we will show the experimental results related to our heuristics, which we omitted or only briefly mentioned in the previous sections. We will test our theory with the framework described in the previous chapter, and compare the results with those obtained by using different parameters or scenes, and also with the results obtained by using the state-of-the-art heuristics, namely the surface area heuristic (SAH) and the longest splitting plane heuristic (LSPH).
+	\item In chapter \ref{ch:use_cases} we will list some possible scenarios where our techniques can be effectively used, based on the results obtained in the previous section.
+	\item Eventually, in chapter \ref{ch:conclusion} we will draw the main take-away points of our work, and produce a list of possible future development directions for the novel topics discussed in our thesis.
+\end{itemize}
 
 
 \chapter{Background Theory}
@@ -315,7 +331,6 @@ In section \ref{sec:monte_carlo_and_variance_reduction_techniques} we will analy
 Last, in section \ref{sec:ray_tracing_acceleration_structures}, we will describe the state-of-the-art acceleration structure to make a fundamental ray tracing procedure (ray-scene intersection) faster.
 
 \section{Ray Tracing Principles} \label{sec:ray_tracing_principles}
-\subsection{High Level Overview}
 Ray tracing is a family of rendering algorithms that is used in computer graphics to transition from a mathematical representation of a scene, to an image on the screen.
 
 Conceptually ray tracing is an extremely straightforward technique, that can be summarized in a few steps:
@@ -611,7 +626,7 @@ The key take away from this section is that with importance sampling we use a no
 \section{Ray Tracing Acceleration Structures} \label{sec:ray_tracing_acceleration_structures}
 In this section we will describe the first family of software optimizations we talked about in section \ref{ssec:optimizations_overview}. These optimizations aim at reducing the time needed to find the intersections between a ray and the geometry of the scene. Usually this is achieved by organizing the scene geometry in a spatial data structure, or by wisely choosing the order in which rays are cast, in order to improve the spatial coherency of the data accesses on the GPU \cite{ray_coherency}. After a brief description of older acceleration structures, we will focus on the state-of-the-art acceleration data structure, called bounding volume hierarchy (BVH), and present how it is constructed. We will eventually show the assumptions on which the construction algorithm is based, whose refutation will be the main subject of the novel approach we propose in the next chapter \ref{ch:projected_area_heuristic}.
 
-\subsection{The Need for Acceleration Structures}
+\subsection{The Need for Acceleration Structures} \label{ssec:need_for_acceleration_structures}
 As we've seen throughout this chapter, in any of the algorithms of the ray tracing family, casting rays is the core of the procedure. Rays are primarily cast from the camera toward the scene, and subsequently, based on the specific algorithm used, they hit objects and bounce off of them. Until now, however, we have overlooked how, in a concrete scenario, the algorithm can detect what is the object hit by the ray. 
 
 Before delving into the algorithms that can be used to carry out this task, it is important to understand how an object is described in the world of computer graphics. In the history of computer graphics a lot of techniques to represent an object have been developed. Some examples are volumetric rendering with voxels \cite{voxel_rendering}, signed distance fields \cite{sdf} and implicit functions that work best with the ray marching algorithm \cite{ray_marching}, or point clouds. By the way, the most common method to represent 3D objects are polygonal meshes.
@@ -647,7 +662,7 @@ The first space partitioning acceleration structure developed is the uniform gri
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.5}]{Images/TODO.png}
+    \includegraphics[width=\textwidth*\real{0.6}]{Images/TODO.png}
     \caption{The uniform grid in 2D.}
     \label{fig:uniform_grid}
 \end{figure}
@@ -658,8 +673,8 @@ In order to solve the adaptability problem of the uniform grid, octrees started 
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.5}]{Images/TODO.png}
-    \caption{A 2D octree..}
+    \includegraphics[width=\textwidth*\real{0.6}]{Images/TODO.png}
+    \caption{A 2D octree.}
     \label{fig:octree}
 \end{figure}
 
@@ -667,7 +682,7 @@ It is important to note how octrees adapt better to the scene. Indeed, compared 
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.5}]{Images/TODO.png}
+    \includegraphics[width=\textwidth*\real{0.6}]{Images/TODO.png}
     \caption{How an octree adapts to a \textit{teapot in the stadium} kind of scene.}
     \label{fig:octree_teapot_stadium}
 \end{figure}
@@ -676,7 +691,7 @@ Another structure that is a generalization of octrees and delivers similar perfo
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.5}]{Images/TODO.png}
+    \includegraphics[width=\textwidth*\real{0.6}]{Images/TODO.png}
     \caption{A kd-tree in 2D.}
     \label{fig:kd_tree}
 \end{figure}
@@ -1653,7 +1668,7 @@ Now we can calculate the perspective projection matrix \cite{TODO}:
 	\begin{bmatrix}
 		\frac{2\cdot near}{right-left} & 0 & -\frac{right+left}{right-left} & 0 \\
 		0 & \frac{2\cdot near}{top-bottom} & -\frac{top+bottom}{top-bottom} & 0 \\
-		0 & 0 & \frac{far+near}{far-near} & -\frac{2\cdot far \cdot near}{far-near}
+		0 & 0 & \frac{far+near}{far-near} & -\frac{2\cdot far \cdot near}{far-near} \\
 		0 & 0 & -1 & 0
 	\end{bmatrix}
 \end{equation}
@@ -1673,12 +1688,12 @@ For this reason, we can use the same structure we used for $PlaneInfluenceArea$s
 	\begin{algorithmic}[1]
 		\Function{FindHullTableIndex}{$eye, aabb$}
 		\Let{$i$}{0}
-		\State{$\textbf{if}\; eye.x < aabb.min.x \; \textbf{then} \; i |= 1$}
-		\State{$\textbf{else\;if}\; eye.x > aabb.max.x \; \textbf{then} \; i |= 2$}
-		\State{$\textbf{if}\; eye.y < aabb.min.y \; \textbf{then} \; i |= 4$}
-		\State{$\textbf{else\;if}\; eye.y > aabb.max.y \; \textbf{then} \; i |= 8$}
-		\State{$\textbf{if}\; eye.z < aabb.min.z \; \textbf{then} \; i |= 32$}
-		\State{$\textbf{else\;if}\; eye.z > aabb.max.z \; \textbf{then} \; i |= 16$}
+		\State{$\textbf{if}\; eye.x < aabb.min.x \; \textbf{then} \; i = i | 1$}
+		\State{$\textbf{else\;if}\; eye.x > aabb.max.x \; \textbf{then} \; i = i | 2$}
+		\State{$\textbf{if}\; eye.y < aabb.min.y \; \textbf{then} \; i = i | 4$}
+		\State{$\textbf{else\;if}\; eye.y > aabb.max.y \; \textbf{then} \; i = i | 8$}
+		\State{$\textbf{if}\; eye.z < aabb.min.z \; \textbf{then} \; i = i | 32$}
+		\State{$\textbf{else\;if}\; eye.z > aabb.max.z \; \textbf{then} \; i = i | 16$}
 		\State \Return{$i$}
 		\EndFunction
 	\end{algorithmic}
@@ -1703,14 +1718,117 @@ $$ray\; direction = center_{AABB} - eye$$
 \subsection*{$isDirectionAffine(ray)$}
 As already discussed in section \ref{sec:ray_influence_area_affinity}, to verify that a ray direction if affine to a point influence area, we can connect the origin of the ray with the eye position, and verify that this vector is parallel to the direction of the ray. Anso in this case it is possible to introduce a tolerance. This method only works if the origin of the ray is inside the frustum of the point influence area, however, since the first affinity is condition is exactly this one, it is never a problem.
 
-$$origin_{ray} - eye \parallel direction_{ray}$$
+$$origin_{ray} - eye \mathbin{\!/\mkern-5mu/\!} direction_{ray}$$
 
 \section{TopLevel} \label{sec:top_level}
-\subsection{AABBs for OBBs} \label{ssec:top_level_aabbs}
+In this section we talk about the implementation details of the top level structure, the topic we described in section \ref{sec:top_level_structure}.
+
+In summary, the top level structure is the component of our framework responsible to manage the influence areas in the scene and, given a 3D point, returning a list of influence areas the point belongs to. It is employed to verify the first affinity condition (section \ref{sec:ray_influence_area_affinity}) whenever a ray is traced. It is therefore extremely important for the top level structure to be efficient in finding out what influence areas are present in a given position of the scene.
+
+In our implementation we propose two top level structures. The first one has zero overhead during the building phase, but it is slower in returning the influence areas a point belongs to. The second one has some overhead during the building phase, but it is extremely fast during the traversal phase.
+
+\subsection{AABBs for Regions} \label{ssec:top_level_aabbs}
+The following top level structure has a very low complexity, and uses the the technique presented in section \ref{ssec:aabb_for_obb} as its only optimization.
+In the AABBs for regions data structure, all the influence areas are stored in a plain array. During the traversal phase, the array is iterated over, and the $contains(point)$ interface function of the region corresponding to the currently iterated influence area is used to check if the current point is affine to the influence area.
+
+SInce this top level structure uses a simple array, there is no overhead in creating it given the influence areas present in the scene. Moreover, it doesn't present any approximation of the 3D regions of the influence areas. On the other hand, employing it each time we have to detect what influence areas a ray is possibly affine with is not ideal, because the complexity of such a task grows linearly with the number of influence areas present in the scene. Furthermore, the algorithms of the $contains(point)$ functions, discussed in section \ref{sec:point_inside_frustum}, are too expensive to be used in this scenario. The optimization of caching the AABB of the 3D region of the influence areas and using it for rejection tests improves performance, but doesn't change the algorithm complexity.
+
+A more accurate analysis of the performance of this top level structure can be found in section \ref{TODO}.
+
 \subsection{Octree} \label{ssec:top_level_octree}
+The top level structure we present in this section is based upon an octree. As we have already explained in section \ref{ssec:need_for_acceleration_structures}, an octree is a tree where each node has exactly 8 children, which partition the volume enclosed by the father into 8 octants with the same shape and the same volume. An illustration of a quadtree (a 2-dimensional octree) can be found in figure \ref{fig:octree}.
 
-\section{Test Scene} \label{sec:test_scene}
+Octrees are often used to partition 3-dimensional space recursively and adaptively, such that a leaf node contains the information about the volume of space it represents. This means that the volume of a leaf node must be uniform with reference to the information the octree is built upon. A classic example of the use of quadtrees, is in image compression \cite{TODO}: the image is recursively subdivided into cells, until a cell contains only one color (figure \ref{fig:quadtree_for_compression}). In this case, the color is the information upon which the quadtree is built, and it must therefore be uniform in leaf nodes.
 
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\textwidth*\real{0.7}]{Images/quadtree_for_compression.png}
+	\caption{The image is recursively subdivided, until a cells contains pixels of just one color (or a maximum depth is reached).}
+	\label{fig:quadtree_for_compression}
+\end{figure}
+
+Our idea is similar to the one of the image compression, however we work in a 3-dimensional environment, and the information upon which our octree is built are the influence areas' regions. We want our leaf nodes to enclose a volume in whose range there are the same influence areas' regions. This means that a leaf can enclose a volume where no regions are present, a volume where there is just one region, or a volume where there is the same combination of regions, as it is possible to observe in figure \ref{fig:octree_detect_leaf}.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\textwidth*\real{0.5}]{Images/octree_for_influence_areas.png}
+	\caption{An example in 2 dimensions of a quadtree built upon influence areas.} 
+	\label{fig:octree_for_influence_areas}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\textwidth*\real{0.8}]{Images/octree_detect_leaf.png}
+	\caption{Different cases of the relative position of an octree cell and the influence areas' regions}
+	\label{fig:octree_detect_leaf}
+\end{figure}
+
+The algorithm for building the top level octree can be resumed in the following flowchart:
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\textwidth*\real{0.97}]{Images/octree_build_flowchart.png}
+	\caption{Algorithm to build the top level octree.}
+	\label{fig:octree_build_flowchart}
+\end{figure}
+
+Each node of the octree has this structure:
+
+\begin{algorithm}[H]
+	\begin{algorithmic}
+		\Class{$Node$}
+		\Member{$boundaries$}{$Aabb\;[\;]$}
+		\Member{$data$}{$Bvh*\;[\;]$}
+		\Member{$children$}{$Node[8]$}
+		\Member{$isLeaf$}{$bool$}
+	\end{algorithmic}
+\end{algorithm} 
+
+It is possible to note that the region of 3D space pertaining to the node is represented by an $Aabb$, and that the data is a list of $Bvh$ pointers, which are the BVHs associated with the influence areas present in the boundaries of the node. Only leaf nodes have a filled $data$ member, whereas internal nodes have no $data$.
+
+The $children$ array has an indexing following the layout in the following figure:
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\textwidth*\real{0.7}]{Images/TODO.png}
+	\caption{The indexing layout of the children of an octree node.}
+	\label{fig:octree_children_layout}
+\end{figure}
+
+In order to detect if a region $R$ is overlapping with the current octree node, represented by an AABB, it is possible to use the algorithm detailed in section \ref{sec:frustum_aabb_intersection}, which uses the separating axis test.
+
+To check if a region $R$ fully contains the current node's AABB, we can use the $Region$ interface method called $fullyContains(aabb)$ (section \ref{sec:regions}). In particular, $Regions$ can be $Obb$s in case of plane influence areas, or $Frustum$s for point influence areas.
+
+In the algorithm presented in figure \ref{fig:octree_build_flowchart} we stop when a node is marked as a leaf, and a node is marked as a leaf when it is fully contained by all the influence areas it overlaps with. Since the nodes are represented by AABBs, and the influence areas by OBBs and frustums, it is is many case impossible to reach a point where the recursive calls of the algorithm end. It would require an infinite amount of subdivisions. For this reason, in our implementation, it is possible to set a maximum depth for the top level octree. Once the maximum depth is reached, a node is by definition a leaf node, and it contains as $data$ all the influence areas that even partially overlap with it. This means that in our implementation we are using a conservative approximation of the influence areas: influence areas as represented in the octree can have a bigger volume than the real influence areas, but never a smaller one. Consequently, it is possible that a ray is considered affine to a certain influence area even though it doesn't respect the first affinity condition (section \ref{sec:ray_influence_area_affinity}). As we will analyze in chapter \ref{ch:experimental_results}, this is not a problem. Indeed we will experimentally show that even with a low maximum depth of the octree, it is possible to achieve the desired results during ray-scene traversal.
+
+Once the octree is built, it is possible to use it to detect which regions are present in a given point of the scene.
+
+\section{Additional Structures} \label{sec:additional_structures}
+In the previous sections of this chapter we described the main structures used in our framework to test the validity of the theoretical claims of this thesis. In the framework many other structures and algorithms are present. However, since these other structures are not as strongly related to the theory of our thesis as the ones we described above, we will only briefly list some of them and their responsibilities.
+
+More information about their usage can be found at \url{TODO}.
+
+\subsection{Test Scene}
+In the previous sections we have seen what are the structures used to represent a BVH, an influence area and a top level structure. The $TestScene$ class is the glue among all these other structures. It is possible to create a $TestScene$ by specifying the $InfluenceArea$s present in the scene, the top level structure type to use, and a list of $RayCasters$ (section \ref{ssec:ray_caster}).
+
+The method $build(triangles)$ can then be used to build the top level structure based on the influence areas. After the top level structure is built, all the BVHs of associated with the influence areas are built, by considering the array of triangles passed as argument as the geometry present in the scene. Eventually the global PAH BVH is built. It is also possible to specify a $BvhAnalyzer$ (section \ref{sec:bvh_analyzer}) to get information about the BVHs built.
+
+The method $traverse()$ can be used to cast some rays based on the $RayCaster$s specified during construction, and collect the results.
+
+\subsection{Ray Caster} \label{ssec:ray_caster}
+A $RayCaster$ is responsible to cast rays in the scene. It is possible to specify a region of the scene where the rays should have origin, a set of directions, and a random distribution to sample rays.
+
+Some relevant $RayCaster$s are:
+\begin{description}
+	\item[Plane ray caster] Rays start from a rectangular section of a plane, and are perpendicular to it (up to a customizable tolerance).
+	\item[Square sphere cap ray caster] Rays start from a point and are cast toward a square sector on the unit sphere surface. Our visual interactive representation can be tried at \url{https://www.geogebra.org/m/bzswwgvj}.
+	\item[Circular sphere cap sampling] Same as above, but the sphere cap the rays are cast toward is circular. Our visual interactive representation can be found at \url{https://www.geogebra.org/m/aqcepkrz}.
+\end{description}
+
+It is possible to specify a point in space and a facing direction for any $RayCaster$, along with an amount of rays to generate.
+
+\subsection{CSV Exporter}
+$CsvExporter$ class objects can be used to specify some of the attributes present in the JSON relative to the BVHs or the top level structure, and export it in the CSV format. Since the JSONs relative to the top level structures can become quite big (in our test cases we obtained JSONs with more than 20000 lines), having a class to extract only the relevant information for a specific analysis has proven invaluably helpful during the experimentation phase.
 
 \chapter{Experimental Results} \label{ch:experimental_results}
 
