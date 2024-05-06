@@ -1237,7 +1237,7 @@ Since a BVH is a complete tree, a leaf node can be detected by the absence of it
 
 An important note is that, in our framework, we are also interested in getting information about the timing and performance of the BVH builder. For this purpose it is possible to add time information to a $Node$, collected during construction, by enabling a C++ macro. The information in each node can later be analyzed, as it is explained in section \ref{sec:bvh_analyzer}.
 
-The $properies$ are values upon which depends how th BVH is built. We will now list and explain some of them:
+The $properies$ are values upon which depends how the BVH is built. We will now list and explain some of them:
 \begin{description} 
 	\item[\boldmath$maxLeafCost$] If a node has a cost (PAH or SAH depending on the cost strategy used) less than this threshold, it is a leaf.
 	\item[\boldmath$maxLeafArea$] If a node has an area (projected or surface depending on the cost strategy used) less than this threshold, it is a leaf.
@@ -1251,7 +1251,7 @@ The $properies$ are values upon which depends how th BVH is built. We will now l
 	\item[\boldmath$excellentChildrenFatherHitProbabilityRatio$] Same as above, but in this case this value is compared with the best children found after each splitting plane cut: if such value is lower than this threshold, no more splitting planes are attempted, even if they had the required quality. This allows an early out during the search for the splitting plane. More details in section \ref{ssec:splitting_plane_implementation}.
 \end{description}
 	
-A $Bvh$ can be built with the member $build$ function, which takes an array of $Triangles$ representing the scene as argument. The function has already been described in section \ref{ssec:bvh_construction}. Here we limit ourself to remember that the function builds the BVH recursively, and uses the three customization functions cited above to decide how to build the BVH.
+A $Bvh$ can be built with the member $build$ function, which takes an array of $Triangles$ representing the scene as argument. The function has already been described in section \ref{ssec:bvh_construction}. Here we limit ourselves to remember that the function builds the BVH recursively, and uses the three customization functions cited above to decide how to build the BVH.
 
 To traverse a $Bvh$ it is possible to use the $traverse$ function, which takes a $Ray$ as argument. The process will be detailed in section \ref{ssec:traversal}.
 
@@ -1831,6 +1831,132 @@ It is possible to specify a point in space and a facing direction for any $RayCa
 $CsvExporter$ class objects can be used to specify some of the attributes present in the JSON relative to the BVHs or the top level structure, and export it in the CSV format. Since the JSONs relative to the top level structures can become quite big (in our test cases we obtained JSONs with more than 20000 lines), having a class to extract only the relevant information for a specific analysis has proven invaluably helpful during the experimentation phase.
 
 \chapter{Experimental Results} \label{ch:experimental_results}
+In this chapter we will present the results we obtained by performing experimental tests on our theories. The experiments have been carried out by using our framework, presented in section \ref{ch:implementation}. Our experiments aim at simulating some possible situations our techniques may face in a real world application. We will detail our methodologies and the reason behind the choice of the test cases we chose. We also try to provide mathematical indicators, or at least empirical reasonings, about why a certain method works better than another one given a specific scenario.
+
+Our tests are aimed at comparing how our heuristics change the behavior of a simple and standard BVH builder, compared to the state-of-the-art heuristics. This means that our focus during the testing phase is not to build the fastest possible BVH builder. Our reasoning behind this choice, is that we wanted to reduce complexity at the bare minimum, in order to be able to isolate what is the real focus of this work, namely the advantages and disadvantages of PAH and SPFH comapred to SAH and LSPH. 
+
+If we tried to build an extremely performant BVH builder, we would have needed to introduce a lot of low level optimizations. For example we would have needed to take into account memory access patterns to increase data locality, as introduced in this paper \cite{TODO}; or we would have needed to build an algorithm running on the GPU. Getting these optimizations right would have required a lot of very specific expertise and trial and error, therefore we would have needed to use an existing BVH builder and modify it, losing the full control over it, which was one of our guiding principles. Furthermore, introducing low-level optimizations can often lead to unintuitive behaviors and difficult to correctly analyze scenarios, which would have made more difficult to carry out a really objective comparison between the heuristics. Most importantly, these optimizations are not strictly related to a specific way a BVH is build, and can therefore be implemented for state-of-the-art BVH builders as well as for ours.
+
+\section{Test Scenes} \label{sec:test_scenes}
+We will now present the eight scenes we used to test our algorithms, and explain the reason why we used each one of them.
+\begin{minipage}{0.4\textwidth}
+	\begin{figure}[H]
+		\includegraphics[width=\textwidth]{Images/TODO.png}
+		\caption{Random 100}
+		\label{fig:random_100}
+	\end{figure}
+\end{minipage} \hfill
+\begin{minipage}{0.55\textwidth}
+	100 triangles placed in a random uniform pattern in a parallelepiped volume. Triangles can overlap, and are similar in size. The main goal of this scene is to study PAH in a uniform scene, and SPFH in a scene where it is difficult to cut off space.\\
+\end{minipage}
+
+\begin{minipage}{0.55\textwidth}
+	Same as above, but the volume is much more dense of triangles. The aim is to study PAH in a uniform scene where the vast majority of rays hit something without using the fallback BVH. SPFH is in a similar situation as above.
+\end{minipage}
+\hfill \begin{minipage}{0.4\textwidth}
+	\begin{figure}[H]
+		\includegraphics[width=\textwidth]{Images/TODO.png}
+		\caption{Random 1000}
+		\label{fig:random_1000}
+	\end{figure}
+\end{minipage}
+
+\begin{minipage}{0.4\textwidth}
+	\begin{figure}[H]
+		\includegraphics[width=\textwidth]{Images/TODO.png}
+		\caption{Suzanne}
+		\label{fig:suzanne}
+	\end{figure}
+\end{minipage} \hfill
+\begin{minipage}{0.55\textwidth}
+	Suzanne represents a small and lowpoly object, with continuous surfaces almost everywhere. The goal is to try PAH on stand-alone objects, and SPFH again in a scenario where it is difficult to effectvely cut off space.
+\end{minipage}
+
+\begin{minipage}{0.55\textwidth}
+	The cottage presents a scene with a big but regular object. Triangles can reach very big dimensions, therefore we use it to test PAH in a scenario with a few big triangles. The same challenge is presented for SPFH: the presence of big triangles makes it difficult to create splits with a small overlapping.
+\end{minipage}
+\hfill \begin{minipage}{0.4\textwidth}
+	\begin{figure}[H]
+		\includegraphics[width=\textwidth]{Images/TODO.png}
+		\caption{Cottage}
+		\label{fig:cottage}
+	\end{figure}
+\end{minipage} 
+
+\begin{minipage}{0.4\textwidth}
+	\begin{figure}[H]
+		\includegraphics[width=\textwidth]{Images/TODO.png}
+		\caption{Cottage Walls}
+		\label{fig:cottage_walls}
+	\end{figure}
+\end{minipage} \hfill
+\begin{minipage}{0.55\textwidth}
+	Exactly the same scene as above, but this time all the rays hit a geometry primitive without the need of using the fallback BVH. The aim is to test how much using the fallback BVH deteriorates the performance of our technique.
+\end{minipage}
+
+\begin{minipage}{0.55\textwidth}
+	This scene presents a panorama with small and detailed objects, along with bigger objects with a smaller polycount. We used this scene as a test case in particular to detect how SPFH works with a scene with geometry of different sizes.
+\end{minipage}
+\hfill \begin{minipage}{0.4\textwidth}
+	\begin{figure}[H]
+		\includegraphics[width=\textwidth]{Images/TODO.png}
+		\caption{Wood}
+		\label{fig:Wood}
+	\end{figure}
+\end{minipage} 
+
+\begin{minipage}{0.4\textwidth}
+	\begin{figure}[H]
+		\includegraphics[width=\textwidth]{Images/TODO.png}
+		\caption{Crowd}
+		\label{fig:crowd}
+	\end{figure}
+\end{minipage} \hfill
+\begin{minipage}{0.55\textwidth}
+	The crowd test scene presents many human like people, with a rather high polycount. The scene was primarily used to observe the behavior of SPFH in a detailed scene, and also to analyze PAH in a scenario with many organic and complex shapes, where AABBs tend to overlap.
+\end{minipage}
+
+\begin{minipage}{0.55\textwidth}
+	Sponza is a scene with a very high polycount compared to the previous ones. It presents the interior of a building, where there are detailed objects with various forms. This is the test case that most closely simulates a real-world scenario.
+\end{minipage}
+\hfill \begin{minipage}{0.4\textwidth}
+	\begin{figure}[H]
+		\includegraphics[width=\textwidth]{Images/TODO.png}
+		\caption{Sponza}
+		\label{fig:sponza}
+	\end{figure}
+\end{minipage}
+
+\section{PAH and SPFH versus SAH and LSPH Building Performance}
+- SAH + LSPH is 100x faster at building (0.07ms vs 15ms)
+- SPFH is as fast as LSPH, the problem is with PAH
+- Memory footprint ????????????????????
+
+\section{Octree versus AABBs for Regions Top Level Structures}
+- Build time ????????????
+- Traversal time ????????????
+- Octree with different properties
+
+\section{PAH and SPFH versus SAH and LSPH BVH Quality}
+- PAH is extremely accurate
+- PAH is more accurate with plane influence areas
+- PAH + SPFH produce higher quality BVHs when rays are perpendicular to a cartesian plane (and it is better with plane influence areas)
+- Hit percentage impacts on our method, due to fallback searches --> it is possible to compute the minimum hit percentage to use our heuristics effectively
+- PAH without SPFH is not good
+- SPFH without PAH ?????????????
+- SPFH actually helps at reducing overlapping, but only at higher levels
+- Overlapping at higher levels is related to BVH quality (as already mentioned by an article)
+- Our tests suffered from having AABBs projections bigger than the near plane --> we used culling, but it is even slower to build
+- What happens if we change the BVHs properties???????????????????
+
+
+
+- What are our objectives during testing: what data we collect? Why this method? What is the term of comparison?
+- The scenes we use: why using those scenes? Are they variegated?
+- How we use the scenes: which influence areas?
+- How we modify our algorithms to get better measurements?
+- Can we compute some indicators to predict if our technique is good for our scene? Or at least an intuition to explain why it is not good for other scenes?
+- What is the memory footprint?
 
 \chapter{Use Cases} \label{ch:use_cases}
 
@@ -2016,7 +2142,6 @@ For the AABB another optimization is possible, where we detect what points will 
 
 \begin{figure}[H]
     \centering
-	\caption{}
     \subfloat[AABB vertices layout.]{
         \raisebox{-0.1\height}{\includegraphics[scale=0.35]{Images/aabb.png}}
     }
@@ -2039,6 +2164,7 @@ For the AABB another optimization is possible, where we detect what points will 
 		\end{tabular}
 		}
     }
+	\caption{}
     \label{fig:aabb_projected_extremes}
 \end{figure}
 
