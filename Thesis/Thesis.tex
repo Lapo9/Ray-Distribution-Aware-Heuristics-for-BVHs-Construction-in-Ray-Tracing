@@ -1938,16 +1938,20 @@ We will now present the eight scenes we used to test our algorithms, and explain
 - Octree with different properties
 
 \section{PAH and SPFH versus SAH and LSPH BVH Quality}
-- PAH is extremely accurate
-- PAH is more accurate with plane influence areas
-- PAH + SPFH produce higher quality BVHs when rays are perpendicular to a cartesian plane (and it is better with plane influence areas)
-- Hit percentage impacts on our method, due to fallback searches --> it is possible to compute the minimum hit percentage to use our heuristics effectively
-- PAH without SPFH is not good
-- SPFH without PAH ?????????????
-- SPFH actually helps at reducing overlapping, but only at higher levels
+- PAH is extremely accurate (4\% error vs 60\%)
+- PAH is more accurate with plane influence areas (2\% error vs 12\%)
+- PAH + SPFH produce higher quality BVHs when rays are perpendicular to a cartesian plane (and it is better with plane influence areas) (parallel 25\% better, 15 7\%, 45 -13\%, oblique -9\%)
+- Hit percentage impacts on our method, due to fallback searches --> it is possible to compute the minimum hit percentage to use our heuristics effectively (breakeven hit \%)
+- PAH without SPFH is not good (-21\% average for plane)
+- SPFH without PAH is better than SPLH (37\% plane, ??\% point), but worse than PAH + SPFH (even though much faster).
+- SPFH actually helps at reducing overlapping, but only at higher levels (57\% vs 68\%)
 - Overlapping at higher levels is related to BVH quality (as already mentioned by an article)
 - Our tests suffered from having AABBs projections bigger than the near plane --> we used culling, but it is even slower to build
-- What happens if we change the BVHs properties???????????????????
+- What happens if we change the BVHs properties?
+	- Lowering the acceptable threshold leads to better BVHs, but it increases construction cost because fallback construction is used more often
+	- Lowering the maximum number of PAH levels leads to worse BVHs, but the building cost is greatly reduced (exponentially reduced due to number of nodes, almost like SAH) --> We can decide when stopping by analyzing the overlapping percentage at each level (where there is no gain over SPLH we stop)
+	- Lowering the splitting plane threshold leads to better BVHs, but greatly increases building cost (we should compute the amount of tried planes per threshold)
+	- Raising the splitting plane threshold leads to way worse BVHs, because SPLH is used almost always
 
 
 

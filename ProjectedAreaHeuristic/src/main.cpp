@@ -85,7 +85,7 @@ int main() {
 	.maxLevels = 100,
 	.bins = 40,
 	.maxNonFallbackLevels = 100,
-	.splitPlaneQualityThreshold = 0.9f,
+	.splitPlaneQualityThreshold = 0.4f,
 	.acceptableChildrenFatherHitProbabilityRatio = 1.3f,
 	.excellentChildrenFatherHitProbabilityRatio = 0.9f
 	};
@@ -105,26 +105,26 @@ int main() {
 #define and_or &&
 	constexpr bool ALL = false;
 
-	constexpr bool PLANE_FULL = ALL || false;
+	constexpr bool PLANE_FULL = ALL || true;
 	constexpr bool PLANE_FULL_LONGEST = ALL || false;
-	constexpr bool POINT_FULL = ALL || false;
+	constexpr bool POINT_FULL = ALL || true;
 	constexpr bool POINT_FULL_LONGEST = ALL || false;
-	constexpr bool PLANE_FULL_SAH = ALL || false;
+	constexpr bool PLANE_FULL_SAH = ALL || true;
 	constexpr bool POINT_FULL_SAH = ALL || true;
 
 	constexpr bool WOOD_SCENE = ALL || true;
 	constexpr bool SUZANNE_SCENE = ALL || true;
-	constexpr bool COTTAGE_SCENE = ALL || true;
+	constexpr bool COTTAGE_SCENE = ALL || false;
 	constexpr bool COTTAGE_WALLS_SCENE = ALL || true;
-	constexpr bool CROWD_SCENE = ALL || true;
-	constexpr bool RANDOM100_SCENE = ALL || true;
-	constexpr bool RANDOM1000_SCENE = ALL || true;
-	constexpr bool SPONZA_SCENE = ALL || true;
+	constexpr bool CROWD_SCENE = ALL || false;
+	constexpr bool RANDOM100_SCENE = ALL || false;
+	constexpr bool RANDOM1000_SCENE = ALL || false;
+	constexpr bool SPONZA_SCENE = ALL || false;
 
 	constexpr string_view RESULTS_DIRECTORY = "D:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/Results/";
 
 	// PLANE FULL PARALLEL
-	bvhProperties.splitPlaneQualityThreshold = 0.4f;
+	bvhProperties.splitPlaneQualityThreshold = 0.1f;
 	{
 		// === Wood scene: 1 plane full influence area ===
 		if constexpr (PLANE_FULL and_or WOOD_SCENE) {
@@ -820,7 +820,7 @@ int main() {
 	};
 
 	// POINT FULL PARALLEL
-	bvhProperties.splitPlaneQualityThreshold = 0.4f;
+	bvhProperties.splitPlaneQualityThreshold = 0.1f;
 	{
 		// === Wood scene: 1 point full influence area ===
 		if constexpr (POINT_FULL and_or WOOD_SCENE) {
