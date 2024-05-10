@@ -1831,14 +1831,14 @@ It is possible to specify a point in space and a facing direction for any $RayCa
 $CsvExporter$ class objects can be used to specify some of the attributes present in the JSON relative to the BVHs or the top level structure, and export it in the CSV format. Since the JSONs relative to the top level structures can become quite big (in our test cases we obtained JSONs with more than 20000 lines), having a class to extract only the relevant information for a specific analysis has proven invaluably helpful during the experimentation phase.
 
 \chapter{Experimental Results} \label{ch:experimental_results}
-In this chapter we will present the results we obtained by performing experimental tests on our theories. The experiments have been carried out by using our framework, presented in section \ref{ch:implementation}. Our experiments aim at simulating some possible situations our techniques may face in a real world application. We will detail our methodologies and the reason behind the choice of the test cases we chose. We also try to provide mathematical indicators, or at least empirical reasonings, about why a certain method works better than another one given a specific scenario.
+In this chapter we will present the results we obtained by performing experimental tests on our theories. The experiments have been carried out by using our framework, presented in chapter \ref{ch:implementation}. Our experiments aim at simulating some possible situations our techniques may face in a real world application. We will detail our methodologies and the reason behind the choice of the selecetd test cases. We also try to provide mathematical indicators, or at least empirical reasonings, about why a certain method works better than another one given a specific scenario.
 
-Our tests are aimed at comparing how our heuristics change the behavior of a simple and standard BVH builder, compared to the state-of-the-art heuristics. This means that our focus during the testing phase is not to build the fastest possible BVH builder. Our reasoning behind this choice, is that we wanted to reduce complexity at the bare minimum, in order to be able to isolate what is the real focus of this work, namely the advantages and disadvantages of PAH and SPFH comapred to SAH and LSPH. 
+Our tests are aimed at comparing how our heuristics change the behavior of a simple and standard BVH builder, compared to the state-of-the-art heuristics, and based on the BVH properties we adopt (section \ref{sec:bvh}). This means that our focus during the testing phase is not to build the fastest possible BVH builder. Our reasoning behind this choice, is that we wanted to reduce complexity at the bare minimum, in order to be able to isolate what the real focus of this work is, namely the advantages and disadvantages of PAH and SPFH comapred to SAH and LSPH. 
 
 If we tried to build an extremely performant BVH builder, we would have needed to introduce a lot of low level optimizations. For example we would have needed to take into account memory access patterns to increase data locality, as introduced in this paper \cite{TODO}; or we would have needed to build an algorithm running on the GPU. Getting these optimizations right would have required a lot of very specific expertise and trial and error, therefore we would have needed to use an existing BVH builder and modify it, losing the full control over it, which was one of our guiding principles. Furthermore, introducing low-level optimizations can often lead to unintuitive behaviors and difficult to correctly analyze scenarios, which would have made more difficult to carry out a really objective comparison between the heuristics. Most importantly, these optimizations are not strictly related to a specific way a BVH is build, and can therefore be implemented for state-of-the-art BVH builders as well as for ours.
 
 \section{Test Scenes} \label{sec:test_scenes}
-We will now present the eight scenes we used to test our algorithms, and explain the reason why we used each one of them.
+We will now present the eight test scenes and the reasons why we selected each one of them.
 \begin{minipage}{0.4\textwidth}
 	\begin{figure}[H]
 		\includegraphics[width=\textwidth]{Images/TODO.png}
@@ -1927,32 +1927,137 @@ We will now present the eight scenes we used to test our algorithms, and explain
 	\end{figure}
 \end{minipage}
 
-\section{PAH and SPFH versus SAH and LSPH Building Performance}
-- SAH + LSPH is 100x faster at building (0.07ms vs 15ms)
-- SPFH is as fast as LSPH, the problem is with PAH
-- Memory footprint ????????????????????
+We decided to test each one of these scenes in a scenario with a single influence area covering the whole geometry. The influence areas we used were both plane and point influence areas, and we decided to carry out tests with different orientations of the influence areas. In particular, we chose four different orientations for each scene and for both plane and point influence areas:
+\begin{description}
+	\item[Parallel] In this case the main rays direction of the influence area is parallel to one of the three cartesian axes. This scenario should, in principle, be the best one in general for AABB-based BVHs, and in particular for SPFH.
+	\item[15 degrees] The main rays direction of the influence area is parallel to one of the three cartesian planes, and forms an angle of 15 degrees with one of the two axes generating the parallel plane. In this scenario, SPFH has a clear best splitting plane (parallel to the rays), and has a clear second best option (the plane forming a 15 degree angle with the rays).
+	\item[45 degrees] The main rays direction of the influence area is parallel to one of the three cartesian planes, and forms an angle of 45 degrees with one of the two axes generating the parallel plane. SPFH has only one clear best direction for splitting a node (parallel to the rays). This means that, based on the BVH properties chosen (section \ref{sec:bvh}), it may often happen to use the fallback strategy, namely SAH and LSPH.
+	\item[Oblique] The main rays direction is not parallel to any of the three cartesian planes. This scenario is the most challenging for SPFH, because it is possible that all three splitting planes are not a good option. For this reason, this scenario can be the best suited to tune the properties of the BVH.
+\end{description}
 
 \section{Octree versus AABBs for Regions Top Level Structures}
 - Build time ????????????
 - Traversal time ????????????
 - Octree with different properties
 
+\section{Comparison with State of the Art Heuristics}
+In this section we will present the tests we performed to compare our heuristics with state-of-the-art heuristics. We will explain why we carried out each experiment and comment on the results.
+
+\subsection{PAH versus SAH Precision} \label{ssec:pah_vs_sah_precision}
+The first test we performed is aimed at comparing the precision of projected area heuristic to surface area heuristic. As explained in section \ref{ssec:traversal}, we have developed a function to compute the real cost of traversing a BVH for a specific ray. We can then use this method to compute an average cost of traversing the BVH for a certain amount of rays. 
+
+In this test, we build a BVH with PAH over a certain influence area. Then, we use a ray caster (section \ref{ssec:ray_caster}) associated with the same influence area to generate the rays to traverse the scene with. We use these rays to compute the average real traversal cost of the BVH, and compare it with the cost predicted by using PAH. We express this comparison as percentage error:
+
+$$error_{PAH} = \Big{|}\frac{real \; cost - estimated \; cost}{estimated \; cost}\Big{|}$$
+
+Then we build a BVH with SAH, and use the same ray caster to traverse it. We compute the average real traversal cost and the cost estimated by SAH. We then compute the $error_{SAH}$ in the same way as above.
+
+To present the results, we decided to aggregate data based on the influence area used (plane or point), and the orientation of the influence area (parallel, 15°, 45° and oblique).
+
+\begin{figure}[H]
+	\includegraphics[width=\textwidth]{Images/pah_accuracy_chart.png}
+	\caption{Accuracy of PAH compared to SAH.}
+	\label{fig:pah_accuracy_chart}
+\end{figure}
+
+As it is possible so observe from the chart \ref{fig:pah_accuracy_chart}, the error of PAH is always smaller than SAH's. On average PAH error is $7\%$, and SAH's $52\%$.
+
+It is also possible to observe that PAH is more precise when the influence area is a plane influence area. In this case the average error is $2\%$, compared to the $12\%$ error in case of point influence areas. This is interesting because it is the opposite tendency with what happens with SAH. We believe that SAH behaves better with point influence areas because a radial ray distribution has multiple ray directions, whereas a parallel ray distribution has only one. This makes it so that a radial ray distribution better approximates the second SAH hypotesis compared to a parallel one (section \ref{sec:sah_hypotheses_fall}).
+
+The results we obtained are in line with our thesis: since in the test scene the ray distribution is not random, but follows a parallel or radial pattern, the second SAH hypotesis doesn't hold. Our heuristic, instead, uses as ray distribution hypotesis that rays naturally organize themselves in parallel or radial patterns, due to light importance sampling (section \ref{sec:monte_carlo_and_variance_reduction_techniques}). Since, in our test cases, we artificially added parallel and radial distributions, PAH is able to estimate better the cost of the BVH.
+
+\subsection{Projected Area Culling} \label{ssec:projected_area_culling}
+During the first iteration of the previous test, we got worse results for PAH: the average error for scenes with plane influence areas was $18\%$, and with point influence areas $31\%$. The reason behind these results was a subtle error in the way the projected area of the AABBs on the near plane of the viewing volume was computed.
+
+As we have explained in sections \ref{ssec:plane_influence_area} and \ref{ssec:point_influence_area}, we can use orthographic and perspective projections to project the AABB to the near plane. However, the 2D hull resulting from the projection, can have some of its part outside the near plane, as it can be observed in figure \ref{fig:projection_outside_near_plane}. 
+
+\begin{figure}[H]
+	\includegraphics[width=\textwidth]{Images/TODO.png}
+	\caption{The 2D projected hull of the AABB is not fully contained in the viewing area of the near plane.}
+	\label{fig:projection_outside_near_plane}
+\end{figure}
+
+This leads to calculating projected areas that are bigger than the area of the near plane. This eventuality drive to errors in computing the hit probability (section \ref{ssec:cost_computation}) of the AABBs of the BVH. Indeed, the parts of the 2D hull that are outside of the near plane, cannot by definition be hit by a ray affine to the influence area associated to their BVH. However, by including them in the computation of the projected area of the AABB, they actually contribute to the calculation of the hit probability of the AABB, raising its value.
+
+In order to mitigate this issue, we need to find a way to exclude the parts of the projected hull of an AABB that are outside the near plane. To do so we can apply culling, explained in section \ref{sec:2dHull_culling}. When we compute the projected hull of an AABB, before computing its area, we cull it with the near plane. The near plane vertices can be easily computed, indeed, since after their projections the vertices of the AABB are in clipping space, then the near plane is a unit square.
+
+\subsection{PAH and SPFH versus SAH and LSPH}
+With the tests presented in this section, we compare the building and traversal of BVHs built with the two heuristics we propose in this work, to BVHs built with the-state-of-the art heuristics, namely surface area heuristic (SAH) and longest splitting plane heuristic (LSPH). 
+
+The set up for this test is exactly the same described in section \ref{ssec:pah_vs_sah_precision}. We build a BVH with PAH and SPFH over a certain influence area. Then, we use a ray caster (section \ref{ssec:ray_caster}) associated with the same influence area to generate the rays to traverse the scene with. We use these rays to compute the average real traversal cost of the BVH. Eventually, we build a BVH over the same geometry with SAH and LSPH, and compute the average real cost in the same way. We then compute these values:
+
+\begin{itemize}
+	\item How much faster, in percentage, the BVH built with PAH and SPFH is to traverse compared to the state-of-the-art one: $faster_{PAH+SPFH} = \frac{cost_{SAH+LSPH}-cost{PAH+SPFH}}{cost_{PAH+SPFH}}$. This value assumes positive values if the BVH built with our heuristics is faster to traverse, and negative ones otherwise.
+	\item How much faster, in percentage, \textit{our full structure} is faster than the state-of-the-art BVH. With the term \textit{our full structure} we refer to the process of traversing the PAH BVH, and, possibly, traversing the global fallback BVH (chapter \ref{ch:multi_influence_areas}), in case the search in the PAH BVH haven't found any intersection: $faster \; full = \frac{cost_{SAH+LSPH}-(cost_{PAH+SPFH}+cost_{fallback})}{cost_{PAH+SPFH}+cost_{fallback}}$.
+	\item The average time per node to compute its cost, both for PAH and SAH.
+	\item The average time per node to compute the best splitting plane, both for SPFH and LSPH.
+\end{itemize}
+
+$faster_{PAH+SPFH}$ and $faster \; full$ are indicators agnostic to the hardware used. Whereas the avarage times depends on the hardware on which the algorithm is ran on. As we already stated in the introduction to this chapter, our focus is to compare the heuristics, therefore we are not interested in the absolute values, but in their relative magnitudes.
+
+The properties (section \ref{sec:bvh}) for the PAH BVHs are set to default values we found out work well empirically. In section \ref{TODO} we carry out a comparison among different choices of these values:
+
+\begin{table}[H]
+	\centering
+	\begin{tabular}{| l | c |}
+		\hline
+		\textbf{property} & \textbf{value}\\
+		\hline
+		\hline
+		$maxLeafCost$ & 0\\
+		$maxLeafArea$ & 0\\
+		$maxLeafHitProbability$ & 0\\
+		$maxTrianglesPerLeaf$ & 2\\
+		$maxLevels$ & 100\\
+		$bins$ & 40\\
+		$maxNonFallbackLevels$ & 100\\
+		$splitPlaneQualityThreshold$ & 0.4\\
+		$acceptableChildrenFatherHitProbabilityRatio$ & 1.3\\
+		$excellentChildrenFatherHitProbabilityRatio$ & 0.9\\
+		\hline
+	\end{tabular}
+\end{table}
+
+In this section we mainly take into account the $faster_{PAH+SPFH}$ indicator, as the $faster \; full$ is analyzed in section \ref{TODO}. 
+
+\begin{figure}[H] 
+	\includegraphics[width=\textwidth]{Images/pah_without_fallback_faster_chart.png}
+	\caption{How much faster is a BVH built with PAH and SPFH compared to one built with SAH and LSPH.}
+	\label{fig:pah_without_fallback_faster_chart}
+\end{figure}
+
+As it is possible to observe in the chart \ref{fig:pah_without_fallback_faster_chart}, our heuristics on average produce a faster BVH only in the case of influence areas with rays that are parallel or \textit{almost parallel} (15 degrees) to one cartesian axis. 
+
+
 \section{PAH and SPFH versus SAH and LSPH BVH Quality}
-- PAH is extremely accurate (4\% error vs 60\%)
-- PAH is more accurate with plane influence areas (2\% error vs 12\%)
 - PAH + SPFH produce higher quality BVHs when rays are perpendicular to a cartesian plane (and it is better with plane influence areas) (parallel 25\% better, 15 7\%, 45 -13\%, oblique -9\%)
+	- Graph of PAH without fallback faster percentage of summary plane and point SAH + SPFH
+
 - Hit percentage impacts on our method, due to fallback searches --> it is possible to compute the minimum hit percentage to use our heuristics effectively (breakeven hit \%)
+	- Graph of summary hit percentage and PAH faster percentage of plane and point SAH + SPFH
+
 - PAH without SPFH is not good (-21\% average for plane)
-- SPFH without PAH is better than SPLH (37\% plane, ??\% point), but worse than PAH + SPFH (even though much faster).
+	- Graph of summary PAH without fallback faster plane and point longest vs plane and point SAH + SPFH
+
+- SPFH without PAH is better than LSPH (37\% plane, 12\% point), but worse than PAH + SPFH (even though much faster).
+	- Graph of summary PAH without fallback quality SPFH vs longest vs SAH+SPFH
+
 - SPFH actually helps at reducing overlapping, but only at higher levels (57\% vs 68\%)
 - Overlapping at higher levels is related to BVH quality (as already mentioned by an article)
+	- Graph of detailed overlapping percentage vs PAH without fallback quality for everything
+
 - Our tests suffered from having AABBs projections bigger than the near plane --> we used culling, but it is even slower to build
+
 - What happens if we change the BVHs properties?
 	- Lowering the acceptable threshold leads to better BVHs, but it increases construction cost because fallback construction is used more often
-	- Lowering the maximum number of PAH levels leads to worse BVHs, but the building cost is greatly reduced (exponentially reduced due to number of nodes, almost like SAH) --> We can decide when stopping by analyzing the overlapping percentage at each level (where there is no gain over SPLH we stop)
+	- Lowering the maximum number of PAH levels leads to worse BVHs, but the building cost is greatly reduced (exponentially reduced due to number of nodes, almost like SAH) --> We can decide when stopping by analyzing the overlapping percentage at each level (where there is no gain over LSPH we stop)
 	- Lowering the splitting plane threshold leads to better BVHs, but greatly increases building cost (we should compute the amount of tried planes per threshold)
-	- Raising the splitting plane threshold leads to way worse BVHs, because SPLH is used almost always
+	- Raising the splitting plane threshold leads to way worse BVHs, because LSPH is used almost always
 
+
+- SAH + LSPH is 100x faster at building (0.07ms vs 15ms)
+- SPFH is as fast as LSPH, the problem is with PAH
+- Memory footprint ????????????????????
 
 
 - What are our objectives during testing: what data we collect? Why this method? What is the term of comparison?
