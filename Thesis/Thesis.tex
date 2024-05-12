@@ -2119,8 +2119,19 @@ Considering all the test cases, the average breakeven hit percentage is $83\%$ t
 \subsection{SPFH in Isolation} \label{ssec:spfh_in_isolation}
 In this section we analyze the performance of splitting plane facing heuristic used to build BVHs that use SAH as cost heuristic.
 
-The reason behind this specific test case is that, as we observed in section \ref{ssec:pah_spfh_vs_sah_lsph}, the time required to use SPFH is not worse than the time required to use LSPH. On the other hand, PAH is much slower than SAH, at least in our naive implementation. Therefore, with this test case we want to verify if it can be worth it to use SPFH without PAH to build BVHs with a higer quality than BVHs built by using SAH and LSPH.
+The reason behind this specific test case is that, as we observed in section \ref{ssec:pah_spfh_vs_sah_lsph}, the performance of SPFH is not worse than the performance of LSPH. On the other hand, PAH is much slower than SAH, at least in our naive implementation. Therefore, with this test case we want to verify if it can be worth it to use SPFH without PAH to build BVHs with a higer quality than BVHs built by using SAH and LSPH.
 
+\begin{figure}[H] 
+	\includegraphics[width=\textwidth]{Images/spfh_isolation.png}
+	\caption{Comparison of how much faster SPFH and SAH is compared to SPFH and PAH.}
+	\label{fig:spfh_isolation}
+\end{figure}
+
+Unexpectedly, the results suggest that using PAH along with SPFH, produces worse results than using SAH and SPFH in almost all scenarios. Not only this, but also the results obtained by using SPFH are always better or on par with the results obtained by using LSPH.
+
+As in the analysis in section \ref{ssec:pah_spfh_vs_sah_lsph}, the results are better in scenes where the rays are parallel or \textit{almost parallel} to one cartesian axis. Moreover, SPFH seems to work best with plane influence areas.
+
+As it is possible to observe, using SFPH with influence areas with oblique or 45 degrees rays, produces BVHs of the same quality of the BVHs produced by LSPH. This is expected, since, as explained in section \ref{ssec:splitting_plane_implementation}, SPFH falls back to using LSPH in case an acceptable split is not found. 
 
 
 \section{PAH and SPFH versus SAH and LSPH BVH Quality}
