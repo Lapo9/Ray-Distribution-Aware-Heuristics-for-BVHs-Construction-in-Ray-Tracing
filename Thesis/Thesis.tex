@@ -1977,7 +1977,7 @@ As we have explained in sections \ref{ssec:plane_influence_area} and \ref{ssec:p
 	\label{fig:projection_outside_near_plane}
 \end{figure}
 
-This leads to calculating projected areas that are bigger than the area of the near plane. This eventuality drive to errors in computing the hit probability (section \ref{ssec:cost_computation}) of the AABBs of the BVH. Indeed, the parts of the 2D hull that are outside of the near plane, cannot by definition be hit by a ray affine to the influence area associated to their BVH. However, by including them in the computation of the projected area of the AABB, they actually contribute to the calculation of the hit probability of the AABB, raising its value.
+This leads to calculating projected areas that are bigger than the area of the near plane. This eventuality drives to errors in computing the hit probability (section \ref{ssec:cost_computation}) of the AABBs of the BVH. Indeed, the parts of the 2D hull that are outside of the near plane, cannot by definition be hit by a ray affine to the influence area associated to their BVH. However, by including them in the computation of the projected area of the AABB, they actually contribute to the calculation of the hit probability of the AABB, raising its value.
 
 In order to mitigate this issue, we need to find a way to exclude the parts of the projected hull of an AABB that are outside the near plane. To do so we can apply culling, explained in section \ref{sec:2dHull_culling}. When we compute the projected hull of an AABB, before computing its area, we cull it with the near plane. The near plane vertices can be easily computed, indeed, since after their projections the vertices of the AABB are in clipping space, then the near plane is a unit square.
 
@@ -2028,7 +2028,7 @@ In this section we mainly take into account the $faster_{PAH+SPFH}$ indicator, a
 
 As it is possible to observe in the chart \ref{fig:pah_without_fallback_faster_chart}, our heuristics on average produce a faster BVH only in the case of influence areas with rays that are parallel or \textit{almost parallel} (15 degrees) to one cartesian axis. The reason behind these results is overlapping, and we will talk about it in section \ref{TODO}.
 
-Plane influence areas tend to work better with PAH than point influence areas. This happens for the same reason why PAH works best with rays that are parallel to a cartesian axis. Indeed, even if the main direction of the point influence area is parallel to a cartesian axis, not all its rays will also be, because the ray distribution of a point influence area is radial.
+Plane influence areas tend to work better with our heuristics than point influence areas. This happens for the same reason why PAH and SPFH work best with rays that are parallel to a cartesian axis. Indeed, even if the main direction of the point influence area is parallel to a cartesian axis, not all its rays will also be, because the ray distribution of a point influence area is radial.
 
 For what concerns the building phase of the BVHs, the timing results can be observed in charts \ref{fig:pah_build_time_chart} and \ref{fig:spfh_build_time_chart}.
 
@@ -2067,7 +2067,7 @@ The results in \ref{fig:pah_faster_chart} are the same as in \ref{fig:pah_withou
 	\label{fig:sponza_vs_random100}
 \end{figure}
 
-The higher hit percentage in the \textit{Sponza} scene lead to a lower number of fallback searches, therefore a much lower overhead during the search for ray-scene intersections.
+The higher hit percentage in the \textit{Sponza} scene leads to a lower number of fallback searches, therefore a much lower overhead during the search for ray-scene intersections.
 
 We therefore attempted to formalize this concept, and find a formula to detect when it is worth it to build a local BVH based on the hit percentage:
 
@@ -2081,9 +2081,9 @@ We therefore attempted to formalize this concept, and find a formula to detect w
 	\end{align*}
 \end{subequations}
 
-In the first line, on the left we sum the cost of the rays traversing only the BVH associated with the influence area, and the rays traversing it and the global BVH; on the right there is the cost of the rays only traversing the global BVH built with SAH and LSPH. We find out that, it is worth it to use a local BVH only if the hit percentage of the rays in the region the BVH is built is bigger than the ration between the cost of the local BVH and the cost of the global BVH.
+In the first line, on the left we sum the cost of the rays traversing only the BVH associated with the influence area, and the rays traversing it and the global BVH; on the right there is the cost of the rays only traversing the global BVH built with SAH and LSPH. Using the local BVH is worth it only if the quantity on the left is smaller than the quantity on the right. We find out that, it is worth it to use a local BVH, only if the hit percentage of the rays with geometry part of the local BVH is bigger than the ratio between the cost of the local BVH and the cost of the global BVH.
 
-This formula is useful at approximating the required hit percentage, because all the needed parameters can be computed before traversing the BVH. Indeed it is possible to use the estimated costs of the local and global BVH to get the breakeven hit percentage. In section \ref{ssec:pah_vs_sah_precision} we showed how good is PAH at predicting the cost of a BVH.
+This formula is useful at approximating the required hit percentage, because all the needed parameters can be computed before traversing the BVH. Indeed it is possible to use the estimated costs of the local and global BVHs to get the breakeven hit percentage. In section \ref{ssec:pah_vs_sah_precision} we showed how good is PAH at predicting the cost of a BVH.
 
 However, the main flaw of this formula is that we assume that the cost of traversing the global BVH for the rays that miss the local one is the same as the cost of the full global BVH. This is not always the case, indeed, in many scenarios, the rays that miss the local BVH will have some peculiar characteristics. For example, as it is possible to observe in figure \ref{fig:ray_missin_local}, all they rays missing in the local BVH are concentrated in a section of the scene, and therefore hit a specific part of the global BVH, which cannot be accurately approximated by the whole BVH.
 
@@ -2104,7 +2104,7 @@ For this reason, instead of using $cost_{SAH+LSPH}$ in the formula to compute th
 	\end{align*}
 \end{subequations}
 
-As it is possible to observe in chart \ref{fig:breakeven_hit_perc_accuracy}, this new formula is accurate at predicting the breakeven hit percentage value. As the difference between the cost of the traversal of the scene with our method and the state-of-th-art method comes close to 0, the delta between the calculated breakeven hit percentage and the measured hit percentage tends to go to 0 too. For example, for the test case of the \textit{Wood} scene with a point influence area with rays parallel to a cartesian axis, the difference in traversal cost between our method and the state-of-the-art method is $0\%$, and the difference between the computed breakeven hit percentage ($55\%$) and the measured hit percentage ($56\%$) is just $1\%$, meaning that the computed breakeven hit percentage is accurate for this test case.
+As it is possible to observe in chart \ref{fig:breakeven_hit_perc_accuracy}, this new formula is accurate at predicting the breakeven hit percentage value. As the difference between the cost of the traversal of the scene with our method and the state-of-the-art method comes close to 0, the delta between the calculated breakeven hit percentage and the measured hit percentage tends to go to 0 too. For example, for the test case of the \textit{Wood} scene with a point influence area with rays parallel to a cartesian axis, the difference in traversal cost between our method and the state-of-the-art method is $0\%$, and the difference between the computed breakeven hit percentage ($55\%$) and the measured hit percentage ($56\%$) is just $1\%$, meaning that the computed breakeven hit percentage is accurate for this test case.
 
 However, in order to compute it, the scene must be traversed first, so that it is possible to obtain a value for $cost_{miss}$.
 
@@ -2114,7 +2114,7 @@ However, in order to compute it, the scene must be traversed first, so that it i
 	\label{fig:breakeven_hit_perc_accuracy}
 \end{figure}
 
-Considering all the test cases, the average breakeven hit percentage is $83\%$ this means that, in order to be worth it to build a local BVH in an area with a parallel or radial point distribution, at least $83\%$ of the rays affine to the associated influence area must hit a primitive part of the local BVH.
+Considering all the test cases, the average breakeven hit percentage is $83\%$ this means that, in order to be worth it to build a local BVH in an area with a parallel or radial point distribution, at least $83\%$ of the rays affine to the associated influence area must hit a triangle that is part of the local BVH.
 
 \subsection{SPFH in Isolation} \label{ssec:spfh_in_isolation}
 In this section we analyze the performance of splitting plane facing heuristic used to build BVHs that use SAH as cost heuristic.
@@ -2133,13 +2133,20 @@ As in the analysis in section \ref{ssec:pah_spfh_vs_sah_lsph}, the results are b
 
 As it is possible to observe, using SFPH with influence areas with oblique or 45 degrees rays, produces BVHs of the same quality of the BVHs produced by LSPH. This is expected, since, as explained in section \ref{ssec:splitting_plane_implementation}, SPFH falls back to using LSPH in case an acceptable split is not found. 
 
+\subsection{PAH in Isolation} \label{ssec:pah_isolation}
+Given the unexpected results presetned in the previous section, we decided to further investigate, and performed analyses on the quality of BVHs built with PAH and LSPH.
+
+\begin{figure}[H] 
+	\includegraphics[width=\textwidth]{Images/TODO.png}
+	\caption{Comparison of how much faster PAH and LSPH is compared to SAH and LSPH.}
+	\label{fig:pah_isolation}
+\end{figure}
+
+The results in chart \ref{fig:pah_isolation} shows that projected area heuristic produces worse BVHs compared to surface area heuristic.
 
 \section{PAH and SPFH versus SAH and LSPH BVH Quality}
 - PAH without SPFH is not good (-21\% average for plane)
 	- Graph of summary PAH without fallback faster plane and point longest vs plane and point SAH + SPFH
-
-- SPFH without PAH is better than LSPH (37\% plane, 12\% point), but worse than PAH + SPFH (even though much faster).
-	- Graph of summary PAH without fallback quality SPFH vs longest vs SAH+SPFH
 
 - SPFH actually helps at reducing overlapping, but only at higher levels (57\% vs 68\%)
 - Overlapping at higher levels is related to BVH quality (as already mentioned by an article)
