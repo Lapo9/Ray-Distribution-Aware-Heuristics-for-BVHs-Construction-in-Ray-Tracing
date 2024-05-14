@@ -819,17 +819,17 @@ With binning, instead of trying every possible cut, a predefined number of cuts 
 \begin{figure}[H]
     \centering
     \subfloat[Triangles splitting without binning]{
-        \includegraphics[width=\textwidth*\real{0.42}]{Images/TODO.png}
+        \includegraphics[width=\textwidth*\real{0.45}]{Images/TODO.png}
 	}
 	\qquad
 	\subfloat[Triangles splitting with binning]{
-        \includegraphics[width=\textwidth*\real{0.42}]{Images/TODO.png}
+        \includegraphics[width=\textwidth*\real{0.45}]{Images/TODO.png}
     }
-	\caption{With binnin it is possible to lose some cuts, but the most relevant ones are always found.}
+	\caption{With binning it is possible to lose some cuts, but the most relevant ones are always found, for example the cut dividing the blue and purple triangles.}
     \label{fig:triangles_splitting_binning}
 \end{figure}
 
-After generating the two subsets of triangle, the enclosing AABBs must be built. The process to build an AABB from a set of triangles is straight-forward, and is summarized by this algorithm:
+After generating the two subsets of triangles, the enclosing AABBs must be built. The process to build an AABB from a set of triangles is straight-forward, and is summarized by this algorithm:
 \begin{algorithm}[H]
 	\caption{AABB building from triangles set.}
 	\begin{algorithmic}[1]
