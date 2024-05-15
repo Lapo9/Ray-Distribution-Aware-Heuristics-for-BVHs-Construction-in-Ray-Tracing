@@ -105,17 +105,17 @@ int main() {
 #define and_or &&
 	constexpr bool ALL = false;
 
-	constexpr bool PLANE_FULL = ALL || true;
-	constexpr bool PLANE_FULL_LONGEST = ALL || false;
-	constexpr bool POINT_FULL = ALL || true;
+	constexpr bool PLANE_FULL = ALL || false;
+	constexpr bool PLANE_FULL_LONGEST = ALL || true;
+	constexpr bool POINT_FULL = ALL || false;
 	constexpr bool POINT_FULL_LONGEST = ALL || false;
-	constexpr bool PLANE_FULL_SAH = ALL || true;
-	constexpr bool POINT_FULL_SAH = ALL || true;
+	constexpr bool PLANE_FULL_SAH = ALL || false;
+	constexpr bool POINT_FULL_SAH = ALL || false;
 
 	constexpr bool WOOD_SCENE = ALL || true;
-	constexpr bool SUZANNE_SCENE = ALL || true;
+	constexpr bool SUZANNE_SCENE = ALL || false;
 	constexpr bool COTTAGE_SCENE = ALL || false;
-	constexpr bool COTTAGE_WALLS_SCENE = ALL || true;
+	constexpr bool COTTAGE_WALLS_SCENE = ALL || false;
 	constexpr bool CROWD_SCENE = ALL || false;
 	constexpr bool RANDOM100_SCENE = ALL || false;
 	constexpr bool RANDOM1000_SCENE = ALL || false;
