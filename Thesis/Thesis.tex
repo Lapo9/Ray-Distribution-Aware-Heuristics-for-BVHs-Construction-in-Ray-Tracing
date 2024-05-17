@@ -353,7 +353,7 @@ With ray tracing shadows are natively generated since, if a point is in shadow, 
 
 \begin{figure}[]
     \centering
-    \includegraphics[scale=0.6]{Images/shadow_map.png}
+    \includegraphics[width=\textwidth*\real{0.65}]{Images/shadow_map.png}
     \caption{The first figure is from the main camera PoV, the second one from the light source PoV. The second figure represents depth: the closer a point is to the light source, the darker. The blue point is in shadow, because the corresponding point in the shadow map is further away than the stored depth.}
     \label{fig:shadow_map}
 \end{figure}
@@ -427,15 +427,15 @@ The first part describes the light emitted $L_e(\bar{x}, \bar{\omega}_o)$, and i
 \begin{figure}[H]
     \centering
     \subfloat[Point light]{
-        \includegraphics[width=\textwidth*\real{0.25}]{Images/point_light.png}
+        \includegraphics[width=\textwidth*\real{0.15}]{Images/point_light.png}
 	}
 	\qquad
-	\subfloat[Plane area light]{
-        \includegraphics[width=\textwidth*\real{0.25}]{Images/plane_light.png} 
+	\subfloat[Area light]{
+        \includegraphics[width=\textwidth*\real{0.15}]{Images/plane_light.png} 
     }
 	\qquad
 	\subfloat[Spotlight]{
-        \includegraphics[width=\textwidth*\real{0.22}]{Images/spot_light.png}
+        \includegraphics[width=\textwidth*\real{0.15}]{Images/spot_light.png}
     }
 	\caption{Three possible types of light sources.}
     \label{fig:light_sources}
@@ -454,7 +454,7 @@ The term $\cos(\bar{n}, \bar{\omega}_i)$ is called geometry term, and reflects a
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.7}]{Images/geometry_term.png}
+    \includegraphics[width=\textwidth*\real{0.5}]{Images/geometry_term.png}
     \caption{The geometry term.}
     \label{fig:geometry_term}
 \end{figure}
@@ -635,7 +635,7 @@ A polygonal mesh describes an object by defining its surface via points, edges a
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.7}]{Images/triangular_mesh.png}
+    \includegraphics[width=\textwidth*\real{0.5}]{Images/triangular_mesh.png}
     \caption{A triangular mesh.}
     \label{fig:triangular_mesh}
 \end{figure}
@@ -662,7 +662,7 @@ The first space partitioning acceleration structure developed is the uniform gri
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.6}]{Images/TODO.png}
+    \includegraphics[width=\textwidth*\real{0.5}]{Images/uniform_grid.png}
     \caption{The uniform grid in 2D.}
     \label{fig:uniform_grid}
 \end{figure}
@@ -673,8 +673,8 @@ In order to solve the adaptability problem of the uniform grid, octrees started 
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.6}]{Images/TODO.png}
-    \caption{A 2D octree.}
+    \includegraphics[width=\textwidth*\real{0.5}]{Images/quadtree.png}
+    \caption{A 2D octree (quadtree).}
     \label{fig:octree}
 \end{figure}
 
@@ -682,7 +682,7 @@ It is important to note how octrees adapt better to the scene. Indeed, compared 
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.6}]{Images/TODO.png}
+    \includegraphics[width=\textwidth*\real{0.5}]{Images/teapot_stadium.png}
     \caption{How an octree adapts to a \textit{teapot in the stadium} kind of scene.}
     \label{fig:octree_teapot_stadium}
 \end{figure}
@@ -691,7 +691,7 @@ Another structure that is a generalization of octrees and delivers similar perfo
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.6}]{Images/TODO.png}
+    \includegraphics[width=\textwidth*\real{0.5}]{Images/kd_tree.png}
     \caption{A kd-tree in 2D.}
     \label{fig:kd_tree}
 \end{figure}
@@ -709,7 +709,7 @@ A choice can be a sphere, which is easy to test against a ray. Moreover, buildin
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.4}]{Images/TODO.png}
+    \includegraphics[width=\textwidth*\real{0.3}]{Images/bounding_sphere_slack.png}
     \caption{Bounding circle (2D bounding sphere) can present large slack spaces.}
     \label{fig:bounding_sphere}
 \end{figure}
@@ -720,7 +720,7 @@ Another option is using oriented bounding boxes (OBB). Oriented bounding boxes i
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.4}]{Images/TODO.png}
+    \includegraphics[width=\textwidth*\real{0.35}]{Images/obb_slack.png}
     \caption{A 2D OBB.}
     \label{fig:obb}
 \end{figure}
@@ -729,7 +729,7 @@ Axis-aligned bounding boxes (AABB) are the most used bounding volumes. AABBs are
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.4}]{Images/TODO.png}
+    \includegraphics[width=\textwidth*\real{0.3}]{Images/aabb_slack.png}
     \caption{A 2D AABB.}
     \label{fig:aabb}
 \end{figure}
@@ -738,7 +738,7 @@ AABBs are the most used bounding volumes both in real-time and non-real-time ray
 
 \begin{figure}[H]
     \centering
-    \includegraphics[scale=0.4]{Images/TODO.png}
+    \includegraphics[width=\textwidth*\real{0.5}]{Images/bvh_2d.png}
     \caption{A 2-dimensional BVH.}
     \label{fig:bvh_2d}
 \end{figure}
@@ -801,7 +801,7 @@ In order to split the triangles into two subsets, a plane is chosen, and based o
 
 \begin{figure}[H]
     \centering
-    \includegraphics[scale=0.4]{Images/TODO.png}
+    \includegraphics[width=\textwidth*\real{0.4}]{Images/triangle_splitting_arbitrary.png}
     \caption{Triangles splitting via arbitrary plane.}
     \label{fig:triangles_splitting}
 \end{figure}
@@ -819,11 +819,11 @@ With binning, instead of trying every possible cut, a predefined number of cuts 
 \begin{figure}[H]
     \centering
     \subfloat[Triangles splitting without binning]{
-        \includegraphics[width=\textwidth*\real{0.45}]{Images/TODO.png}
+        \includegraphics[width=\textwidth*\real{0.45}]{Images/split_no_binning.png}
 	}
 	\qquad
 	\subfloat[Triangles splitting with binning]{
-        \includegraphics[width=\textwidth*\real{0.45}]{Images/TODO.png}
+        \includegraphics[width=\textwidth*\real{0.45}]{Images/split_binning.png}
     }
 	\caption{With binning it is possible to lose some cuts, but the most relevant ones are always found, for example the cut dividing the blue and purple triangles.}
     \label{fig:triangles_splitting_binning}
@@ -880,7 +880,7 @@ Since all rays hit the root AABB, we can interpret it as the certain event. And 
 
 \begin{figure}[H]
     \centering
-    \includegraphics[scale=0.5]{Images/TODO.png}
+    \includegraphics[width=\textwidth*\real{0.5}]{Images/TODO.png}
     \caption{Visual relationship between AABB area and hit probability in 2D, under the assumption rays are uniformly distributed.}
     \label{fig:area_probability_visual}
 \end{figure}
@@ -1378,7 +1378,7 @@ In order to detect if a point is inside an OBB, we project its distance vector f
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.5}]{Images/TODO.png}
+    \includegraphics[width=\textwidth*\real{0.6}]{Images/point_obb_test.png}
     \caption{Check to detect if a point is inside an OBB.}
     \label{fig:oobb_contains}
 \end{figure}
@@ -1446,7 +1446,7 @@ $$\neg Aabb.function \implies \neg Obb.function$$
 The condition is only sufficient, but not necessary. It is thus needed to fall back to the more expensive $Obb$'s implementations in case the $Aabb$'s implementation give a positive response.
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.6}]{Images/TODO.png}
+    \includegraphics[width=\textwidth*\real{0.4}]{Images/obb_aabb_rejection_test.png}
     \caption{If the point (purple) is outside the AABB, it is necessarily outside the OBB too. The inverse (blue and light blue) is not guaranteed.}
     \label{fig:aabb_for_obb_contains}
 \end{figure}
@@ -1459,7 +1459,7 @@ A frustum can be defined by specifying its orientation in space, an origin point
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.6}]{Images/TODO.png}
+    \includegraphics[width=\textwidth*\real{0.45}]{Images/frustum_definition.png}
     \caption{How a frustum can be defined.}
     \label{fig:frustum}
 \end{figure}
@@ -1529,7 +1529,7 @@ With this matrix we transform the rectangle parallelepiped viewing volume to the
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.6}]{Images/TODO.png}
+    \includegraphics[width=\textwidth*\real{0.6}]{Images/cvv.png}
     \caption{Visualization of the orthographic projection matrix: it shrinks the rectangle parallelepiped viewing volume to the canonical view volume.}
     \label{fig:canonical_view_volume}
 \end{figure}
@@ -1703,7 +1703,7 @@ What the above algorith does, is to check if the eye position is inside the min-
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=\textwidth*\real{0.7}]{Images/TODO.png}
+	\includegraphics[width=\textwidth*\real{0.5}]{Images/aabb_view_hull.png}
 	\caption{Considering the $x$ dimension, the blue eye is inside the range of the AABB, whereas the purple one is not. The purple eye can also see the right face.}
 	\label{fig:visible_faces_from_eye}
 \end{figure}
@@ -1790,7 +1790,7 @@ The $children$ array has an indexing following the layout in the following figur
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=\textwidth*\real{0.7}]{Images/TODO.png}
+	\includegraphics[width=\textwidth*\real{0.4}]{Images/octree_node_layout.png}
 	\caption{The indexing layout of the children of an octree node.}
 	\label{fig:octree_children_layout}
 \end{figure}
@@ -1841,7 +1841,7 @@ If we tried to build an extremely performant BVH builder, we would have needed t
 We will now present the eight test scenes and the reasons why we selected each one of them.
 \begin{minipage}{0.4\textwidth}
 	\begin{figure}[H]
-		\includegraphics[width=\textwidth]{Images/TODO.png}
+		\includegraphics[width=\textwidth]{Images/random100_scene.png}
 		\caption{Random 100}
 		\label{fig:random_100}
 	\end{figure}
@@ -1855,7 +1855,7 @@ We will now present the eight test scenes and the reasons why we selected each o
 \end{minipage}
 \hfill \begin{minipage}{0.4\textwidth}
 	\begin{figure}[H]
-		\includegraphics[width=\textwidth]{Images/TODO.png}
+		\includegraphics[width=\textwidth]{Images/random1000_scene.png}
 		\caption{Random 1000}
 		\label{fig:random_1000}
 	\end{figure}
@@ -1863,7 +1863,7 @@ We will now present the eight test scenes and the reasons why we selected each o
 
 \begin{minipage}{0.4\textwidth}
 	\begin{figure}[H]
-		\includegraphics[width=\textwidth]{Images/TODO.png}
+		\includegraphics[width=\textwidth]{Images/suzanne_scene.png}
 		\caption{Suzanne}
 		\label{fig:suzanne}
 	\end{figure}
@@ -1899,7 +1899,7 @@ We will now present the eight test scenes and the reasons why we selected each o
 \end{minipage}
 \hfill \begin{minipage}{0.4\textwidth}
 	\begin{figure}[H]
-		\includegraphics[width=\textwidth]{Images/TODO.png}
+		\includegraphics[width=\textwidth]{Images/wood_scene.png}
 		\caption{Wood}
 		\label{fig:Wood}
 	\end{figure}
@@ -1907,7 +1907,7 @@ We will now present the eight test scenes and the reasons why we selected each o
 
 \begin{minipage}{0.4\textwidth}
 	\begin{figure}[H]
-		\includegraphics[width=\textwidth]{Images/TODO.png}
+		\includegraphics[width=\textwidth]{Images/crowd_scene.png}
 		\caption{Crowd}
 		\label{fig:crowd}
 	\end{figure}
@@ -1921,7 +1921,7 @@ We will now present the eight test scenes and the reasons why we selected each o
 \end{minipage}
 \hfill \begin{minipage}{0.4\textwidth}
 	\begin{figure}[H]
-		\includegraphics[width=\textwidth]{Images/TODO.png}
+		\includegraphics[width=\textwidth]{Images/sponza_scene.png}
 		\caption{Sponza}
 		\label{fig:sponza}
 	\end{figure}
@@ -1955,6 +1955,7 @@ Then we build a BVH with SAH, and use the same ray caster to traverse it. We com
 To present the results, we decided to aggregate data based on the influence area used (plane or point), and the orientation of the influence area (parallel, 15°, 45° and oblique).
 
 \begin{figure}[H]
+	\centering
 	\includegraphics[width=\textwidth]{Images/pah_accuracy_chart.png}
 	\caption{Accuracy of PAH compared to SAH.}
 	\label{fig:pah_accuracy_chart}
@@ -1972,7 +1973,8 @@ During the first iteration of the previous test, we got worse results for PAH: t
 As we have explained in sections \ref{ssec:plane_influence_area} and \ref{ssec:point_influence_area}, we can use orthographic and perspective projections to project the AABB to the near plane. However, the 2D hull resulting from the projection, can have some of its part outside the near plane, as it can be observed in figure \ref{fig:projection_outside_near_plane}. 
 
 \begin{figure}[H]
-	\includegraphics[width=\textwidth]{Images/TODO.png}
+	\centering
+	\includegraphics[width=\textwidth*\real{0.75}]{Images/near_plane_culling.png}
 	\caption{The 2D projected hull of the AABB is not fully contained in the viewing area of the near plane.}
 	\label{fig:projection_outside_near_plane}
 \end{figure}
@@ -2021,6 +2023,7 @@ The properties (section \ref{sec:bvh}) for the PAH BVHs are set to default value
 In this section we mainly take into account the $faster_{PAH+SPFH}$ indicator, as the $faster \; full$ is analyzed in section \ref{TODO}.
 
 \begin{figure}[H] 
+	\centering
 	\includegraphics[width=\textwidth]{Images/pah_without_fallback_faster_chart.png}
 	\caption{How much faster is a BVH built with PAH and SPFH compared to one built with SAH and LSPH.}
 	\label{fig:pah_without_fallback_faster_chart}
@@ -2033,6 +2036,7 @@ Plane influence areas tend to work better with our heuristics than point influen
 For what concerns the building phase of the BVHs, the timing results can be observed in charts \ref{fig:pah_build_time_chart} and \ref{fig:spfh_build_time_chart}.
 
 \begin{figure}[H] 
+	\centering
 	\includegraphics[width=\textwidth]{Images/pah_build_time_chart.png}
 	\caption{Average time per node spent inside the compute cost function for PAH and SAH.}
 	\label{fig:pah_build_time_chart}
@@ -2043,6 +2047,7 @@ As it is possible to observe, PAH is on average an order of magnitude slower tha
 It is important to remember that our implementation runs on the CPU and is not optimized. However, considering the nature of the operations used in PAH, namely projections, it is reasonable to think that its performance could improve if it was taylored and ran on a parallel architecture, like a GPU. At the moment we don't have any experimental evidence this is the case, and this is only a supposition based on an analogy with the algorithms that work best on a GPU. A future direction of development should be to port the algorithm to compute PAH on a GPU architecture.
 
 \begin{figure}[H] 
+	\centering
 	\includegraphics[width=\textwidth]{Images/spfh_build_time_chart.png}
 	\caption{Average time spent inside the compute splitting plane function for SPFH and LSPH.}
 	\label{fig:spfh_build_time_chart}
@@ -2054,6 +2059,7 @@ For what concerns SPFH, it is possible to note from chart \ref{fig:spfh_build_ti
 In the previous section we focused on the raw performance of BVHs built with PAH and SPFH, by analyzing the values of the $faster_{PAH+SPFH}$ indicator in various situations. However, in a real case scenario, when a search in the BVH associated with an influence area fails, a search in the global BVH must be performed, as described in section \ref{sec:local_and_global_bvhs}. For this reason, the $faster \; full$ indicator is better at predicting if BVHs built with our heuristics are actually faster to traverse than BVHs built with SAH and LSPH.
 
 \begin{figure}[H] 
+	\centering
 	\includegraphics[width=\textwidth]{Images/pah_faster_chart.png}
 	\caption{How much faster is a BVH built with PAH and SPFH compared to one built with SAH and LSPH, considering also the fallback searches.}
 	\label{fig:pah_faster_chart}
@@ -2062,6 +2068,7 @@ In the previous section we focused on the raw performance of BVHs built with PAH
 The results in \ref{fig:pah_faster_chart} are the same as in \ref{fig:pah_without_fallback_faster_chart}, but shifted around $12\%$ lower. We then tried to analyze the results of each scene individually, instead of in their aggregate form. We found out that the results were directly related to how many of the rays hit the geometry present in the BVH associated with the influence area. For example, in the \textit{Sponza} scene, where the hit percentage of the rays was close to $100\%$, the results are much better than in a scene like \textit{Random100}, where the hit percentage is around $10\%$ on average:
 
 \begin{figure}[H] 
+	\centering
 	\includegraphics[width=\textwidth]{Images/sponza_vs_random100.png}
 	\caption{$faster\; full$ indicator for \textit{Sponza} and \textit{Random100}, along with their hit percentage.}
 	\label{fig:sponza_vs_random100}
@@ -2088,9 +2095,10 @@ This formula is useful at approximating the required hit percentage, because all
 However, the main flaw of this formula is that we assume that the cost of traversing the global BVH for the rays that miss the local one is the same as the cost of the full global BVH. This is not always the case, indeed, in many scenarios, the rays that miss the local BVH will have some peculiar characteristics. For example, as it is possible to observe in figure \ref{fig:ray_missin_local}, all they rays missing in the local BVH are concentrated in a section of the scene, and therefore hit a specific part of the global BVH, which cannot be accurately approximated by the whole BVH.
 
 \begin{figure}[H] 
-	\includegraphics[width=\textwidth]{Images/TODO.png}
+	\centering
+	\includegraphics[width=\textwidth*\real{0.5}]{Images/local_missing_rays.png}
 	\caption{The rays that miss in the local BVH are all concentrated in a section of the scene.}
-	\label{fig:ray_missin_local}
+	\label{fig:ray_missing_local}
 \end{figure}
 
 For this reason, instead of using $cost_{SAH+LSPH}$ in the formula to compute the breakeven hit percentage, we would need to use a more specific cost value, computed only for the rays that miss the local BVH. We call this value $cost_{miss}$:
@@ -2109,6 +2117,7 @@ As it is possible to observe in chart \ref{fig:breakeven_hit_perc_accuracy}, thi
 However, in order to compute it, the scene must be traversed first, so that it is possible to obtain a value for $cost_{miss}$.
 
 \begin{figure}[H] 
+	\centering
 	\includegraphics[width=\textwidth]{Images/breakeven_hit_perc_accuracy.png}
 	\caption{As the difference in traversal cost of our method and the state-of-the-art method goes to 0, also the difference between the calculated breakeven hit percentage and the measured one tends to 0.}
 	\label{fig:breakeven_hit_perc_accuracy}
@@ -2122,6 +2131,7 @@ In this section we analyze the performance of splitting plane facing heuristic u
 The reason behind this specific test case is that, as we observed in section \ref{ssec:pah_spfh_vs_sah_lsph}, the performance of SPFH is not worse than the performance of LSPH. On the other hand, PAH is much slower than SAH, at least in our naive implementation. Therefore, with this test case we want to verify if it can be worth it to use SPFH without PAH to build BVHs with a higer quality than BVHs built by using SAH and LSPH.
 
 \begin{figure}[H] 
+	\centering
 	\includegraphics[width=\textwidth]{Images/spfh_isolation.png}
 	\caption{Comparison of how much faster SPFH and SAH is compared to SPFH and PAH.}
 	\label{fig:spfh_isolation}
@@ -2137,6 +2147,7 @@ As it is possible to observe, using SFPH with influence areas with oblique or 45
 Given the unexpected results presetned in the previous section, we decided to further investigate, and performed analyses on the quality of BVHs built with PAH and LSPH.
 
 \begin{figure}[H] 
+	\centering
 	\includegraphics[width=\textwidth]{Images/TODO.png}
 	\caption{Comparison of how much faster PAH and LSPH is compared to SAH and LSPH.}
 	\label{fig:pah_isolation}
@@ -2323,7 +2334,7 @@ This consideration makes it possible to use the theorem in a concrete scenario.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[scale=0.35]{Images/aabb_1d_proj.png} 
+    \includegraphics[width=\textwidth*\real{0.45}]{Images/aabb_1d_proj.png} 
     \caption{The projection of an AABB on an axis.}
     \label{fig:aabb_1d_proj}
 \end{figure}
@@ -2338,11 +2349,11 @@ the number of checks is reduced to $(3 + 5)_{normals} + (3\cdot 6)_{cross\: prod
 \begin{figure}[H]
     \centering
     \subfloat[AABB: 3 different edges directions]{
-        \includegraphics[scale=0.35]{Images/aabb_edges_same_dir.png}
+        \includegraphics[width=\textwidth*\real{0.35}]{Images/aabb_edges_same_dir.png}
 		}
 		\qquad
 	\subfloat[Frustum: 6 different edges directions]{
-        \includegraphics[scale=0.35]{Images/frustum_edges_same_dir.png}
+        \includegraphics[width=\textwidth*\real{0.35}]{Images/frustum_edges_same_dir.png}
     }
 	\caption{In the figure the edges having the same direction are colored in the same color.}
     \label{fig:aabb_frustum_different_edges_directions}
@@ -2460,7 +2471,7 @@ $$u \times v \; where \; u = \overrightarrow{AB}, v = \overrightarrow{AP}$$
 
 \begin{figure}[H]
     \centering
-    \includegraphics[scale=0.4]{Images/cross_product.png} 
+    \includegraphics[width=\textwidth*\real{0.45}]{Images/cross_product.png} 
     \caption{Visualization of cross product.}
     \label{fig:cross_product}
 \end{figure}
@@ -2493,14 +2504,14 @@ In order to find the overlapping region between two 2D hulls in 2-dimensional sp
 
 \begin{figure}[H]
     \centering
-    \includegraphics[scale=0.7]{Images/hull_culling.png} 
+    \includegraphics[width=\textwidth*\real{0.75}]{Images/hull_culling.png} 
     \caption{General algorithm to find the overlapping region between two convex hulls called $A$ and $B$.}
     \label{fig:hull_culling}
 \end{figure}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[scale=0.4]{Images/overlapping_hull.png} 
+    \includegraphics[width=\textwidth*\real{0.45}]{Images/overlapping_hull.png} 
     \caption{Yellow vertices are found in the first 2 steps (vertices inside), whereas light blue vertices are found in the third step (edges intersections).}
     \label{fig:overlapping_hull}
 \end{figure}
@@ -2559,7 +2570,7 @@ We are now left with the task of verifying whether the found intersection point 
 
 \begin{figure}[H]
     \centering
-    \includegraphics[scale=0.4]{Images/segments_intersection.png} 
+    \includegraphics[width=\textwidth*\real{0.6}]{Images/segments_intersection.png} 
     \caption{In this example segments do not collide because $max(M_x, N_x) = N_x \ngeq K_x$ or $max(M_y, N_y) \ngeq K_y$}
     \label{fig:segments_intersection}
 \end{figure}
@@ -2575,7 +2586,7 @@ The $atan2(v_y, v_x)$ function returns the angle between the positive x-axis and
 
 \begin{figure}[H]
     \centering
-    \includegraphics[scale=0.4]{Images/vertices_sorting.png} 
+    \includegraphics[width=\textwidth*\real{0.75}]{Images/vertices_sorting.png} 
     \caption{Vertices of a convex hull before and after $atan2$ sorting.}
     \label{fig:vertices_sorting}
 \end{figure}
