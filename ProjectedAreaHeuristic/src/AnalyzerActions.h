@@ -104,9 +104,10 @@ namespace pah::analyzerActions {
 		 * @brief Logs time measurements and updates the total "average" time measurement.
 		 * If the macro TIMING is false, nothing happens.
 		 */
-		static void timeMeasurement(Bvh::NodeTimingInfo& meanTimeInfo, ANALYZER_ACTION_PER_NODE_ARGUMENTS) {
+		static void timeMeasurement(std::pair<Bvh::NodeTimingInfo, int>& meanTimeInfo, ANALYZER_ACTION_PER_NODE_ARGUMENTS) {
 			//update total "average" times
-			TIME(meanTimeInfo += node.nodeTimingInfo;);
+			TIME(meanTimeInfo.first += node.nodeTimingInfo;);
+			TIME(meanTimeInfo.second += node.isLeaf() ? 0 : 1;);
 			
 			//log to JSON the times of this node
 			TIME(localLog["timing"] = node.nodeTimingInfo;);
@@ -140,8 +141,8 @@ namespace pah::analyzerActions {
 
 			float overlappingPercentage = smallestChildrenArea == 0 ? 0.f : overlappingChildrenArea / smallestChildrenArea;
 			float overlappingPercentageCulled = smallestChildrenAreaCulled == 0 ? 0.f : overlappingChildrenAreaCulled / smallestChildrenAreaCulled;
-			localLog["metrics"]["childrenOverlappingPercentage"] = overlappingPercentage;
-			localLog["metrics"]["childrenOverlappingPercentageCulled"] = overlappingPercentageCulled;
+			localLog["metrics"]["childrenOverlappingPercentage"+maxLevelToConsider] = overlappingPercentage;
+			localLog["metrics"]["childrenOverlappingPercentageCulled"+maxLevelToConsider] = overlappingPercentageCulled;
 		}
 	}
 
@@ -202,9 +203,14 @@ namespace pah::analyzerActions {
 		/**
 		 * @brief Logs the total build time and the average times for each building step of each node.
 		 */
-		static void timeMeasurement(Bvh::NodeTimingInfo& meanTimeInfo, ANALYZER_ACTION_FINAL_ARGUMENTS) {			
+		static void timeMeasurement(std::pair<Bvh::NodeTimingInfo, int>& meanTimeInfo, ANALYZER_ACTION_FINAL_ARGUMENTS) {			
 			//log total "average" times
-			TIME(log["totalTiming"] = meanTimeInfo;);
+			TIME(log["totalTiming"] = meanTimeInfo.first;);
+
+			//per node averages (above is per function call)
+			TIME(log["totalTiming"]["computeCostCountPerNode"] = (float)meanTimeInfo.first.computeCostCount / meanTimeInfo.second;)
+			TIME(log["totalTiming"]["chooseSplittingPlanesCountPerNode"] = (float)meanTimeInfo.first.chooseSplittingPlanesCount / meanTimeInfo.second;)
+			TIME(log["totalTiming"]["shouldStopCountPerNode"] = (float)meanTimeInfo.first.shouldStopCount / meanTimeInfo.second;)
 
 			//log total time
 			INFO(log["totalTiming"]["fullTotal"] = bvh.getTotalBuildTime().count(););

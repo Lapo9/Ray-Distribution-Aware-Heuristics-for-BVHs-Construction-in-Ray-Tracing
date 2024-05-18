@@ -705,7 +705,7 @@ Assuming the best-case scenario where a ray always hits only one of the 2 childr
 
 The bounding volume in which a BVH encloses triangles should have a form that is cheap to intersect with a ray, and also cheap to build given a set of triangles.
 
-A choice can be a sphere, which is easy to test against a ray. Moreover, building the tightest enclosing sphere given a set of triangles is as simple as finding the 2 triangles furthest away in each direction, computing the middle point and setting as radius the distance between the furthest triangle and the middle point. The negative aspect of using bounding spheres lies in the fact that a sphere extends equally in all directions in 3D space. This means that if the triangles are displaced in a way where they extend more in one direction than in other ones, the bounding sphere will present a lot of slack space, and won't enclose the triangles thightly. This is not ideal, because in the traversal phase a non-tight bounding volume generates a lot of false positives, namely situations where the bounding volume is hit but no triangle is intersected.
+A choice can be a sphere, which is easy to test against a ray. Moreover, building the tightest enclosing sphere given a set of triangles is as simple as finding the 2 triangles furthest away in each direction, computing the middle point and setting as radius the distance between the furthest triangle and the middle point. The negative aspect of using bounding spheres lies in the fact that a sphere extends equally in all directions in 3D space. This means that if the triangles are displaced in a way where they extend more in one direction than in other ones, the bounding sphere will present a lot of slack space, and won't enclose the triangles tightly. This is not ideal, because in the traversal phase a non-tight bounding volume generates a lot of false positives, namely situations where the bounding volume is hit but no triangle is intersected.
 
 \begin{figure}[H]
     \centering
@@ -1831,11 +1831,11 @@ It is possible to specify a point in space and a facing direction for any $RayCa
 $CsvExporter$ class objects can be used to specify some of the attributes present in the JSON relative to the BVHs or the top level structure, and export it in the CSV format. Since the JSONs relative to the top level structures can become quite big (in our test cases we obtained JSONs with more than 20000 lines), having a class to extract only the relevant information for a specific analysis has proven invaluably helpful during the experimentation phase.
 
 \chapter{Experimental Results} \label{ch:experimental_results}
-In this chapter we will present the results we obtained by performing experimental tests on our theories. The experiments have been carried out by using our framework, presented in chapter \ref{ch:implementation}. Our experiments aim at simulating some possible situations our techniques may face in a real world application. We will detail our methodologies and the reason behind the choice of the selecetd test cases. We also try to provide mathematical indicators, or at least empirical reasonings, about why a certain method works better than another one given a specific scenario.
+In this chapter we will present the results we obtained by performing experimental tests on our theories. The experiments have been carried out by using our framework, presented in chapter \ref{ch:implementation}. Our experiments aim at simulating some possible situations our techniques may face in a real-world application. We will detail our methodologies and the reason behind the choice of the selected test cases. We also try to provide mathematical indicators, or at least empirical reasonings, about why a certain method works better than another one given a specific scenario.
 
 Our tests are aimed at comparing how our heuristics change the behavior of a simple and standard BVH builder, compared to the state-of-the-art heuristics, and based on the BVH properties we adopt (section \ref{sec:bvh}). This means that our focus during the testing phase is not to build the fastest possible BVH builder. Our reasoning behind this choice, is that we wanted to reduce complexity at the bare minimum, in order to be able to isolate what the real focus of this work is, namely the advantages and disadvantages of PAH and SPFH comapred to SAH and LSPH. 
 
-If we tried to build an extremely performant BVH builder, we would have needed to introduce a lot of low level optimizations. For example we would have needed to take into account memory access patterns to increase data locality, as introduced in this paper \cite{TODO}; or we would have needed to build an algorithm running on the GPU. Getting these optimizations right would have required a lot of very specific expertise and trial and error, therefore we would have needed to use an existing BVH builder and modify it, losing the full control over it, which was one of our guiding principles. Furthermore, introducing low-level optimizations can often lead to unintuitive behaviors and difficult to correctly analyze scenarios, which would have made more difficult to carry out a really objective comparison between the heuristics. Most importantly, these optimizations are not strictly related to a specific way a BVH is build, and can therefore be implemented for state-of-the-art BVH builders as well as for ours.
+If we tried to build an extremely performant BVH builder, we would have needed to introduce a lot of low-level optimizations. For example, we would have needed to take into account memory access patterns to increase data locality, as introduced in this paper \cite{TODO}; or we would have needed to build an algorithm running on the GPU. Getting these optimizations right would have required a lot of very specific expertise and trial and error, therefore we would have needed to use an existing BVH builder and modify it, losing the full control over it, which was one of our guiding principles. Furthermore, introducing low-level optimizations can often lead to unintuitive behaviors and difficult to correctly analyze scenarios, which would have made it more difficult to carry out a really objective comparison between the heuristics. Most importantly, these optimizations are not strictly related to a specific way a BVH is built, and can therefore be implemented for state-of-the-art BVH builders as well as for ours.
 
 \section{Test Scenes} \label{sec:test_scenes}
 We will now present the eight test scenes and the reasons why we selected each one of them.
@@ -1869,11 +1869,11 @@ We will now present the eight test scenes and the reasons why we selected each o
 	\end{figure}
 \end{minipage} \hfill
 \begin{minipage}{0.55\textwidth}
-	Suzanne represents a small and lowpoly object, with continuous surfaces almost everywhere. The goal is to try PAH on stand-alone objects, and SPFH again in a scenario where it is difficult to effectvely cut off space.
+	Suzanne represents a small and low-poly object, with continuous surfaces almost everywhere. The goal is to try PAH on stand-alone objects, and SPFH again in a scenario where it is difficult to effectively cut off space.
 \end{minipage}
 
 \begin{minipage}{0.55\textwidth}
-	The cottage presents a scene with a big but regular object. Triangles can reach very big dimensions, therefore we use it to test PAH in a scenario with a few big triangles. The same challenge is presented for SPFH: the presence of big triangles makes it difficult to create splits with a small overlapping.
+	The cottage presents a scene with a big but regular object. Triangles can reach very big dimensions, therefore we use it to test PAH in a scenario with a few big triangles. The same challenge is presented for SPFH: the presence of big triangles makes it difficult to create splits with small overlaps.
 \end{minipage}
 \hfill \begin{minipage}{0.4\textwidth}
 	\begin{figure}[H]
@@ -1913,7 +1913,7 @@ We will now present the eight test scenes and the reasons why we selected each o
 	\end{figure}
 \end{minipage} \hfill
 \begin{minipage}{0.55\textwidth}
-	The crowd test scene presents many human like people, with a rather high polycount. The scene was primarily used to observe the behavior of SPFH in a detailed scene, and also to analyze PAH in a scenario with many organic and complex shapes, where AABBs tend to overlap.
+	The crowd test scene presents many human-like people, with a rather high polycount. The scene was primarily used to observe the behavior of SPFH in a detailed scene, and also to analyze PAH in a scenario with many organic and complex shapes, where AABBs tend to overlap.
 \end{minipage}
 
 \begin{minipage}{0.55\textwidth}
@@ -1930,7 +1930,7 @@ We will now present the eight test scenes and the reasons why we selected each o
 We decided to test each one of these scenes in a scenario with a single influence area covering the whole geometry. The influence areas we used were both plane and point influence areas, and we decided to carry out tests with different orientations of the influence areas. In particular, we chose four different orientations for each scene and for both plane and point influence areas:
 \begin{description}
 	\item[Parallel] In this case the main rays direction of the influence area is parallel to one of the three cartesian axes. This scenario should, in principle, be the best one in general for AABB-based BVHs, and in particular for SPFH.
-	\item[15 degrees] The main rays direction of the influence area is parallel to one of the three cartesian planes, and forms an angle of 15 degrees with one of the two axes generating the parallel plane. In this scenario, SPFH has a clear best splitting plane (parallel to the rays), and has a clear second best option (the plane forming a 15 degree angle with the rays).
+	\item[15 degrees] The main rays direction of the influence area is parallel to one of the three cartesian planes, and forms an angle of 15 degrees with one of the two axes generating the parallel plane. In this scenario, SPFH has a clear best splitting plane (parallel to the rays), and has a clear second-best option (the plane forming a 15 degrees angle with the rays).
 	\item[45 degrees] The main rays direction of the influence area is parallel to one of the three cartesian planes, and forms an angle of 45 degrees with one of the two axes generating the parallel plane. SPFH has only one clear best direction for splitting a node (parallel to the rays). This means that, based on the BVH properties chosen (section \ref{sec:bvh}), it may often happen to use the fallback strategy, namely SAH and LSPH.
 	\item[Oblique] The main rays direction is not parallel to any of the three cartesian planes. This scenario is the most challenging for SPFH, because it is possible that all three splitting planes are not a good option. For this reason, this scenario can be the best suited to tune the properties of the BVH.
 \end{description}
@@ -1944,7 +1944,7 @@ We decided to test each one of these scenes in a scenario with a single influenc
 In this section we will present the tests we performed to compare our heuristics with state-of-the-art heuristics. We will explain why we carried out each experiment and comment on the results.
 
 \subsection{PAH versus SAH Precision} \label{ssec:pah_vs_sah_precision}
-The first test we performed is aimed at comparing the precision of projected area heuristic to surface area heuristic. As explained in section \ref{ssec:traversal}, we have developed a function to compute the real cost of traversing a BVH for a specific ray. We can then use this method to compute an average cost of traversing the BVH for a certain amount of rays. 
+The first test we performed is aimed at comparing the precision of projected area heuristic to surface area heuristic. As explained in section \ref{ssec:traversal}, we have developed a function to compute the real cost of traversing a BVH for a specific ray. We can then use this method to compute the average cost of traversing the BVH for a certain amount of rays. 
 
 In this test, we build a BVH with PAH over a certain influence area. Then, we use a ray caster (section \ref{ssec:ray_caster}) associated with the same influence area to generate the rays to traverse the scene with. We use these rays to compute the average real traversal cost of the BVH, and compare it with the cost predicted by using PAH. We express this comparison as percentage error:
 
@@ -1963,9 +1963,9 @@ To present the results, we decided to aggregate data based on the influence area
 
 As it is possible so observe from the chart \ref{fig:pah_accuracy_chart}, the error of PAH is always smaller than SAH's. On average PAH error is $7\%$, and SAH's $52\%$.
 
-It is also possible to observe that PAH is more precise when the influence area is a plane influence area. In this case the average error is $2\%$, compared to the $12\%$ error in case of point influence areas. This is interesting because it is the opposite tendency with what happens with SAH. We believe that SAH behaves better with point influence areas because a radial ray distribution has multiple ray directions, whereas a parallel ray distribution has only one. This makes it so that a radial ray distribution better approximates the second SAH hypotesis compared to a parallel one (section \ref{sec:sah_hypotheses_fall}).
+It is also possible to observe that PAH is more precise when the influence area is a plane influence area. In this case the average error is $2\%$, compared to the $12\%$ error in case of point influence areas. This is interesting because it is the opposite tendency with what happens with SAH. We believe that SAH behaves better with point influence areas because a radial ray distribution has multiple ray directions, whereas a parallel ray distribution has only one. This makes it so that a radial ray distribution better approximates the second SAH hypothesis compared to a parallel one (section \ref{sec:sah_hypotheses_fall}).
 
-The results we obtained are in line with our thesis: since in the test scene the ray distribution is not random, but follows a parallel or radial pattern, the second SAH hypotesis doesn't hold. Our heuristic, instead, uses as ray distribution hypotesis that rays naturally organize themselves in parallel or radial patterns, due to light importance sampling (section \ref{sec:monte_carlo_and_variance_reduction_techniques}). Since, in our test cases, we artificially added parallel and radial distributions, PAH is able to estimate better the cost of the BVH.
+The results we obtained are in line with our thesis: since in the test scene the ray distribution is not random, but follows a parallel or radial pattern, the second SAH hypothesis doesn't hold. Our heuristic, instead, uses as ray distribution hypothesis that rays naturally organize themselves in parallel or radial patterns, due to light importance sampling (section \ref{sec:monte_carlo_and_variance_reduction_techniques}). Since, in our test cases, we artificially added parallel and radial distributions, PAH is able to estimate better the cost of the BVH.
 
 \subsection{Projected Area Culling} \label{ssec:projected_area_culling}
 During the first iteration of the previous test, we got worse results for PAH: the average error for scenes with plane influence areas was $18\%$, and with point influence areas $31\%$. The reason behind these results was a subtle error in the way the projected area of the AABBs on the near plane of the viewing volume was computed.
@@ -1995,7 +1995,7 @@ The set up for this test is exactly the same described in section \ref{ssec:pah_
 	\item The average time per node to compute the best splitting plane, both for SPFH and LSPH.
 \end{itemize}
 
-$faster_{PAH+SPFH}$ and $faster \; full$ are indicators agnostic to the hardware used. Whereas the avarage times depends on the hardware on which the algorithm is ran on. As we already stated in the introduction to this chapter, our focus is to compare the heuristics, therefore we are not interested in the absolute values, but in their relative magnitudes.
+$faster_{PAH+SPFH}$ and $faster \; full$ are indicators agnostic to the hardware used. Whereas the average times depends on the hardware on which the algorithm is run on. As we already stated in the introduction to this chapter, our focus is to compare the heuristics, therefore we are not interested in the absolute values, but in their relative magnitudes.
 
 The properties (section \ref{sec:bvh}) for the PAH BVHs are set to default values we found out work well empirically. In section \ref{TODO} we carry out a comparison among different choices of these values:
 
