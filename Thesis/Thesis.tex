@@ -2605,6 +2605,87 @@ In the last formula we consider $P_0 = P_{n+1}$.
 \chapter{Multiple Importance Sampling} \label{ch:mis}
 TODO
 
+\chapter{Sphere Cap Sampling} \label{ch:sphere_cap_sampling}
+In this appendix we explain how we implemented the uniform random sampling from a sphere cap, given an angle $\alpha$ and a radius $R$ \ref{fig:sphere_cap}. This method is used to implement the circular sphere cap ray caster \ref{ssec:ray_caster}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth*\real{0.4}]{Images/TODO.png} 
+    \caption{A sphere cap of angle $\alpha$ and radius $R$.}
+    \label{fig:sphere_cap}
+\end{figure}
+
+The idea is to rotate a vector along two axes:
+\begin{enumerate}
+	\item First, we rotate the vector along one of the axes perpendicular to it. We call this \textit{yaw}, and its values range from $0$ to $\alpha$.
+	\item Then we rotate the new vector we got along the axis parallel to the original vector. We call this \textit{roll}, and its values range from $0$ to $2\pi$.
+\end{enumerate}
+
+The issue with this method is how we sample the first random rotation, the yaw. Indeed we cannot use uniform sampling. If we used uniform sampling, we would get more samples in the region close to the center of the sphere cap, and fewer and fewer samples the more we get far from it. The reason behind this can be easily intuited by looking at figure \ref{fig:concentric_circles}: the more we step away from the center of the cap, the more the circles get bigger. If we used uniform sampling, there would be the same probability for the random sample to be placed in any of the circles. However, this means that inner circles would have a bigger sample-density than outer ones.
+
+To solve this issue, we must sample the yaw with a PDF proportional to the rate of increase of the circumferences. In other words, since we want to keep the sample-density constant, if a circumference is twice as long as another one, it must receive twice the samples.
+
+Given a sphere of ray $R$ and oriented toward $\overrightarrow{u}$, the length of the circumference passing through a the point of the sphere intersected by a vector forming with $\overrightarrow{u}$ an angle $\alpha$, can be obtained by using this formula:
+
+$$C(\alpha) = R \cdot sin(\alpha) \cdot 2\pi$$
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth*\real{0.4}]{Images/TODO.png} 
+    \caption{By using trigonometry we can obtain the length of the radius of the circle.}
+    \label{fig:radius_from_angle}
+\end{figure}
+
+This means that the yaw angle must be sampled according to a PDF proportional to this function.
+
+In order to do the sampling, we adopted the inverted CDF method \cite{TODO}. This method can be summarized in four steps:
+\begin{enumerate}
+	\item Normalize the function ($C(\alpha)$ in this case) to obtain the PDF.
+	\item Compute the CDF from the PDF.
+	\item Compute the inverse function to the CDF, called ICDF.
+	\item Now, to sample based on the original PDF, it is sufficient to obtain a uniform sample and plug it into the ICDF.
+\end{enumerate}
+
+In our case, the first thing to do is to compute the normalization factor of $C(\alpha)$. To obtain it is is sufficient to integrate the function from $0$ to $\alpha$:
+
+$$k_{norm}(a)=\int_{0}^{\alpha} C(a) da$$
+
+One problem is that we cannot compute this integral in our C++ code each time, because it would require too much computation effort. Therefore we decided to approximate the normalization factor with a similar closed-form function. In particular, with trial and error, we obtained this function, which approximates the integral function well, as it can be seen in figure \ref{fig:normalization_factor_approx}:
+
+$$k_{approx}(a) = 2.85\cdot a^{1.81}$$
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth*\real{0.3}]{Images/norm_factor_approx.png} 
+    \caption{In red the exact function, in purple the approximation.}
+    \label{fig:normalization_factor_approx}
+\end{figure}
+
+We can now compute the PDF:
+
+$$pdf(x) = \frac{C(x)}{f_approx(\alpha)}$$
+
+The next step is to compute the CDF from the PDF. The CDF is obtained by integrating the PDF. In our case the CDF has form:
+
+$$-\frac{2\pi \cdot R}{k_{approx}} \cdot cos(x) + \frac{2\pi \cdot R}{k_{approx}}$$
+
+The third step is to compute the inverted CDF, which in our case is:
+
+$$icdf(x) = arccos\Bigg(\frac{\frac{2\pi \cdot R}{k_{approx}}-x}{\frac{2\pi \cdot R}{k_{approx}}}\Bigg)$$
+
+Now that we obtained the ICDF, we can get uniform random samples $X_{uniform}$, and obtained the random samples according to the PDF in this way:
+
+$$X_{pdf} = icdf(X_{uniform})$$
+
+Until now we have shown how to get the yaw rotation angle. The second step to sample a point uniformly from a sphere cap is to rotate the new vector by a uniform random angle in the range $o$ to $2\pi$. The axis of rotation is parallel to the original vector.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth*\real{0.5}]{Images/TODO.png} 
+    \caption{The more we get far from the center of the sphere cap, the more the circles get bigger.}
+    \label{fig:concentric_circles}
+\end{figure}
+
 % === Lists ===
 \listoffigures
 \listoftables
