@@ -41,7 +41,10 @@ TopLevel::TraversalResults pah::TopLevel::traverse(const Ray& ray) const {
 	TraversalResults res{};
 	TIME(TimeLogger timeLogger{ [&res](auto duration) {res.traversalTime = duration; } });
 
+	TIME(TimeLogger timeLoggerSearch{ [&res](auto duration) {res.affineBvhSearchTime = duration; } });
 	const auto& relevantBvhs = containedIn(ray.getOrigin()); //here we have the BVHs where the starting point of the ray is contained (we don't know if the direction is relevant tho)
+	TIME(timeLoggerSearch.stop());
+
 	res.totalBvhs = relevantBvhs.size();
 
 	for (const auto& bvh : relevantBvhs) {

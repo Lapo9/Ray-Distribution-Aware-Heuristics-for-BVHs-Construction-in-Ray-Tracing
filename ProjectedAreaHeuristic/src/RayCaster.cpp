@@ -32,6 +32,7 @@ CumulativeRayCasterResults& pah::CumulativeRayCasterResults::operator+=(const Cu
 	intersectionTestsWithTrianglesWhenHitNonFallbackTotal += rhs.intersectionTestsWithTrianglesWhenHitNonFallbackTotal; 
 	TIME(timeTraversingTotal += rhs.timeTraversingTotal;);
 	TIME(timeTraversingOnlyBvhsTotal += rhs.timeTraversingOnlyBvhsTotal;);
+	TIME(affineBvhSearchTimeTotal += rhs.affineBvhSearchTimeTotal;);
 
 	return *this;
 }
@@ -67,6 +68,7 @@ CumulativeRayCasterResults& pah::CumulativeRayCasterResults::operator+=(const Ra
 	intersectionTestsWithTrianglesWhenHitNonFallbackTotal += rhs.intersectionTestsWithTrianglesWhenHitNonFallbackTotal; 
 	TIME(timeTraversingTotal += rhs.timeTraversingTotal;);
 	TIME(timeTraversingOnlyBvhsTotal += rhs.timeTraversingOnlyBvhsTotal;);
+	TIME(affineBvhSearchTimeTotal += rhs.affineBvhSearchTimeTotal;);
 
 	return *this;
 }
@@ -97,6 +99,7 @@ RayCasterResults& pah::RayCasterResults::operator+=(const TopLevel::TraversalRes
 	}
 	TIME(timeTraversingTotal += rhs.traversalTime;);
 	TIME(timeTraversingOnlyBvhsTotal += rhs.bvhOnlyTraversalTime;);
+	TIME(affineBvhSearchTimeTotal += rhs.affineBvhSearchTime;);
 
 	if (rhs.hit()) {
 		intersectionTestsWhenHitTotal += rhs.intersectionTestsWhenHit;
@@ -155,6 +158,7 @@ CumulativeRayCasterResults pah::operator+(const RayCasterResults& lhs, const Ray
 	crcr.traversalCostForBvh.insert_range(lhs.traversalCostForBvh); crcr.traversalCostForBvh.insert_range(rhs.traversalCostForBvh);
 	TIME(crcr.timeTraversingTotal = lhs.timeTraversingTotal + rhs.timeTraversingTotal;);
 	TIME(crcr.timeTraversingOnlyBvhsTotal = lhs.timeTraversingOnlyBvhsTotal + rhs.timeTraversingOnlyBvhsTotal;);
+	TIME(crcr.affineBvhSearchTimeTotal = lhs.affineBvhSearchTimeTotal + rhs.affineBvhSearchTimeTotal;);
 
 	return crcr;
 }

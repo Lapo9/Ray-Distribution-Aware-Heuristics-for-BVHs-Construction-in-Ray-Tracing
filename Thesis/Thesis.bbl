@@ -1,4 +1,4 @@
-\begin{thebibliography}{46}
+\begin{thebibliography}{47}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -185,10 +185,15 @@ TODO.
 \newblock Todo.
 \newblock \emph{TODO}, TODO\penalty0 (TODO):\penalty0 TODO, TODO.
 
-\bibitem[Veach()]{monte_carlo_integration}
+\bibitem[Veach({\natexlab{a}})]{mis}
+E.~Veach.
+\newblock Chapter 9: Multiple importance sampling.
+\newblock \url{https://graphics.stanford.edu/courses/cs348b-03/papers/veach-chapter9.pdf}, {\natexlab{a}}.
+
+\bibitem[Veach({\natexlab{b}})]{monte_carlo_integration}
 E.~Veach.
 \newblock Chapter 2: Monte carlo integration.
-\newblock \url{https://www.ime.usp.br/~jmstern/wp-content/uploads/2020/04/EricVeach2.pdf}.
+\newblock \url{https://www.ime.usp.br/~jmstern/wp-content/uploads/2020/04/EricVeach2.pdf}, {\natexlab{b}}.
 
 \bibitem[Veach(1998{\natexlab{a}})]{monte_carlo_convergence}
 E.~Veach.

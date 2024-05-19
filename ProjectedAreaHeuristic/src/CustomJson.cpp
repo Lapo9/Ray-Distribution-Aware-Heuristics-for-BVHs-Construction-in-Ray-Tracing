@@ -192,6 +192,8 @@ void pah::to_json(json& j, const CumulativeRayCasterResults& crcr) {
 	TIME(j["general"]["timeTraversingOnlyBvhsTotal"] = crcr.timeTraversingOnlyBvhsTotal.count(););
 	TIME(j["general"]["timeTraversingOnlyBvhsAveragePerRay"] = crcr.timeTraversingOnlyBvhsAveragePerRay().count(););
 	TIME(j["general"]["timeTraversingOnlyBvhsAveragePerBvh"] = crcr.timeTraversingOnlyBvhsAveragePerBvh().count(););
+	TIME(j["general"]["affineBvhSearchTimeTotal"] = crcr.affineBvhSearchTimeTotal.count(););
+	TIME(j["general"]["affineBvhSearchTimePerRay"] = crcr.affineBvhSearchTimeAveragePerRay().count(););
 	
 	j["total"]["bvhsTraversed"]["bvhsTraversedTotal"] = crcr.bvhsTraversedTotal;
 	j["total"]["bvhsTraversed"]["bvhsTraversedAveragePerRay"] = crcr.bvhsTraversedAveragePerRay();

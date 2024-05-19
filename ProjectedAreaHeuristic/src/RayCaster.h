@@ -26,6 +26,7 @@ namespace pah {
 		TIME(DurationMs timeTraversingTotal;); /**< @brief The sum of the traversal times of all the rays. */
 		TIME(DurationMs timeTraversingOnlyBvhsTotal;); /**< @brief How much time it took to do the BVHs traversal. TopLevel structure traversal overhead is not included. */
 		TIME(DurationMs timeTotal;); /**< @brief The total time of casting all the rays. It can be sligthly more than @p timeTotalTraversing */
+		TIME(DurationMs affineBvhSearchTimeTotal;); /**< @brief Time spent in traversing the top level structure to find the potentially affine BVHs.*/
 
 		float hitsPercentage() const { return (float)hitsTotal / raysAmount; }
 		float missesPercentage() const { return (float)missesTotal / raysAmount; }
@@ -35,6 +36,7 @@ namespace pah {
 		float nonFallbackBvhSearchesPercentage() const { return nonFallbackBvhSearches() / (float)raysAmount; }
 		std::unordered_map<const Bvh*, std::pair<float, int>> traversalCostForBvhPerRay() const { auto res = traversalCostForBvh; for (auto& e : res) e.second.first /= e.second.second; return res; }
 		TIME(DurationMs timeTraversingAveragePerRay() const { return timeTraversingTotal / (float)raysAmount; })
+		TIME(DurationMs affineBvhSearchTimeAveragePerRay() const { return affineBvhSearchTimeTotal / (float)raysAmount; })
 		TIME(DurationMs timeTraversingOnlyBvhsAveragePerRay() const { return timeTraversingOnlyBvhsTotal / (float)raysAmount; })
 		TIME(DurationMs timeTraversingAveragePerBvh() const { return timeTraversingTotal / (float)bvhsTraversedTotal; })
 		TIME(DurationMs timeTraversingOnlyBvhsAveragePerBvh() const { return timeTraversingOnlyBvhsTotal / (float)bvhsTraversedTotal; })
@@ -92,6 +94,8 @@ namespace pah {
 		std::unordered_map<const Bvh*, std::pair<float, int>> traversalCostForBvh;
 		TIME(DurationMs timeTraversingTotal;);
 		TIME(DurationMs timeTraversingOnlyBvhsTotal;);
+		TIME(DurationMs affineBvhSearchTimeTotal;); /**< @brief Time spent in traversing the top level structure to find the potentially affine BVHs.*/
+
 
 		float hitsPercentage() const { return (float)hitsTotal / raysAmount; }
 		float missesPercentage() const { return (float)missesTotal / raysAmount; }
@@ -102,6 +106,7 @@ namespace pah {
 		std::unordered_map<const Bvh*, std::pair<float, int>> traversalCostForBvhPerRay() const { auto res = traversalCostForBvh; for (auto& e : res) e.second.first /= e.second.second; return res; }
 		TIME(DurationMs timeTraversingAveragePerRay() const { return timeTraversingTotal / (float)raysAmount; });
 		TIME(DurationMs timeTraversingOnlyBvhsAveragePerRay() const { return timeTraversingOnlyBvhsTotal / (float)raysAmount; });
+		TIME(DurationMs affineBvhSearchTimeAveragePerRay() const { return affineBvhSearchTimeTotal / (float)raysAmount; })
 		TIME(DurationMs timeTraversingAveragePerBvh() const { return timeTraversingTotal / (float)bvhsTraversedTotal; });
 		TIME(DurationMs timeTraversingOnlyBvhsAveragePerBvh() const { return timeTraversingOnlyBvhsTotal / (float)bvhsTraversedTotal; });
 

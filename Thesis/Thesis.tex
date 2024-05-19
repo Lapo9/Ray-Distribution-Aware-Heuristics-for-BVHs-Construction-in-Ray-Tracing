@@ -619,7 +619,7 @@ Using BRDF sampling or light sampling in isolation as variance reduction PDFs ca
 
 On the contrary, in a scene with rough materials (such as concrete) and with few distant light sources, using light sampling would be beneficial, since many of the rays would be cast toward a light, instead of toward the void.
 
-To remedy the problem of choosing the right importance sampling technique based on the portion of the scene, a new technique has been developed, called multiple importance sampling (MIS). Since the technique is an extension to importance sampling, it will be described in appendix \ref{ch:mis}.
+To remedy the problem of choosing the right importance sampling technique based on the portion of the scene, a new technique has been developed, called multiple importance sampling (MIS) \cite{mis}.
 
 The key take away from this section is that with importance sampling we use a non-uniform PDF to sample probe rays from. This creates artifacts in the ray distribution in the scene. In particular, if next event estimation is used, a big part of the rays will tend to go toward light sources. In chapter \ref{ch:projected_area_heuristic} we will study how these artifacts in the ray distribution can be exploited to design a faster technique to traverse a bounding volume hierarchy, which is the main subject of the next section \ref{sec:ray_tracing_acceleration_structures}.
 
@@ -2156,12 +2156,13 @@ Given the unexpected results presetned in the previous section, we decided to fu
 The results in chart \ref{fig:pah_isolation} shows that projected area heuristic produces worse BVHs compared to surface area heuristic.
 
 \section{PAH and SPFH versus SAH and LSPH BVH Quality}
-- PAH without SPFH is not good (-21\% average for plane)
-	- Graph of summary PAH without fallback faster plane and point longest vs plane and point SAH + SPFH
-
-- SPFH actually helps at reducing overlapping, but only at higher levels (57\% vs 68\%)
-- Overlapping at higher levels is related to BVH quality (as already mentioned by an article)
-	- Graph of detailed overlapping percentage vs PAH without fallback quality for everything
+- PAH is much more precise than SAH at predicting the cost of a BVH.
+- Projected area culling
+- PAH and SPFH produce higher quality BVHs than SAH and LSPH. We tried this with these BVH properties: xyz. We will now analyze PAH and SPFH in isolation.
+- PAH doesn't produce better BVHs than SAH if LSPH is used. This happens because, in case the splitting plane is not built to minimize overlapping, PAH produces a very big child and a very small one, and they completely overlap. PAH is also far slower than SAH.
+- SPFH produces higher quality BVHs than LSPH with both SAH ans PAH. We used these properties for the thresholds: xyz. With these properties, for each node, on average the splitting phase is done x.y times. This number is higher in scenarios where there isn't a clear cutting orientation because the fallback is often used. For this same reason, the gain of SPFH over LSPH is reduced for oblique and 45 test cases. SPFH is not slower than LSPH.
+- Breakeven hit percentage
+- The projected overlapping is a good metric to explain why SPFH works. We compute how much 2 children overlap (explain formula). We decided to compute the overlapping at different levels of the BVH. At high levels SPFH produces lower overlapping percentages than LSPH. The overlapping is directly correlated with BVH quality. At lower levels the overlapping is not reduced. This means we can use SPFH on higher levels and then fall back to LSPH.
 
 - What happens if we change the BVHs properties?
 	- Lowering the acceptable threshold leads to better BVHs, but it increases construction cost because fallback construction is used more often
@@ -2602,32 +2603,36 @@ Given a polygon with vertices $P_0, P_1, ..., P_n$, where each vertex has coordi
 
 In the last formula we consider $P_0 = P_{n+1}$.
 
-\chapter{Multiple Importance Sampling} \label{ch:mis}
-TODO
-
 \chapter{Sphere Cap Sampling} \label{ch:sphere_cap_sampling}
-In this appendix we explain how we implemented the uniform random sampling from a sphere cap, given an angle $\alpha$ and a radius $R$ \ref{fig:sphere_cap}. This method is used to implement the circular sphere cap ray caster \ref{ssec:ray_caster}.
+In this appendix we explain how we implemented the uniform random sampling from a sphere cap, given an angle $\gamma$ and a radius $R$ (figure \ref{fig:sphere_cap}). This method is used to implement the circular sphere cap ray caster we talked about in section \ref{ssec:ray_caster}.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth*\real{0.4}]{Images/TODO.png} 
-    \caption{A sphere cap of angle $\alpha$ and radius $R$.}
+    \caption{A sphere cap of angle $\gamma$ and radius $R$.}
     \label{fig:sphere_cap}
 \end{figure}
 
-The idea is to rotate a vector along two axes:
+In order to sample uniformly from the sphere cap, the idea is to rotate a vector starting from the center of the sphere along two axes:
 \begin{enumerate}
-	\item First, we rotate the vector along one of the axes perpendicular to it. We call this \textit{yaw}, and its values range from $0$ to $\alpha$.
-	\item Then we rotate the new vector we got along the axis parallel to the original vector. We call this \textit{roll}, and its values range from $0$ to $2\pi$.
+	\item First, we rotate the vector along one of the axes perpendicular to it. We call this rotation \textit{yaw}, and its values range from $0$ to $\gamma$.
+	\item Then, we rotate the new vector we got along the axis parallel to the original vector. We call this rotation \textit{roll}, and its values range from $0$ to $2\pi$.
 \end{enumerate}
 
-The issue with this method is how we sample the first random rotation, the yaw. Indeed we cannot use uniform sampling. If we used uniform sampling, we would get more samples in the region close to the center of the sphere cap, and fewer and fewer samples the more we get far from it. The reason behind this can be easily intuited by looking at figure \ref{fig:concentric_circles}: the more we step away from the center of the cap, the more the circles get bigger. If we used uniform sampling, there would be the same probability for the random sample to be placed in any of the circles. However, this means that inner circles would have a bigger sample-density than outer ones.
+The issue with this method is how we sample the first random rotation, the yaw. Indeed we cannot use uniform sampling. If we used uniform sampling, we would get more samples in the region close to the center of the sphere cap, and fewer and fewer samples the more we get far from it. The reason behind this can be easily intuited by looking at figure \ref{fig:concentric_circles}: the more we step away from the center of the cap, the more the circumferences get bigger. If we used uniform sampling, there would be the same probability for the random sample to be placed in any of the circumferences. However, this means that inner circumferences would have a bigger sample-density than outer ones.
 
-To solve this issue, we must sample the yaw with a PDF proportional to the rate of increase of the circumferences. In other words, since we want to keep the sample-density constant, if a circumference is twice as long as another one, it must receive twice the samples.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth*\real{0.5}]{Images/TODO.png} 
+    \caption{The more we get far from the center of the sphere cap, the more the circles get bigger.}
+    \label{fig:concentric_circles}
+\end{figure}
 
-Given a sphere of ray $R$ and oriented toward $\overrightarrow{u}$, the length of the circumference passing through a the point of the sphere intersected by a vector forming with $\overrightarrow{u}$ an angle $\alpha$, can be obtained by using this formula:
+To solve this issue, we must sample the yaw with a PDF proportional to the rate of increase of the circumferences, which is a function of the yaw angle. In other words, since we want to keep the sample-density constant, if a circumference is twice as long as another one, it must receive twice the samples.
 
-$$C(\alpha) = R \cdot sin(\alpha) \cdot 2\pi$$
+Given a sphere of ray $R$ and oriented toward $\overrightarrow{u}$, the length of the circumference passing through the point of the sphere intersected by a vector forming with $\overrightarrow{u}$ an angle $\gamma$, can be obtained by using this formula:
+
+$$C(\gamma) = R \cdot sin(\gamma) \cdot 2\pi$$
 
 \begin{figure}[H]
     \centering
@@ -2640,40 +2645,40 @@ This means that the yaw angle must be sampled according to a PDF proportional to
 
 In order to do the sampling, we adopted the inverted CDF method \cite{TODO}. This method can be summarized in four steps:
 \begin{enumerate}
-	\item Normalize the function ($C(\alpha)$ in this case) to obtain the PDF.
+	\item Normalize the function ($C(\gamma)$ in this case) to obtain the PDF.
 	\item Compute the CDF from the PDF.
 	\item Compute the inverse function to the CDF, called ICDF.
 	\item Now, to sample based on the original PDF, it is sufficient to obtain a uniform sample and plug it into the ICDF.
 \end{enumerate}
 
-In our case, the first thing to do is to compute the normalization factor of $C(\alpha)$. To obtain it is is sufficient to integrate the function from $0$ to $\alpha$:
+In our case, the first thing to do is to compute the normalization factor of $C(\gamma)$. To obtain it is is sufficient to integrate the function from $0$ to $\gamma$:
 
-$$k_{norm}(a)=\int_{0}^{\alpha} C(a) da$$
+$$k_{norm}(\gamma)=\int_{0}^{\gamma} C(a) da$$
 
 One problem is that we cannot compute this integral in our C++ code each time, because it would require too much computation effort. Therefore we decided to approximate the normalization factor with a similar closed-form function. In particular, with trial and error, we obtained this function, which approximates the integral function well, as it can be seen in figure \ref{fig:normalization_factor_approx}:
 
-$$k_{approx}(a) = 2.85\cdot a^{1.81}$$
+$$k_{approx}(\gamma) = 2.85\cdot a^{1.81}$$
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.3}]{Images/norm_factor_approx.png} 
+    \includegraphics[width=\textwidth*\real{0.2}]{Images/norm_factor_approx.png} 
     \caption{In red the exact function, in purple the approximation.}
     \label{fig:normalization_factor_approx}
 \end{figure}
 
 We can now compute the PDF:
 
-$$pdf(x) = \frac{C(x)}{f_approx(\alpha)}$$
+$$pdf(x) = \frac{C(x)}{k_{approx}(\gamma)}$$
 
 The next step is to compute the CDF from the PDF. The CDF is obtained by integrating the PDF. In our case the CDF has form:
 
-$$-\frac{2\pi \cdot R}{k_{approx}} \cdot cos(x) + \frac{2\pi \cdot R}{k_{approx}}$$
+$$cdf(x) = -\frac{2\pi \cdot R}{k_{approx}(\gamma)} \cdot cos(x) + \frac{2\pi \cdot R}{k_{approx}(\gamma)}$$
 
 The third step is to compute the inverted CDF, which in our case is:
 
-$$icdf(x) = arccos\Bigg(\frac{\frac{2\pi \cdot R}{k_{approx}}-x}{\frac{2\pi \cdot R}{k_{approx}}}\Bigg)$$
+$$icdf(x) = arccos\Bigg(\frac{\frac{2\pi \cdot R}{k_{approx}(\gamma)}-x}{\frac{2\pi \cdot R}{k_{approx}(\gamma)}}\Bigg)$$
 
-Now that we obtained the ICDF, we can get uniform random samples $X_{uniform}$, and obtained the random samples according to the PDF in this way:
+Now that we obtained the ICDF, we can get uniform random samples $X_{uniform}$, and compute the random samples according to the PDF in this way:
 
 $$X_{pdf} = icdf(X_{uniform})$$
 
@@ -2681,9 +2686,9 @@ Until now we have shown how to get the yaw rotation angle. The second step to sa
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.5}]{Images/TODO.png} 
-    \caption{The more we get far from the center of the sphere cap, the more the circles get bigger.}
-    \label{fig:concentric_circles}
+    \includegraphics[width=\textwidth*\real{0.45}]{Images/sphere_cap_samples.png} 
+    \caption{Uniform random samples on a sphere cap.}
+    \label{fig:samples_sphere_cap}
 \end{figure}
 
 % === Lists ===

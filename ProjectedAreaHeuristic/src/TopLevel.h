@@ -16,7 +16,7 @@ namespace pah {
 	public:
 		//related classes
 		struct TraversalResults {
-			int bvhsTraversed; /**< How many @p Bvh s we traversed before fnding the hit. */
+			int bvhsTraversed; /**< How many @p Bvh s we traversed before finding the hit. */
 			int totalBvhs; /**< How many potential @p Bvh s we could have traversed. */
 			int intersectionTestsTotal;
 			int intersectionTestsWithNodes;
@@ -39,6 +39,7 @@ namespace pah {
 			int intersectionTestsWithTrianglesWhenHitNonFallback; 
 			TIME(DurationMs traversalTime;);
 			TIME(DurationMs bvhOnlyTraversalTime;);
+			TIME(DurationMs affineBvhSearchTime;); /**< Time spent in traversing the top level structure to find the potentially affine BVHs.*/
 
 			bool hit() const {
 				return closestHit != nullptr;

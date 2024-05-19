@@ -19,49 +19,50 @@ Warning--empty year in monte_carlo_estimators_scratchapixel
 Warning--empty year in monte_carlo_properties
 Warning--empty year in ray_triangle_intersection
 Warning--empty year in lotus
+Warning--empty year in mis
 Warning--empty year in monte_carlo_integration
 Warning--empty publisher in path_guiding
 Warning--can't use both volume and number fields in ray_coherency
 Warning--empty year in obb_construction
-You've used 46 entries,
+You've used 47 entries,
             2773 wiz_defined-function locations,
-            843 strings with 12053 characters,
-and the built_in function-call counts, 20475 in all, are:
-= -- 1822
-> -- 1089
-< -- 44
-+ -- 379
-- -- 330
-* -- 1476
-:= -- 3067
-add.period$ -- 156
-call.type$ -- 46
-change.case$ -- 244
+            846 strings with 12174 characters,
+and the built_in function-call counts, 20780 in all, are:
+= -- 1849
+> -- 1099
+< -- 45
++ -- 384
+- -- 333
+* -- 1495
+:= -- 3113
+add.period$ -- 159
+call.type$ -- 47
+change.case$ -- 248
 chr.to.int$ -- 43
-cite$ -- 111
-duplicate$ -- 1004
-empty$ -- 1773
-format.name$ -- 393
-if$ -- 4387
-int.to.chr$ -- 4
+cite$ -- 114
+duplicate$ -- 1019
+empty$ -- 1805
+format.name$ -- 397
+if$ -- 4452
+int.to.chr$ -- 5
 int.to.str$ -- 1
 missing$ -- 36
-newline$ -- 249
-num.names$ -- 184
-pop$ -- 621
+newline$ -- 254
+num.names$ -- 188
+pop$ -- 633
 preamble$ -- 1
-purify$ -- 201
+purify$ -- 204
 quote$ -- 0
-skip$ -- 752
+skip$ -- 761
 stack$ -- 0
-substring$ -- 590
-swap$ -- 155
+substring$ -- 592
+swap$ -- 158
 text.length$ -- 16
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 491
-warning$ -- 19
-while$ -- 190
+type$ -- 502
+warning$ -- 20
+while$ -- 193
 width$ -- 0
-write$ -- 601
-(There were 20 warnings)
+write$ -- 614
+(There were 21 warnings)
