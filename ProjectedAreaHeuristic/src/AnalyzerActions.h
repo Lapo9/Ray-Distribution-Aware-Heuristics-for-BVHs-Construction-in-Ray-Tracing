@@ -141,8 +141,8 @@ namespace pah::analyzerActions {
 
 			float overlappingPercentage = smallestChildrenArea == 0 ? 0.f : overlappingChildrenArea / smallestChildrenArea;
 			float overlappingPercentageCulled = smallestChildrenAreaCulled == 0 ? 0.f : overlappingChildrenAreaCulled / smallestChildrenAreaCulled;
-			localLog["metrics"]["childrenOverlappingPercentage"+maxLevelToConsider] = overlappingPercentage;
-			localLog["metrics"]["childrenOverlappingPercentageCulled"+maxLevelToConsider] = overlappingPercentageCulled;
+			localLog["metrics"]["childrenOverlappingPercentage" + std::to_string(maxLevelToConsider)] = overlappingPercentage;
+			localLog["metrics"]["childrenOverlappingPercentageCulled" + std::to_string(maxLevelToConsider)] = overlappingPercentageCulled;
 		}
 	}
 
@@ -219,9 +219,10 @@ namespace pah::analyzerActions {
 		/**
 		 * @brief Computes the total percentage of overlapping area among siblings.
 		 */
+		template<int maxLevelToConsider>
 		static void siblingsOverlapping(std::tuple<float,float,float,float>& totalAndOverlappingArea, ANALYZER_ACTION_FINAL_ARGUMENTS) {
-			log["globalInfo"]["siblingsOverlappingPercentage"] = get<1>(totalAndOverlappingArea) / get<0>(totalAndOverlappingArea);
-			log["globalInfo"]["siblingsOverlappingPercentageCulled"] = get<3>(totalAndOverlappingArea) / get<2>(totalAndOverlappingArea);
+			log["globalInfo"]["siblingsOverlappingPercentage" + std::to_string(maxLevelToConsider)] = get<1>(totalAndOverlappingArea) / get<0>(totalAndOverlappingArea);
+			log["globalInfo"]["siblingsOverlappingPercentageCulled" + std::to_string(maxLevelToConsider)] = get<3>(totalAndOverlappingArea) / get<2>(totalAndOverlappingArea);
 		}
 	}
 }

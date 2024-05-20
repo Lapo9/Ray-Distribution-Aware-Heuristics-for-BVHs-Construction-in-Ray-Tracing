@@ -35,7 +35,7 @@ int main() {
 		ACCESSOR("Hit percentage",								AT::PAH,["total"]["hitMiss"]["hitsPercentage"]),
 		ACCESSOR("Overlapping % 4",								AT::TOP_LEVEL,["bvhs"].at(0)["globalInfo"]["siblingsOverlappingPercentage4"]),
 		ACCESSOR("Overlapping % culled 4",						AT::TOP_LEVEL,["bvhs"].at(0)["globalInfo"]["siblingsOverlappingPercentageCulled4"]),
-		ACCESSOR("Overlapping % culled 7",						AT::TOP_LEVEL,["bvhs"].at(0)["globalInfo"]["siblingsOverlappingPercentageCulled4"]),
+		ACCESSOR("Overlapping % culled 7",						AT::TOP_LEVEL,["bvhs"].at(0)["globalInfo"]["siblingsOverlappingPercentageCulled7"]),
 		ACCESSOR("Overlapping % culled 10",						AT::TOP_LEVEL,["bvhs"].at(0)["globalInfo"]["siblingsOverlappingPercentageCulled10"]),
 		ACCESSOR("Overlapping % culled 15",						AT::TOP_LEVEL,["bvhs"].at(0)["globalInfo"]["siblingsOverlappingPercentageCulled15"]),
 		ACCESSOR("Overlapping % culled 100",					AT::TOP_LEVEL,["bvhs"].at(0)["globalInfo"]["siblingsOverlappingPercentageCulled100"]),
@@ -75,11 +75,11 @@ int main() {
 		MAKE_ACTIONS_PAIR(levelCount),
 		MAKE_ACTIONS_PAIR(triangles),
 		MAKE_ACTIONS_PAIR(influenceArea),
-		std::pair{ std::function{ analyzerActions::perNode::siblingsOverlapping<4> }, std::function{ analyzerActions::finals::siblingsOverlapping }},
-		std::pair{ std::function{ analyzerActions::perNode::siblingsOverlapping<7> }, std::function{ analyzerActions::finals::siblingsOverlapping }},
-		std::pair{ std::function{ analyzerActions::perNode::siblingsOverlapping<10> }, std::function{ analyzerActions::finals::siblingsOverlapping }},
-		std::pair{ std::function{ analyzerActions::perNode::siblingsOverlapping<15> }, std::function{ analyzerActions::finals::siblingsOverlapping }},
-		std::pair{ std::function{ analyzerActions::perNode::siblingsOverlapping<100> }, std::function{ analyzerActions::finals::siblingsOverlapping }},
+		std::pair{ std::function{ analyzerActions::perNode::siblingsOverlapping<4> }, std::function{ analyzerActions::finals::siblingsOverlapping<4> }},
+		std::pair{ std::function{ analyzerActions::perNode::siblingsOverlapping<7> }, std::function{ analyzerActions::finals::siblingsOverlapping<7> }},
+		std::pair{ std::function{ analyzerActions::perNode::siblingsOverlapping<10> }, std::function{ analyzerActions::finals::siblingsOverlapping<10> }},
+		std::pair{ std::function{ analyzerActions::perNode::siblingsOverlapping<15> }, std::function{ analyzerActions::finals::siblingsOverlapping<15> }},
+		std::pair{ std::function{ analyzerActions::perNode::siblingsOverlapping<100> }, std::function{ analyzerActions::finals::siblingsOverlapping<100> }},
 		MAKE_ACTIONS_PAIR(timeMeasurement)
 	};
 
@@ -109,28 +109,28 @@ int main() {
 
 
 	// Filter test scenes to run
-#define and_or &&
+#define and_or ||
 	constexpr bool ALL = false;
 
-	constexpr bool PLANE = ALL || false;
-	constexpr bool POINT = ALL || false;
+	constexpr bool PLANE = ALL || true;
+	constexpr bool POINT = ALL || true;
 	constexpr bool PLANE_LONGEST = ALL || false;
 	constexpr bool POINT_LONGEST = ALL || false;
-	constexpr bool PLANE_SAH = ALL || true;
+	constexpr bool PLANE_SAH = ALL || false;
 	constexpr bool POINT_SAH = ALL || false;
 	constexpr bool PLANE_STANDARD = ALL || false;
 	constexpr bool POINT_STANDARD = ALL || false;
 
 	constexpr bool WOOD_SCENE = ALL || false;
-	constexpr bool SUZANNE_SCENE = ALL || true;
+	constexpr bool SUZANNE_SCENE = ALL || false;
 	constexpr bool COTTAGE_SCENE = ALL || false;
 	constexpr bool COTTAGE_WALLS_SCENE = ALL || false;
 	constexpr bool CROWD_SCENE = ALL || false;
-	constexpr bool RANDOM100_SCENE = ALL || true;
+	constexpr bool RANDOM100_SCENE = ALL || false;
 	constexpr bool RANDOM1000_SCENE = ALL || false;
 	constexpr bool SPONZA_SCENE = ALL || false;
 
-	constexpr string_view RESULTS_DIRECTORY = "D:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/Results/";
+	constexpr string_view RESULTS_DIRECTORY = "E:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/Results/";
 	constexpr float spfhSplitPlaneQualityThreshold = 0.4f;
 	constexpr float lsphSplitPlaneQualityThreshold = 0.99f;
 
@@ -2918,6 +2918,6 @@ int main() {
 		}
 	};
 
-	csvTraversal.generateCsv("D:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/Results/ExportedCsv.csv");
+	csvTraversal.generateCsv("D:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/Results/ExportedCsvFull.csv");
 	return 0;
 }
