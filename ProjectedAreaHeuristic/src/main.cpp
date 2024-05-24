@@ -107,7 +107,8 @@ int main() {
 	Bvh fallbackBvh{ bvhProperties, bvhStrategies::computeCostSah, bvhStrategies::chooseSplittingPlanesLongest<0.f>, bvhStrategies::shouldStopThresholdOrLevel, "fallback" };
 	fallbackBvh.setFallbackComputeCostStrategy(bvhStrategies::computeCostSah);
 
-
+#define BVH_TESTS 0
+#if BVH_TESTS
 	// Filter test scenes to run
 #define and_or ||
 	constexpr bool ALL = false;
@@ -2917,7 +2918,74 @@ int main() {
 			}
 		}
 	};
-
+	
 	csvTraversal.generateCsv("D:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/Results/ExportedCsvFull.csv");
+#endif //BVH_TESTS
+
+#define OCTREE_TESTS 1
+#if OCTREE_TESTS
+	// OCTREE VS AABBS
+	{
+		distributions::UniformBoxDistribution mainDistribution3d{ 2,4, 2,6, 2,3 };
+		distributions::UniformBoxDistribution otherDistribution3d{ -1,1, -1,1 , -1,1 };
+		const vector triangles = Triangle::generateRandom(50, rng, mainDistribution3d, otherDistribution3d);
+		constexpr int MAX_ITERATIONS = 1000;
+		constexpr int MAX_INFLUENCE_AREAS = 10;
+		int dontDiscard = 0; //just used to avoid compiler optimization discarding our calculations
+
+		//create a vector of influence areas and the associated BVHs
+		list<PlaneInfluenceArea> planeInfluenceAreas{}; //do NOT use vector. We must store a reference to the elements of these lists inside Bvh, and vector can reallocate memory
+		list<PointInfluenceArea> pointInfluenceAreas{}; //do NOT use vector. We must store a reference to the elements of these lists inside Bvh, and vector can reallocate memory
+		vector<Bvh> bvhsOctree{};
+		vector<Bvh> bvhsAabbs{};
+		distributions::UniformBoxDistribution position{ 2,6, 2,6, 2,6 };
+		distributions::UniformBoxDistribution direction{ -1,1, -1,1, -1,1 };
+		distributions::UniformBoxDistribution size{ 1,5, 1,5, 2,10 };
+		distributions::UniformBoxDistribution fovAndNear{ 20,100, 20,100, 1,2 };
+		for (int i = 0; i < MAX_INFLUENCE_AREAS; ++i) {
+			Vector3 sizePlane = size(rng);
+			Vector3 sizePoint = size(rng);
+			Vector3 fov = fovAndNear(rng);
+
+			planeInfluenceAreas.emplace_back(Plane{ position(rng), direction(rng), sizePlane.x, sizePlane.y }, sizePlane.z, 10000);
+			pointInfluenceAreas.emplace_back(Pov{ position(rng), direction(rng), fov.x, fov.y }, fov.z + sizePoint.z, fov.z, 10000);
+
+			bvhsOctree.emplace_back(Bvh{bvhProperties, planeInfluenceAreas.back(), bvhStrategies::computeCostSah, bvhStrategies::chooseSplittingPlanesLongest, bvhStrategies::shouldStopThresholdOrLevel, "plane"});
+			bvhsOctree.emplace_back(Bvh{bvhProperties, pointInfluenceAreas.back(), bvhStrategies::computeCostSah, bvhStrategies::chooseSplittingPlanesLongest, bvhStrategies::shouldStopThresholdOrLevel, "point"});
+			
+			bvhsAabbs.emplace_back(Bvh{bvhProperties, planeInfluenceAreas.back(), bvhStrategies::computeCostSah, bvhStrategies::chooseSplittingPlanesLongest, bvhStrategies::shouldStopThresholdOrLevel, "plane"});
+			bvhsAabbs.emplace_back(Bvh{bvhProperties, pointInfluenceAreas.back(), bvhStrategies::computeCostSah, bvhStrategies::chooseSplittingPlanesLongest, bvhStrategies::shouldStopThresholdOrLevel, "point"});
+		}
+
+		TopLevelOctree topLevelOctree{ octreeProperties, fallbackBvh };
+		for (auto& elem : bvhsOctree) {
+			topLevelOctree.addBvh(std::move(elem));
+		}
+		topLevelOctree.build(triangles);
+		utilities::TimeLogger octreeTime{ [](DurationMs duration) { cout << endl << "Top level octree duration in ms: " << duration.count(); } };
+		for (int i = 0; i < MAX_ITERATIONS; ++i) {
+			Vector3 point = mainDistribution3d(rng);
+			auto res = topLevelOctree.containedIn(point);
+			dontDiscard += res.size();
+		}
+		octreeTime.stop();
+
+		TopLevelAabbs topLevelAabbs{ fallbackBvh };
+		for (auto& elem : bvhsAabbs) {
+			topLevelAabbs.addBvh(std::move(elem));
+		}
+		topLevelAabbs.build(triangles);
+		utilities::TimeLogger aabbsTime{ [](DurationMs duration) { cout << endl << "Top level AABBs duration in ms: " << duration.count(); } };
+		for (int i = 0; i < MAX_ITERATIONS; ++i) {
+			Vector3 point = mainDistribution3d(rng);
+			auto res = topLevelAabbs.containedIn(point);
+			dontDiscard += res.size();
+		}
+		aabbsTime.stop();
+
+		cout << endl << dontDiscard;
+	}
+#endif //OCTREE_TESTS
+
 	return 0;
 }

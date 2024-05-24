@@ -86,6 +86,13 @@ namespace pah {
 		}
 
 		/**
+		 * @brief Adds another BVH to the ones present in this TopLevel object. Must be called before build..
+		 */
+		void addBvh(Bvh&& bvh) {
+			bvhs.emplace_back(std::move(bvh));
+		}
+
+		/**
 		 * @brief Insert the triangles in the specific area they belong to, then builds the BVHs.
 		 */
 		virtual void build(const std::vector<Triangle>& triangles);
