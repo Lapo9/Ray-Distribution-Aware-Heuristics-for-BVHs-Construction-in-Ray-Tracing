@@ -120,6 +120,7 @@ void pah::Bvh::splitNode(Node& node, Axis fatherSplittingAxis, float fatherHitPr
 			bestLeftCostSoFar = { MAX,MAX,MAX }; bestRightCostSoFar = { MAX,MAX,MAX };
 		}
 
+		node.nodeTimingInfo.chooseSplittingPlanesCount++;
 		//split for each bin
 		for (int i = 1; i < properties.bins - 1; ++i) {
 			float splittingPlanePosition = at(node.aabb.min, axis) + (at(node.aabb.max, axis) - at(node.aabb.min, axis)) / properties.bins * i;

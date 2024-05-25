@@ -107,28 +107,28 @@ int main() {
 	Bvh fallbackBvh{ bvhProperties, bvhStrategies::computeCostSah, bvhStrategies::chooseSplittingPlanesLongest<0.f>, bvhStrategies::shouldStopThresholdOrLevel, "fallback" };
 	fallbackBvh.setFallbackComputeCostStrategy(bvhStrategies::computeCostSah);
 
-#define BVH_TESTS 0
+#define BVH_TESTS 1
 #if BVH_TESTS
 	// Filter test scenes to run
-#define and_or ||
+#define and_or &&
 	constexpr bool ALL = false;
 
 	constexpr bool PLANE = ALL || true;
 	constexpr bool POINT = ALL || true;
 	constexpr bool PLANE_LONGEST = ALL || false;
 	constexpr bool POINT_LONGEST = ALL || false;
-	constexpr bool PLANE_SAH = ALL || false;
-	constexpr bool POINT_SAH = ALL || false;
+	constexpr bool PLANE_FACING = ALL || false;
+	constexpr bool POINT_FACING = ALL || false;
 	constexpr bool PLANE_STANDARD = ALL || false;
 	constexpr bool POINT_STANDARD = ALL || false;
 
-	constexpr bool WOOD_SCENE = ALL || false;
-	constexpr bool SUZANNE_SCENE = ALL || false;
-	constexpr bool COTTAGE_SCENE = ALL || false;
-	constexpr bool COTTAGE_WALLS_SCENE = ALL || false;
-	constexpr bool CROWD_SCENE = ALL || false;
-	constexpr bool RANDOM100_SCENE = ALL || false;
-	constexpr bool RANDOM1000_SCENE = ALL || false;
+	constexpr bool WOOD_SCENE = ALL || true;
+	constexpr bool SUZANNE_SCENE = ALL || true;
+	constexpr bool COTTAGE_SCENE = ALL || true;
+	constexpr bool COTTAGE_WALLS_SCENE = ALL || true;
+	constexpr bool CROWD_SCENE = ALL || true;
+	constexpr bool RANDOM100_SCENE = ALL || true;
+	constexpr bool RANDOM1000_SCENE = ALL || true;
 	constexpr bool SPONZA_SCENE = ALL || false;
 
 	constexpr string_view RESULTS_DIRECTORY = "E:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/Results/";
@@ -1531,7 +1531,7 @@ int main() {
 	bvhProperties.splitPlaneQualityThreshold = spfhSplitPlaneQualityThreshold;
 	{
 		// === Wood scene: 1 plane influence area ===
-		if constexpr (PLANE_SAH and_or WOOD_SCENE) {
+		if constexpr (PLANE_FACING and_or WOOD_SCENE) {
 			// === Wood scene: 1 plane influence area parallel to x covering all the scene. 1 ray caster relative to the influence area. ===
 			{
 				PlaneInfluenceArea influenceAreaPlaneParallel{ Plane{{2.5,.9,0}, {-1,0,0}, 1.5,0.9}, 10, 10000 };
@@ -1574,7 +1574,7 @@ int main() {
 		}
 
 		// === Suzanne scene: 1 plane influence area ===
-		if constexpr (PLANE_SAH and_or SUZANNE_SCENE) {
+		if constexpr (PLANE_FACING and_or SUZANNE_SCENE) {
 			// === Suzanne scene: 1 plane influence area parallel to x covering all the scene. 1 ray caster relative to the influence area. ===
 			{
 				PlaneInfluenceArea influenceAreaPlaneParallel{ Plane{{0,0,2}, {0,0,-1}, .9,.9}, 10, 10000 };
@@ -1617,7 +1617,7 @@ int main() {
 		}
 
 		// === Cottage scene: 1 plane influence area ===
-		if constexpr (PLANE_SAH and_or COTTAGE_SCENE) {
+		if constexpr (PLANE_FACING and_or COTTAGE_SCENE) {
 			// === Cottage scene: 1 plane influence area parallel to x covering all the scene. 1 ray caster relative to the influence area. ===
 			{
 				PlaneInfluenceArea influenceAreaPlaneParallel{ Plane{{10,2.8,0}, {-1,0,0}, 6,2.6}, 35, 10000 };
@@ -1660,7 +1660,7 @@ int main() {
 		}
 
 		// === CottageWalls scene: 1 plane influence area ===
-		if constexpr (PLANE_SAH and_or COTTAGE_WALLS_SCENE) {
+		if constexpr (PLANE_FACING and_or COTTAGE_WALLS_SCENE) {
 			// === CottageWalls scene: 1 plane influence area parallel to x covering all the scene. 1 ray caster relative to the influence area. ===
 			{
 				PlaneInfluenceArea influenceAreaPlaneParallel{ Plane{{10,2.8,0}, {-1,0,0}, 6,2.6}, 35, 10000 };
@@ -1703,7 +1703,7 @@ int main() {
 		}
 
 		// === Crowd scene: 1 plane influence area ===
-		if constexpr (PLANE_SAH and_or CROWD_SCENE) {
+		if constexpr (PLANE_FACING and_or CROWD_SCENE) {
 			// === Crowd scene: 1 plane influence area parallel to x covering all the scene. 1 ray caster relative to the influence area. ===
 			{
 				PlaneInfluenceArea influenceAreaPlaneParallel{ Plane{{2,2.2,-8}, {0,0,1}, 7,1.8}, 30, 10000 };
@@ -1746,7 +1746,7 @@ int main() {
 		}
 
 		// === Random100 scene: 1 plane influence area ===
-		if constexpr (PLANE_SAH and_or RANDOM100_SCENE) {
+		if constexpr (PLANE_FACING and_or RANDOM100_SCENE) {
 			// === Random100 scene: 1 plane influence area parallel to x covering all the scene. 1 ray caster relative to the influence area. ===
 			{
 				PlaneInfluenceArea influenceAreaPlaneParallel{ Plane{{5,5,-4}, {0,0,1}, 5,5}, 20, 10000 };
@@ -1789,7 +1789,7 @@ int main() {
 		}
 
 		// === Random1000 scene: 1 plane influence area ===
-		if constexpr (PLANE_SAH and_or RANDOM1000_SCENE) {
+		if constexpr (PLANE_FACING and_or RANDOM1000_SCENE) {
 			// === Random1000 scene: 1 plane influence area parallel to x covering all the scene. 1 ray caster relative to the influence area. ===
 			{
 				PlaneInfluenceArea influenceAreaPlaneParallel{ Plane{{5,5,-4}, {0,0,1}, 5,5}, 20, 10000 };
@@ -1832,7 +1832,7 @@ int main() {
 		}
 
 		// === Sponza scene: 1 plane influence area ===
-		if constexpr (PLANE_SAH and_or SPONZA_SCENE) {
+		if constexpr (PLANE_FACING and_or SPONZA_SCENE) {
 			// === Sponza scene: 1 plane influence area parallel to x covering all the scene. 1 ray caster relative to the influence area. ===
 			{
 				PlaneInfluenceArea influenceAreaPlaneParallel{ Plane{{-9,11,-1}, {1,0,0}, 16, 11}, 50, 10000 };
@@ -1879,7 +1879,7 @@ int main() {
 	bvhProperties.splitPlaneQualityThreshold = spfhSplitPlaneQualityThreshold;
 	{
 		// === Wood scene: 1 point influence area ===
-		if constexpr (POINT_SAH and_or WOOD_SCENE) {
+		if constexpr (POINT_FACING and_or WOOD_SCENE) {
 			// === Wood scene: 1 point influence area parallel to x covering all the scene. 1 ray caster relative to the influence area. ===
 			{
 				PointInfluenceArea influenceAreaPointParallel{ Pov{{2.5,.9,0}, {-1,0,0}, 90, 60}, 10, 1, 10000 };
@@ -1922,7 +1922,7 @@ int main() {
 		}
 
 		// === Suzanne scene: 1 point influence area ===
-		if constexpr (POINT_SAH and_or SUZANNE_SCENE) {
+		if constexpr (POINT_FACING and_or SUZANNE_SCENE) {
 			// === Suzanne scene: 1 point influence area parallel to x covering all the scene. 1 ray caster relative to the influence area. ===
 			{
 				PointInfluenceArea influenceAreaPointParallel{ Pov{{0,0,4}, {0,0,-1}, 30, 30}, 10, 2, 10000 };
@@ -1965,7 +1965,7 @@ int main() {
 		}
 
 		// === Cottage scene: 1 point influence area ===
-		if constexpr (POINT_SAH and_or COTTAGE_SCENE) {
+		if constexpr (POINT_FACING and_or COTTAGE_SCENE) {
 			// === Cottage scene: 1 point influence area parallel to x covering all the scene. 1 ray caster relative to the influence area. ===
 			{
 				PointInfluenceArea influenceAreaPointParallel{ Pov{{15,2.7,0}, {-1,0,0}, 70, 35}, 35, 1, 10000 };
@@ -2008,7 +2008,7 @@ int main() {
 		}
 
 		// === CottageWalls scene: 1 point influence area ===
-		if constexpr (POINT_SAH and_or COTTAGE_WALLS_SCENE) {
+		if constexpr (POINT_FACING and_or COTTAGE_WALLS_SCENE) {
 			// === CottageWalls scene: 1 point influence area parallel to x covering all the scene. 1 ray caster relative to the influence area. ===
 			{
 				PointInfluenceArea influenceAreaPointParallel{ Pov{{15,2.7,0}, {-1,0,0}, 70, 35}, 35, 1, 10000 };
@@ -2051,7 +2051,7 @@ int main() {
 		}
 
 		// === Crowd scene: 1 point influence area ===
-		if constexpr (POINT_SAH and_or CROWD_SCENE) {
+		if constexpr (POINT_FACING and_or CROWD_SCENE) {
 			// === Crowd scene: 1 point influence area parallel to x covering all the scene. 1 ray caster relative to the influence area. ===
 			{
 				PointInfluenceArea influenceAreaPointParallel{ Pov{{2,2.2,-8}, {0,0,1}, 130, 45}, 30, 1, 10000 };
@@ -2094,7 +2094,7 @@ int main() {
 		}
 
 		// === Random100 scene: 1 point influence area ===
-		if constexpr (POINT_SAH and_or RANDOM100_SCENE) {
+		if constexpr (POINT_FACING and_or RANDOM100_SCENE) {
 			// === Random100 scene: 1 point influence area parallel to x covering all the scene. 1 ray caster relative to the influence area. ===
 			{
 				PointInfluenceArea influenceAreaPointParallel{ Pov{{5,5,-4}, {0,0,1}, 90, 90}, 20, 1, 10000 };
@@ -2137,7 +2137,7 @@ int main() {
 		}
 
 		// === Random1000 scene: 1 point influence area ===
-		if constexpr (POINT_SAH and_or RANDOM1000_SCENE) {
+		if constexpr (POINT_FACING and_or RANDOM1000_SCENE) {
 			// === Random1000 scene: 1 point influence area parallel to x covering all the scene. 1 ray caster relative to the influence area. ===
 			{
 				PointInfluenceArea influenceAreaPointParallel{ Pov{{5,5,-4}, {0,0,1}, 90, 90}, 20, 1, 10000 };
@@ -2180,7 +2180,7 @@ int main() {
 		}
 
 		// === Sponza scene: 1 point influence area ===
-		if constexpr (POINT_SAH and_or SPONZA_SCENE) {
+		if constexpr (POINT_FACING and_or SPONZA_SCENE) {
 			// === Sponza scene: 1 point influence area parallel to x covering all the scene. 1 ray caster relative to the influence area. ===
 			{
 				PointInfluenceArea influenceAreaPointParallel{ Pov{{-9,11,-1}, {1,0,0}, 70, 50}, 50, 1, 10000 };
@@ -2919,10 +2919,10 @@ int main() {
 		}
 	};
 	
-	csvTraversal.generateCsv("D:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/Results/ExportedCsvFull.csv");
+	csvTraversal.generateCsv("D:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/Results/ExportedCsvFullSplittingPlanesCountHigher.csv");
 #endif //BVH_TESTS
 
-#define OCTREE_TESTS 1
+#define OCTREE_TESTS 0
 #if OCTREE_TESTS
 	// OCTREE VS AABBS
 	{
@@ -2930,8 +2930,9 @@ int main() {
 		distributions::UniformBoxDistribution otherDistribution3d{ -1,1, -1,1 , -1,1 };
 		const vector triangles = Triangle::generateRandom(50, rng, mainDistribution3d, otherDistribution3d);
 		constexpr int MAX_ITERATIONS = 1000;
-		constexpr int MAX_INFLUENCE_AREAS = 10;
-		int dontDiscard = 0; //just used to avoid compiler optimization discarding our calculations
+		constexpr int MAX_INFLUENCE_AREAS = 2;
+		int octreeHits = 0; //how many influence areas are hit in the octree
+		int aabbsHits = 0; //how many influence areas are hit in the aabbs
 
 		//create a vector of influence areas and the associated BVHs
 		list<PlaneInfluenceArea> planeInfluenceAreas{}; //do NOT use vector. We must store a reference to the elements of these lists inside Bvh, and vector can reallocate memory
@@ -2957,6 +2958,7 @@ int main() {
 			bvhsAabbs.emplace_back(Bvh{bvhProperties, pointInfluenceAreas.back(), bvhStrategies::computeCostSah, bvhStrategies::chooseSplittingPlanesLongest, bvhStrategies::shouldStopThresholdOrLevel, "point"});
 		}
 
+		octreeProperties.maxLevel = 4;
 		TopLevelOctree topLevelOctree{ octreeProperties, fallbackBvh };
 		for (auto& elem : bvhsOctree) {
 			topLevelOctree.addBvh(std::move(elem));
@@ -2966,7 +2968,7 @@ int main() {
 		for (int i = 0; i < MAX_ITERATIONS; ++i) {
 			Vector3 point = mainDistribution3d(rng);
 			auto res = topLevelOctree.containedIn(point);
-			dontDiscard += res.size();
+			octreeHits += res.size();
 		}
 		octreeTime.stop();
 
@@ -2979,11 +2981,11 @@ int main() {
 		for (int i = 0; i < MAX_ITERATIONS; ++i) {
 			Vector3 point = mainDistribution3d(rng);
 			auto res = topLevelAabbs.containedIn(point);
-			dontDiscard += res.size();
+			aabbsHits += res.size();
 		}
 		aabbsTime.stop();
 
-		cout << endl << dontDiscard;
+		cout << endl << "Influence areas hit --> octree: " << octreeHits << "\taabbs: " << aabbsHits;
 	}
 #endif //OCTREE_TESTS
 

@@ -63,7 +63,6 @@ namespace pah {
 
 			void logChooseSplittingPlanes(DurationMs duration) {
 				chooseSplittingPlanesTot += duration;
-				chooseSplittingPlanesCount++;
 			}
 
 			void logShouldStop(DurationMs duration) {

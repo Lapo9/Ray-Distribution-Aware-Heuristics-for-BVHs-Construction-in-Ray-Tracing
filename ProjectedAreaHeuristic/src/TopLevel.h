@@ -88,7 +88,7 @@ namespace pah {
 		/**
 		 * @brief Adds another BVH to the ones present in this TopLevel object. Must be called before build..
 		 */
-		void addBvh(Bvh&& bvh) {
+		virtual void addBvh(Bvh&& bvh) {
 			bvhs.emplace_back(std::move(bvh));
 		}
 
@@ -226,6 +226,11 @@ namespace pah {
 			}
 
 			root.aabb = sceneAabb;
+		}
+
+		void addBvh(Bvh&& bvh) override {
+			root.aabb += bvh.getInfluenceArea()->getBvhRegion().enclosingAabb();
+			TopLevel::addBvh(std::move(bvh));
 		}
 
 		void build(const std::vector<Triangle>& triangles) override;
