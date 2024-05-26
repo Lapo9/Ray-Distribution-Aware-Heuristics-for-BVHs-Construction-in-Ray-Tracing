@@ -107,7 +107,7 @@ int main() {
 	Bvh fallbackBvh{ bvhProperties, bvhStrategies::computeCostSah, bvhStrategies::chooseSplittingPlanesLongest<0.f>, bvhStrategies::shouldStopThresholdOrLevel, "fallback" };
 	fallbackBvh.setFallbackComputeCostStrategy(bvhStrategies::computeCostSah);
 
-#define BVH_TESTS 1
+#define BVH_TESTS 0
 #if BVH_TESTS
 	// Filter test scenes to run
 #define and_or &&
@@ -2922,7 +2922,7 @@ int main() {
 	csvTraversal.generateCsv("D:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/Results/ExportedCsvFullSplittingPlanesCountHigher.csv");
 #endif //BVH_TESTS
 
-#define OCTREE_TESTS 0
+#define OCTREE_TESTS 1
 #if OCTREE_TESTS
 	// OCTREE VS AABBS
 	{
@@ -2930,7 +2930,7 @@ int main() {
 		distributions::UniformBoxDistribution otherDistribution3d{ -1,1, -1,1 , -1,1 };
 		const vector triangles = Triangle::generateRandom(50, rng, mainDistribution3d, otherDistribution3d);
 		constexpr int MAX_ITERATIONS = 1000;
-		constexpr int MAX_INFLUENCE_AREAS = 2;
+		constexpr int MAX_INFLUENCE_AREAS = 40;
 		int octreeHits = 0; //how many influence areas are hit in the octree
 		int aabbsHits = 0; //how many influence areas are hit in the aabbs
 
@@ -2958,7 +2958,7 @@ int main() {
 			bvhsAabbs.emplace_back(Bvh{bvhProperties, pointInfluenceAreas.back(), bvhStrategies::computeCostSah, bvhStrategies::chooseSplittingPlanesLongest, bvhStrategies::shouldStopThresholdOrLevel, "point"});
 		}
 
-		octreeProperties.maxLevel = 4;
+		octreeProperties.maxLevel = 7;
 		TopLevelOctree topLevelOctree{ octreeProperties, fallbackBvh };
 		for (auto& elem : bvhsOctree) {
 			topLevelOctree.addBvh(std::move(elem));
