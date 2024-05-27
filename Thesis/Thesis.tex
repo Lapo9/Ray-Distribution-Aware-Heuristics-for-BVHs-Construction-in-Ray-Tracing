@@ -2284,11 +2284,11 @@ It is also interesting to see how SPFH is more effective at reducing overlapping
 This fact can be exploited, and it is therefore possible to use SPFH only on the higher levels of a BVH, and then directly fallback to LSPH. With this optimization it is possible to use more quality-oriented properties for the BVH construction, such as a lower $splittingPlaneQualityThreshold$ or $acceptableChildrenFatherHitProbabilityRatio$. We will talk about this in section \ref{TODO}.
 
 \section{Octree versus AABBs for Regions Top Level Structures} \label{sec:octree_vs_aabbs}
-In this chapter we will present a comparison between the two top level acceleration structures we implemented in our framework, namely the octree and the AABBs for regions (section \ref{sec:top_level}). We will also analyze how many levels the octree must have in order to approximate in an acceptable way the influence areas it is built on.
+In this chapter we will present a comparison between the two top level acceleration structures we implemented in our framework, namely the octree and the AABBs for regions (section \ref{sec:top_level}). We will also analyze how many levels the octree must have in order to approximate in an acceptable way the influence areas it is built on, and how the approximation affects the traversal of the contained BVHs.
 
-In order to compare the octree to the AABBs for regions structure, we create a specified quantity of influence areas. Half of these influence areas are plane, and the other half are point influence areas. We then build both the octree and the AABBs for regions structures over these influence areas. Eventually we uniformly sample $1000$ points in the region where the influence areas are placed, and query both the top level structures for the influence areas the point is contained into.
+In order to compare the octree to the AABBs for regions structure, we created a specified quantity of influence areas. Half of these influence areas are plane, and the other half are point influence areas. We then build both the octree and the AABBs for regions structures over these influence areas. Eventually we uniformly sample $1000$ points in the region where the influence areas are placed, and query both the top level structures for the influence areas a specific point is contained into.
 
-In our first test we compare the average time required by the two top level structures to return the result of our queries. We decided to also compare octrees with different amount of levels. The quantity of influence areas for this first testing scenario is $20$, equally divided between plane and point.
+In our first test we compare the average time required by the two top level structures to return the result of our queries. We decided to also compare octrees with different amount of levels. The quantity of influence areas for this first testing scenario is $20$, equally divided between plane and point ones.
 
 \begin{figure}[H] 
 	\centering
@@ -2297,11 +2297,11 @@ In our first test we compare the average time required by the two top level stru
 	\label{fig:octree_vs_aabbs_traversal_chart}
 \end{figure}
 
-In chart \ref{fig:octree_vs_aabbs_traversal_chart} we can observe how the required time grows as the number of the levels of the octree increases. The growth gets faster as the number of levels increases: this is expected, since in a binary tree the number of nodes can be obtained by this formula: $\#nodes = 2^n-1$ where $n$ is the number of levels. This means that, if we increase the number of levels from $n-1$ to $n$, the tree will have $2^{n-1}$ nodes more, and the time to traverse it will exponentially grow.
+In chart \ref{fig:octree_vs_aabbs_traversal_chart} we can observe how the required time grows as the number of the levels of the octree increases. The growth gets faster as the number of levels increases: this is expected, since in a octonary tree the number of nodes can be obtained by this formula: $\#nodes = 8^n-1$ where $n$ is the number of levels. This means that, if we increase the number of levels from $n-1$ to $n$, the tree will have $8^{n-1}$ nodes more, and the time to traverse it will exponentially grow.
 
 Instead, the time for the AABBs for regions structure remains constant, since the structure doesn't have the concept of level. In case of 20 influence areas, the breakeven point between the two structures is between the $8^{th}$ and $9^{th}$ level, meaning that it is not worth it to use an octree if it has more than $8$ levels.
 
-Of course, the octree is the structure that scales better with the amount of influence areas. In order to show this, we decided to build octrees with $7$ levels over an increasing amount of influence areas:
+The octree is the structure that scales better with the amount of influence areas. In order to show this, we decided to build octrees with $7$ levels over an increasing amount of influence areas:
 
 \begin{figure}[H] 
 	\centering
@@ -2310,11 +2310,39 @@ Of course, the octree is the structure that scales better with the amount of inf
 	\label{fig:octree_scaling_with_influence_areas_chart}
 \end{figure}
 
-As it can be observed in chart \ref{fig:octree_scaling_with_influence_areas_chart}
+As it can be observed in chart \ref{fig:octree_scaling_with_influence_areas_chart}, with a small amount of influence areas ($4$), an octree with $7$ levels is $36\%$ slower than the AABBs for regions structure at detecting the influence areas a point is contained into. As the amount of influence areas increases, the AABBs for regions structure becomes slower and slower, while the octree keeps its query time constant. This is expected, since the query time of the octree is independent from the amount of influence areas, and only depends on the number of levels. Already with $10$ influence areas, the octree is $20\%$ faster, and the discrepancy keeps increasing. 
 
+Last, we wanted to quantify the error an octree introduces. The octree is indeed an approximation of of the influence areas. As we mentioned in chapter \ref{sec:top_level_structure}, it is a conservative approximation, meaning that the volume of the influence areas is overestimated, but never underestimated.
+
+\begin{figure}[H] 
+	\centering
+	\includegraphics[width=\textwidth]{Images/octree_error_faster_chart.png}
+	\caption{Analysis of the error an octree with a given amount of levels introduces in its queries, and how much faster it is compared to the AABBs for regions structure.}
+	\label{fig:octree_error_faster_chart}
+\end{figure}
+
+In chart \ref{fig:octree_error_faster_chart} we show the average error of the octrees queries in percentage, and how much faster they are compared to the AABBs for regions structure. An octree with $4$ levels has an error percentage of $110\%$, in particular of the $9136$ influence areas the points were considered contained into, $4795$ were false positives. The error decreases exponentially, and already with $5$ levels it is $40\%$, while the octree is only $3$ percentage points slower compared to the one with $4$ levels.
+
+From the chart is is possible to observe that the maximum difference between how faster is the octree and its error percentage is reached with an octree of $6$ levels. However, in our test cases (section \ref{ssec:pah_spfh_vs_sah_lsph}) we adopted octrees with $5$ levels, in order to reduce the building times. Indeed, as it can be observed in the chart above, the building time grows exponentially, which is expected given that the number of nodes in the tree also grows exponentially, as mentioned a few paragraphs above.
+
+The last analysis we carried out concerns the average traversal cost of the BVHs as related to the approximation error of the underlying octree. If the approximation of the octree is too coarse, too many rays that are not affine to a certain influence area will be cast towards it regardless. This leads to searching the ray-scene intersection in a BVH that doesn't follow the PAH and SPFH hypotheses. Furthermore, it is more likely for such a ray to completely miss the BVH, and fall back to the global BVH, wasting time. The experimental results show that with a $4$ level octree the average cost of traversing the BVH for the scenes \textit{Cottage}, \textit{Random1000}, \textit{Wood}, \textit{Suzanne} is $100.5$, and increases to $115.5$ if we consider also the fallback searches. With an octree with $5$ levels the costs go down respectively to $88.7$ and $101.4$. However, if we use a $6$ levels octree the costs only decrease to $87.6$ and $99.8$. All the analyses were performed on octrees built over $20$ influence areas.
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|l|c|c|c|}
+		\hline
+        & \textbf{4 levels} & \textbf{5 levels} &\textbf{6 levels}\\
+		\hline \hline
+		\textbf{Cost w/o fallback}& $100.5$ & $88.7$ & $87.6$ \\
+		\textbf{Cost with fallback} & $115.5$ & $101.4$ & $99.8$ \\
+		\hline
+    \end{tabular}
+	\caption{Octree levels and BVH traversal cost.}
+	\label{tab:levels_vs_quality}
+\end{table}
 
 \section{Testing Different Properties for PAH and SPFH BVH Construction} \label{sec:testing_different_properties}
-In this section we will briefly analyze how, by modifying some properties during the building phase of a BVH (table \ref{tab:standard_properties}), the resulting BVH changes. In particular we will focus on the $splitPlaneQualityThreshold$, $acceptableChildrenFatherHitProbabilityRatio$ and $excellentChildrenFatherHitProbabilityRatio$ properties, and measure the BVH quality and the amount of nodes for which the fallback method is used. All the results are presented in an aggregated form, where the average value of all the used test cases is considered. We will run the analysis on all the test cases where both PAH and SPFH are used.
+In this section we will briefly analyze how, by modifying some properties during the building phase of a BVH (table \ref{tab:standard_properties}), the resulting BVH changes. In particular we will focus on the $splitPlaneQualityThreshold$, $acceptableChildrenFatherHitProbabilityRatio$ and $excellentChildrenFatherHitProbabilityRatio$ properties, and measure the BVH quality and the amount of nodes built by using the fallback heuristics. All the results are presented in an aggregated form, where the average value of all the used test cases is considered. We will run the analysis on all the test cases where both PAH and SPFH are used.
 
 The base values for the properties listed above are the following:
 
@@ -2331,17 +2359,21 @@ The base values for the properties listed above are the following:
 	\label{tab:standard_properties}
 \end{table}
 
-With these values we get an average BVH quality of $110.5$. The amount of attempted splitting planes per node is $1.8$: this value is computed as follow: $\frac{total\;splitting\;planes\;attempted}{\#internal\;nodes}$. The fallback splitting method, namely using LSPH and SAH, is used $0.34$ times per node. The fallback method is used when there are no more splitting planes with a quality above $splitPlaneQualityThreshold$ and no split with a hit ratio value less than $acceptableChildrenFatherHitProbabilityRatio$ has already been found. A better explanation of this process can be found in section \ref{ssec:splitting_plane_implementation}.
+With these values we get an average BVH quality of $110.5$. The amount of attempted splitting planes per node is $1.8$: this value is computed as follow: 
 
-First, we tried to lower the $splitPlaneQualityThreshold$. The result we expect from this change is to build BVHs with a better quality, at the cost of an increased build time. Indeed, with a less strict threshold on the minimum quality of a splitting plane, more splitting planes will be attempted while trying to divide a node into its two children. The results we obtained fullfill our expectation: the avareage cost of the BVHs is now $88.4$, with an amount of attempted splits per node of $2.4$. Moreover, the fallback method is used fewer times, because it is more likely to find a good split: the amount of nodes generated with the fallback method is now only the $13\%$.
+$$attempted \; splitting \; planes = \frac{total\;splitting\;planes\;attempted}{\#internal\;nodes}$$
+
+The fallback splitting method, namely using LSPH and SAH, is used $0.34$ times per node. The fallback method is used when there are no more splitting planes with a quality above $splitPlaneQualityThreshold$ and no split with a hit ratio value less than $acceptableChildrenFatherHitProbabilityRatio$ has already been found. A better explanation of this process can be found in section \ref{ssec:splitting_plane_implementation}.
+
+First, we tried to lower the $splitPlaneQualityThreshold$. The result we expect from this change is to build BVHs with a better quality, at the cost of an increased build time. Indeed, with a less strict threshold on the minimum quality of a splitting plane, more splitting planes will be attempted while trying to divide a node into its two children. The results we obtained fullfill our expectation: the avareage cost of the BVHs is now $88.4$, with an amount of attempted splits per node of $2.4$. Moreover, the fallback method is used fewer times, because, by attempting more splitting planes, it is more likely to find a good split: the amount of nodes generated with the fallback method is now only the $13\%$.
 
 We then tried to raise the $splitPlaneQualityThreshold$, and, even in this case, we obtained results in line with the expectations. The average BVH cost increased to $148.3$, while the amount of attempted splitting planes decreased to $1.5$ per node. The fallback method is used $0.68$ times per node.
 
 The next set of tests we performed keeps the $splitPlaneQualityThreshold$ constant, while increasing and decreasing the $acceptableChildrenFatherHitProbabilityRatio$ and $excellentChildrenFatherHitProbabilityRatio$ properties.
 
-We first tried to decrease the two properties mentioned above to values of $1.1$ and $0.7$ respectively. We expect that, with a more demanding threshold to consider a split as \textit{good enough}, the quality if the BVH will increase at the cost of having more nodes generated with the fallback heuristics. The experimental results confirm our hypotheses. Indeed, the average BVH cost decreases to $69.2$, while $40\%$ of the nodes are created with LSPH and SAH. Also the amount of splitting planes attempted increases to $2.0$ splitting plane per node.
+We first tried to decrease the two properties mentioned above to values of $1.1$ and $0.7$ respectively. We expect that, with a more demanding threshold to consider a split as \textit{good enough}, the quality of the BVH will increase at the cost of having more nodes generated with the fallback heuristics. The experimental results confirm our hypotheses. Indeed, the average BVH cost decreases to $69.2$, while $40\%$ of the nodes are created with LSPH and SAH. Also, the amount of splitting planes attempted increases to $2.0$ splitting planes per node.
 
-Eventually we raised $acceptableChildrenFatherHitProbabilityRatio$ to $1.5$ and \\$excellentChildrenFatherHitProbabilityRatio$ to $1.1$. The results are in line with our expectations: the average cost of a BVH is now increased to $124.6$, but only $29$ of the nodes are created with the fallback heuristics. The average amount of attempted splitting planes per node is decreased to $1.7$.
+Eventually we raised $acceptableChildrenFatherHitProbabilityRatio$ to $1.5$ and \\$excellentChildrenFatherHitProbabilityRatio$ to $1.1$. The results are in line with our expectations: the average cost of a BVH is now increased to $124.6$, but only $29\%$ of the nodes are created with the fallback heuristics. The average amount of attempted splitting planes per node is decreased to $1.7$.
 
 In table \ref{tab:different_properties_summary} it is possible to look at all the results described above in a condensed form.
 
@@ -2349,7 +2381,7 @@ In table \ref{tab:different_properties_summary} it is possible to look at all th
     \centering
     \begin{tabular}{|l|c|c|c|c|c|}
 		\hline
-		\textbf{Property} & \textbf{Case 1} & \textbf{Case 2} & \textbf{Case 3} & \textbf{Case 4} & \textbf{Case 5}\\ 
+		& \textbf{Case 0} & \textbf{Case 1} & \textbf{Case 2} & \textbf{Case 3} & \textbf{Case 4}\\ 
 		\hline \hline
         \boldmath$splitPlaneQualityThreshold$ & \underline{$0.4$} & $0.1$ & $0.8$ & \underline{$0.4$} & \underline{$0.4$}\\
 		\boldmath$acceptable.C.F.HitProb.Ratio$ & \underline{$1.3$} & \underline{$1.3$} & \underline{$1.3$} & $1.1$ & $1.5$\\
@@ -2360,7 +2392,7 @@ In table \ref{tab:different_properties_summary} it is possible to look at all th
 		\textbf{Fallback percentage} & $0.34$ & $0.13$ & $0.68$ & $0.41$ & $0.29$\\
 		\hline
     \end{tabular}
-	\caption{Sumamry of our experiments with different properties values. Underlined values are the default ones.}
+	\caption{Summary of our experiments with different properties values. Underlined values are the default ones.}
 	\label{tab:different_properties_summary}
 \end{table}
 

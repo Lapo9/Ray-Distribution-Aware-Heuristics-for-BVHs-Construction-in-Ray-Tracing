@@ -99,7 +99,7 @@ int main() {
 
 
 	TopLevelOctree::OctreeProperties octreeProperties{
-		.maxLevel = 4,
+		.maxLevel = 5,
 		.conservativeApproach = false
 	};
 
@@ -113,21 +113,21 @@ int main() {
 #define and_or &&
 	constexpr bool ALL = false;
 
-	constexpr bool PLANE = ALL || true;
-	constexpr bool POINT = ALL || true;
+	constexpr bool PLANE = ALL || false;
+	constexpr bool POINT = ALL || false;
 	constexpr bool PLANE_LONGEST = ALL || false;
 	constexpr bool POINT_LONGEST = ALL || false;
 	constexpr bool PLANE_FACING = ALL || false;
 	constexpr bool POINT_FACING = ALL || false;
-	constexpr bool PLANE_STANDARD = ALL || false;
-	constexpr bool POINT_STANDARD = ALL || false;
+	constexpr bool PLANE_STANDARD = ALL || true;
+	constexpr bool POINT_STANDARD = ALL || true;
 
 	constexpr bool WOOD_SCENE = ALL || true;
 	constexpr bool SUZANNE_SCENE = ALL || true;
 	constexpr bool COTTAGE_SCENE = ALL || true;
-	constexpr bool COTTAGE_WALLS_SCENE = ALL || true;
-	constexpr bool CROWD_SCENE = ALL || true;
-	constexpr bool RANDOM100_SCENE = ALL || true;
+	constexpr bool COTTAGE_WALLS_SCENE = ALL || false;
+	constexpr bool CROWD_SCENE = ALL || false;
+	constexpr bool RANDOM100_SCENE = ALL || false;
 	constexpr bool RANDOM1000_SCENE = ALL || true;
 	constexpr bool SPONZA_SCENE = ALL || false;
 
@@ -2919,7 +2919,7 @@ int main() {
 		}
 	};
 	
-	csvTraversal.generateCsv("D:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/Results/ExportedCsvFullSplittingPlanesCountHigher.csv");
+	csvTraversal.generateCsv("D:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/Results/ExportedCsvFullSplittingPlanesCountHigher2.csv");
 #endif //BVH_TESTS
 
 #define OCTREE_TESTS 1
@@ -2930,7 +2930,7 @@ int main() {
 		distributions::UniformBoxDistribution otherDistribution3d{ -1,1, -1,1 , -1,1 };
 		const vector triangles = Triangle::generateRandom(50, rng, mainDistribution3d, otherDistribution3d);
 		constexpr int MAX_ITERATIONS = 1000;
-		constexpr int MAX_INFLUENCE_AREAS = 40;
+		constexpr int MAX_INFLUENCE_AREAS = 10;
 		int octreeHits = 0; //how many influence areas are hit in the octree
 		int aabbsHits = 0; //how many influence areas are hit in the aabbs
 
@@ -2958,7 +2958,7 @@ int main() {
 			bvhsAabbs.emplace_back(Bvh{bvhProperties, pointInfluenceAreas.back(), bvhStrategies::computeCostSah, bvhStrategies::chooseSplittingPlanesLongest, bvhStrategies::shouldStopThresholdOrLevel, "point"});
 		}
 
-		octreeProperties.maxLevel = 7;
+		octreeProperties.maxLevel = 4;
 		TopLevelOctree topLevelOctree{ octreeProperties, fallbackBvh };
 		for (auto& elem : bvhsOctree) {
 			topLevelOctree.addBvh(std::move(elem));
