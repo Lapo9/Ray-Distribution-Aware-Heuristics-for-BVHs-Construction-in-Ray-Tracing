@@ -2396,9 +2396,94 @@ In table \ref{tab:different_properties_summary} it is possible to look at all th
 	\label{tab:different_properties_summary}
 \end{table}
 
-\chapter{Use Cases and Future Developments} \label{ch:use_cases} 
+\section{Memory Footprint} \label{sec:memory_footprint}
+In this section we try to estimate the memory consumption of the objects needed to support our heuristics, and compare them with the memory footprint of a standard BVH.
+
+\subsection*{Estimate of the Cost of a BVH}
+In order to estimate the memory occupied by a BVH, we first have to estimate the number of nodes in it. On average the BVHs of the test cases has $18.4$ levels, which we can approximate to $18$. A binary tree with $18$ level, in case it is balanced, has $2^{18}-1 = 262143$ nodes, half of which are leaf nodes.
+
+In our implementation, a node is represented by a structure (section \ref{sec:bvh}) holding an $Aabb$, two pointers to the children nodes and a list of triangles. We decided to keep the list of triangles in internal nodes for debugging and visualization reasons, however it is only necessary in leaf nodes. For the sake of this analysis, we will only consider leaf nodes containing a list of pointers to triangles. 
+
+An $Aabb$ is represented by a pair of 3-dimensional vectors of floating point numbers, therefore it has a weight of $4B \cdot 3 \cdot 2 = 24 Bytes$.
+
+Assuming that floating points are stored in $4$ bytes, and pointers in $8$ bytes, an internal node has a weight of $24B + 2 \cdot 8B = 40 Bytes$. 
+
+To compute the weight of a leaf node, we have to add the size of the array of triangles' indices. Since, in our test cases, the algorithm stopped when the number of triangles in a node was less than 3, we can assume\footnote{It is also possible to have a leaf node with more than $2$ triangles, in case it was impossible to split due to the relative position of the triangles' centers.} that all the leaf nodes carried $2$ triangles. In this case their weight is $40B + 2 \cdot 4B = 48B$.
+
+We can now compute the cost of a balanced BVH of $18$ levels as:
+\boldmath{$$(2^{18-1}-1) \cdot 40B + 2^{18-1} \cdot 48B \approx 11.53MB$$}\unboldmath
+
+\subsection*{Estimate of the Cost of a Influence Areas}
+When a BVH has an associated influence area, we must add the cost of it to the one of the array. A $PlaneInfluenceArea$ is made up of a $Plane$, a $4x4$ view projection matrix (used to accelerate the projection process), and an $AabbForObb$ (section \ref{ssec:aabb_for_obb}).
+
+The $Plane$ holds two 3D floating-point vectors, one for the passing point and one for the normal ($24 Bytes$). The $AabbForObb$ contains $6$ 3D floating-point vectors, respectively for the center, forward, right and up directions, and the half size in all directions. Moreover it contains an $Aabb$ for the rejection tests: the total cost is $6 \cdot 3 \cdot 4B + 24B= 96 Bytes$.
+
+The total weight of a $PlaneInfluenceArea$ is \boldmath{$24B + 96B + 4\cdot 4 \cdot 4B = 184 Bytes$}\unboldmath.
+
+A $PointInfluenceArea$ is made up of a $Pov$ and a $Frustum$. The $Pov$ contains two 3D floating-point vectors for the viewing direction and position, and 2 floats for the $x$ and $y$ fields of view ($32 Bytes$).
+
+The $Frustum$ a more heavy structure, because it contains redundant information to improve ray-frustum collision detection (see section \ref{ssec:frustum}). It contains $4x4$ view-projection matrix, an array of $6$ 3D directions for the face normals, an array of $6$ 3D vectors for the edges and $8$ 3D vertices. Furthermore it contains an $Aabb$ for rejection tests. 
+
+The total cost is \boldmath{$32B + 4\cdot 4 \cdot 4B + 6 \cdot 3 \cdot 4B + 6 \cdot 3 \cdot 4B + 8 \cdot 3 \cdot 4B = 336 Bytes$}\unboldmath.
+
+The average cost of an influence area is therefore: \boldmath{$\frac{184B + 336B}{2} = 260 Bytes$}\unboldmath.
+
+\subsection*{Estimate of the Cost of an Octree}
+In order to compute the size of all the structures needed for our heuristics, we first have to make some assumptions on the number of influence areas present in the scene. We will first analyze the case where just one influence area is present in the scene, and then the case were $20$ influence areas are present in the scene.
+
+We also compare both the cases where the octree or the AABBs for regions top level structure is used (section \ref{sec:top_level_structure}).
+
+In case the octree is used, its cost can be computed in a similar way to the BVH. Since we showed that octrees with $5$ levels provide the right compromise between speed and precision (section \ref{sec:octree_vs_aabbs}), we assume a $5$ level octree. A $5$ level octree has $8^{5}-1 = 32767$ nodes, half of which are leaves.
+
+A node of an octree holds an $Aabb$, $8$ pointers to its children and, in case it is a leaf, an array of pointers to the $Bvh$s included in the leaf. This means that an internal node has a weight of $24B + 8 \cdot 4B = 56 Bytes$. A leaf node, assuming it contains just one $Bvh$, has a cost of $56B + 4B = 60B$.
+
+Therefore, the cost of the octree is: 
+\boldmath{$$(8^{5-1}-1) \cdot 56B + 8^{5-1} \cdot 60B \approx 1.9MB$$}\unboldmath
+
+For what concerns the AABB for regions structure, it is simply an array of BVH.
+
+\subsection*{Putting All Together}
+We can not put everything together and calculate the cost of our structures. In case there is only one influence area covering most of the scene, the total cost of our structure is:
+
+\begin{subequations}
+	\begin{align*}
+	Total\;cost &= Cost\;local\;BVH + Cost\;influence\;area + Cost\;global\;BVH + Cost\;octree\\
+	&= 11.53MB + 260B + 11.53MB + 1.9MB \approx 24.96MB
+	\end{align*}
+\end{subequations}
+
+If we used only the global BVH, the cost would have been only $11.53MB$, which means that using our heuristics is costing $2.16$ times more.
+
+\noindent\rule{\textwidth}{1pt}
+In case there are $20$ influence areas, we assume that they contain roughly the same amount of triangles, and that only $50\%$ of all the triangles in the scene are contained in at least one influence area. Before we assumed that the BVH has $18$ levels, is balanced and each leaf contains $2$ triangles. 
+
+This means that the total number of triangles in the scene is $2^{18-1} \cdot 2 = 524288$. Only half of these are included in a BVH, therefore each BVH roughly contains $\frac{524288}{2\cdot 20} \approx 13000$ triangles. A balanced BVH with $13000$ triangles has an amount of levels equals to\footnote{The division by $2$ comes from the fact that each leaf contains $2$ triangles on average, as we explained above.}:
+
+$$\Big\lceil\log_2\Big(\frac{13000}{2}\Big)+1\Big\rceil = 14$$ 
+
+A BVH with 14 levels has a cost of \boldmath{$(2^{14-1}-1) \cdot 40B + 2^{14-1} \cdot 48B \approx 0.72MB$}\unboldmath.
+
+We can now compute the total cost of the structures needed to use our heuristics in this scenario:
+
+\begin{subequations}
+	\begin{align*}
+		Total\;cost &= (Cost\;local\;BVH + Cost\;influence\;area) \cdot 20 + Cost\;global\;BVH + Cost\;octree\\
+		&= (0.72MB + 260B) \cdot 20 + 11.53MB + 1.9MB \approx 27.8MB
+	\end{align*}
+\end{subequations}
+
+Since the $20$ BVHs contains a smaller amount of nodes the cost of each BVH is greatly reduced. In particular, the dominant part of the cost of the BVH increases exponentially with the number of nodes. This relation allow us to use our structures even in cases with many influence areas of modest size.
 
 \chapter{Conclusion} \label{ch:conclusion}
+\section{Use Cases and Future Developments} \label{sec:use_cases}
+\begin{itemize}
+	\item Improve algorithms
+	\item Port on GPU
+	\item Try other top level structures (e.g. KD tree)
+	\item Find a method to detect the influence areas (e.g. clustering)
+\end{itemize}
+
+\section{Closing Thoughts} \label{sec:closing_thoughts}
 
 
 % === Bibliography ===
@@ -2915,8 +3000,15 @@ Until now we have shown how to get the yaw rotation angle. The second step to sa
 \begin{table}[H]
     \centering
     \begin{tabular}{lll}
-        \textbf{Symbol} & \textbf{Description} & \textbf{Unit} \\\hline\\[-9px]
-        $\bm{alpha}$ & symbol 1 & km \\[2px]
+        \textbf{Symbol} & \textbf{Description}\\\hline\\[-9px]
+        $\bm{PAH}$ & Projected Area Heuristic\\[2px]
+        $\bm{SAH}$ & Surface Area Heuristic\\[2px]
+        $\bm{SPFH}$ & Splitting Plane Facing Heuristic\\[2px]
+        $\bm{LSPH}$ & Longest Splitting Plane Heuristic\\[2px]
+        $\bm{BVH}$ & Bounding Volume Hierarchy\\[2px]
+        $\bm{AABB}$ & Axis-Aligned Bounding Box\\[2px]
+        $\bm{OBB}$ & Oriented Bounding Box\\[2px]
+        $\bm{SAT}$ & Separating Axis Test\\[2px]
     \end{tabular}
 \end{table}
 
