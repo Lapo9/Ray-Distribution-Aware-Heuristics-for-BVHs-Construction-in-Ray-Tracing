@@ -915,7 +915,7 @@ Since all rays hit the root AABB, we can interpret it as the certain event. And 
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.5}]{Images/TODO.png}
+    \includegraphics[width=\textwidth*\real{0.7}]{Images/area_prob_visualization.png}
     \caption{Visual relationship between AABB area and hit probability in 2D, under the assumption rays are uniformly distributed.}
     \label{fig:area_probability_visual}
 \end{figure}
@@ -939,9 +939,6 @@ However it is also useful to have a way to evaluate the cost of a BVH a-posterio
 
 By merging the formulae to compute the cost of leaf and internal nodes, the cost function of a BVH assumes this form:
 $$Cost_{SAH}(BVH) = \sum_{L \in leaf\; nodes} \frac{Area_L}{Area_{root}} \cdot \#triangles_L \cdot 1.2 + \sum_{I \in internal\; nodes} \frac{Area_I}{Area_{root}} \cdot 2 \cdot 1$$
-
-\subsubsection{TLAS and BLAS}
-TODO
 
 \chapter{Projected Area Heuristic} \label{ch:projected_area_heuristic}
 In chapter \ref{ch:background_theory} we described how ray tracing works. In particular, in section \ref{sec:monte_carlo_and_variance_reduction_techniques} we have seen how importance sampling generates artifacts in the ray distribution of the scene. In section \ref{sec:ray_tracing_acceleration_structures} we described how it is possible to build an acceleration structure to speed up the ray-scene intersection process, and we have shown how the surface area heuristic is the state-of-the-art method to build high-quality BVHs. In this chapter, we will show that some of the hypotheses of the SAH are not satisfied in a real-world scenario, due to the use of importance sampling. We will eventually propose a new heuristic called projected area heuristic (PAH), and show the situations where it can be used to build BVHs. In this chapter we will describe the problem and the solutions from a theoretical point of view; all the implementation details will be thoroughly discussed in chapter \ref{ch:implementation}.
@@ -982,8 +979,8 @@ Since rays are not distributed uniformly in the scene, it means that we cannot i
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.5}]{Images/TODO.png}
-    \caption{A flat but long AABB in a region of rays parallel to its long side.}
+    \includegraphics[width=\textwidth*\real{0.5}]{Images/rays_parallel_hit_prob.png}
+    \caption{The two AABBs have the same hit probability according to SAH, but one of the two gets hit many more times in a region of parallel rays.}
     \label{fig:flat_long_aabb}
 \end{figure}
 
@@ -998,7 +995,7 @@ One of the relevant ray distributions that can naturally arise in a ray traced s
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.5}]{Images/TODO.png}
+    \includegraphics[width=\textwidth*\real{0.5}]{Images/plane_light_rays.png}
     \caption{Parallel rays distributions arise in proximity of plane area light sources.}
     \label{fig:parallel_rays_distribution}
 \end{figure}
@@ -1007,30 +1004,23 @@ In a 3-dimensional region with such a ray distribution, we can estimate the prob
 
 Let us first analyze the case where the rays are parallel to one of the 3 cartesian axis, let's say $z$. In this case, the extension of an AABB in the $z$ direction is irrelevant, because it is impossible for a ray to hit the box on any face other than the $xy$ ones. Therefore, only the area of the $xy$ face is related to the probability that the AABB is hit.
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\textwidth*\real{0.5}]{Images/TODO.png}
-    \caption{If rays are parallel to a cartesian axis, the extension of the AABB in that dimension is irrelevant.}
-    \label{fig:rays_parallel_to_cartesian_dimension}
-\end{figure}
-
 We can generalize this idea to the case where the rays are parallel to an arbitrary direction by orthographically projecting the AABB on the plane normal to the rays. The area of the orthographic projection is directly related to the probability a ray hits the AABB.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.5}]{Images/TODO.png}
+    \includegraphics[width=\textwidth*\real{0.5}]{Images/ortho_projection.png}
     \caption{Orthographic projection of an AABB.}
     \label{fig:aabb_ortho_projection}
 \end{figure}
 
-The details of our implementation will be extensively discussed in section \ref{TODO}.
+The details of our implementation will be extensively discussed in section \ref{ch:implementation}.
 
 \section{Point Ray Distribution} \label{sec:point_ray_distribution}
 Another ray distribution commonly found in proximity of point lights is what we call the point ray distribution. In this distribution, rays all pass through the same point in 3D space, creating a radial pattern over a solid angle, as it is shown in the figure below.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.5}]{Images/TODO.png}
+    \includegraphics[width=\textwidth*\real{0.3}]{Images/point_light_rays.png}
     \caption{Point rays distributions arise in proximity of point light sources.}
     \label{fig:point_rays_distribution}
 \end{figure}
@@ -1041,7 +1031,7 @@ The hit probability $p$ is computed as the ratio between two areas.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.5}]{Images/TODO.png}
+    \includegraphics[width=\textwidth*\real{0.6}]{Images/perspective_projection.png}
     \caption{Perspective projection of an AABB.}
     \label{fig:aabb_perspective_projection}
 \end{figure}
@@ -1065,7 +1055,7 @@ As we have touched on in the last chapter, while ray tracing a scene, it is like
 
 \begin{figure}[]
     \centering
-    \includegraphics[width=\textwidth*\real{0.7}]{Images/TODO.png}
+    \includegraphics[width=\textwidth*\real{0.7}]{Images/multiple_influence_areas.png}
     \caption{A scene with multiple relevant ray distributions.}
     \label{fig:multiple_ray_distributions}
 \end{figure}
@@ -1077,11 +1067,11 @@ Influence areas must first be localized in the scene. To do so, we decided to en
 \begin{figure}[H]
     \centering
 	\subfloat[Plane influence area]{
-    	\includegraphics[width=\textwidth*\real{0.45}]{Images/TODO.png}
+    	\includegraphics[width=\textwidth*\real{0.45}]{Images/obb_3d.png}
 	}
 	\qquad
 	\subfloat[Point influence area]{
-    	\includegraphics[width=\textwidth*\real{0.45}]{Images/TODO.png}
+    	\includegraphics[width=\textwidth*\real{0.45}]{Images/frustum_3d.png}
 	}
     \caption{Plane influence areas are described by OBBs, whereas point influence areas are described by frustums.}
     \label{fig:influence_areas}
@@ -2025,7 +2015,7 @@ The set-up for this test is exactly the same described in section \ref{ssec:pah_
 	\item The average time per node to compute the best splitting plane, both for SPFH and LSPH.
 \end{itemize}
 
-$faster_{PAH+SPFH}$ and $faster \; full$ are indicators agnostic to the hardware used. Whereas the average times depends on the hardware on which the algorithm is run on. As we already stated in the introduction to this chapter, our focus is to compare the heuristics, therefore we are not interested in the absolute values, but in their relative magnitudes.
+$faster_{PAH+SPFH}$ and $faster \; full$ are indicators agnostic to the hardware used. Whereas the average times depends on the hardware on which the algorithm is run on. Another option we took into consideration was to perform a low level analysis on the assembly instructions each heuristic is translated into by the compiler. However, as we already stated in the introduction to this chapter, our focus is to compare the heuristics, therefore we are not interested in the absolute values, but in their relative magnitudes. For this reason, we opted to use the raw run time as indicator.
 
 The properties (section \ref{sec:bvh}) for the PAH BVHs are set to default values we found out work well empirically. In section \ref{TODO} we carry out a comparison among different choices of these values:
 
