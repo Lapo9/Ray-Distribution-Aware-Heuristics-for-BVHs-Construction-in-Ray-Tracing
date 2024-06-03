@@ -29,7 +29,7 @@
 \graphicspath{{./Images/}} % Directory of the images
 \usepackage{transparent} % Enables transparent images
 \usepackage{eso-pic} % For the background picture on the title page
-\usepackage{subfig} % Numbered and caption subfigures using \subfloat.
+\usepackage{subfig} % Numbered and caption sub-figures using \subfloat.
 \usepackage{tikz} % A package for high-quality hand-made figures.
 \usetikzlibrary{}
 \usepackage{caption} % Coloured captions
@@ -348,7 +348,7 @@ In this work we aim to show how this way of computing the cost function for the 
 		\item In chapter \ref{ch:multi_influence_areas} we will describe the data structures needed to enable the use of SAH, from a theoretical point of view.
 		\item In chapter \ref{ch:splitting_plane_facing_heuristic} we will explain the second novel heuristic, called splitting plane facing heuristic (SPFH). SPFH is focused on the selection of the best plane to split the triangles during BVH construction.
 	\end{itemize}
-	\item In chapter \ref{ch:implementation} we will extensively explain the implementation details we omitted from the previous three chapters. We decided to subdivide the thesis like this for two main reasons: do not overload the theory chapters, in order to be able to coincisely get to the core concepts; and leave the reader with a section where all the implementation details are concentrated, so that, in case he or she wants to try our framework, this section can be used as a reference.
+	\item In chapter \ref{ch:implementation} we will extensively explain the implementation details we omitted from the previous three chapters. We decided to subdivide the thesis like this for two main reasons: do not overload the theory chapters, in order to be able to concisely get to the core concepts; and leave the reader with a section where all the implementation details are concentrated, so that, in case he or she wants to try our framework, this section can be used as a reference.
 	\item In chapter \ref{ch:experimental_results} we will show the experimental results related to our heuristics, which we omitted or only briefly mentioned in the previous chapters. We will test our theory with the framework described in the previous chapter, and compare the results with those obtained by using different parameters or scenes, and also with the results obtained by using the state-of-the-art heuristics, namely the surface area heuristic (SAH) and the longest splitting plane heuristic (LSPH).
 	\item In chapter \ref{ch:use_cases} we will list some possible scenarios where our techniques can be effectively used, based on the results obtained in the previous section. Moreover, we will produce a list of possible future development directions for the novel topics discussed in our thesis.
 	\item Eventually, in chapter \ref{ch:conclusion} we will draw the main take-away points of our work.
@@ -400,7 +400,7 @@ The most prominent use of the second category is in movies. CGI effects and anim
 
 The main difference between real-time and production ray tracing lies in the time constraints for producing a frame. In production ray tracing producing a frame can take a long time, even in the order of magnitude of days. Whereas, in real-time ray tracing, a frame must be produced every $33$ms to achieve $30$ frames per second (fps), and every $16.5$ms to achieve $60$ fps, which can be considered today's standard by many PC videogames.
 
-This starking difference makes it so that different techniques must be used depending on the scenario. In real-time ray tracing many approximations must be introduced in order to stay within the frame time budget, whereas in production ray tracing more accurate algorithms can be used, since time constraints are loose. Our work can benefit both categories, since the methods we will introduce can make ray tracing faster, in some situations, without introducing approximations.
+This striking difference makes it so that different techniques must be used depending on the scenario. In real-time ray tracing many approximations must be introduced in order to stay within the frame time budget, whereas in production ray tracing more accurate algorithms can be used, since time constraints are loose. Our work can benefit both categories, since the methods we will introduce can make ray tracing faster, in some situations, without introducing approximations.
 
 \subsection{Optimizations Overview} \label{ssec:optimizations_overview}
 Until now we briefly highlighted the strong points of ray tracing, and greatly simplified it. The main issue with ray tracing is that it is computationally expensive to simulate light transport in a convincing way. The reason lies in the rendering equation, and will be explained in section \ref{sec:monte_carlo_and_variance_reduction_techniques}.
@@ -440,7 +440,7 @@ Of course, if a ray starting from the camera never hits a light source, it could
 From this point on, we will consider the scenario where rays are traced backwards.
 
 \section{Monte-Carlo and Variance Reduction Techniques} \label{sec:monte_carlo_and_variance_reduction_techniques}
-In this section we will analyze the mathematical foundations of ray tracing, namely the Kajiya's rendering equation. Then we will present a statistical method to resolve the integrals appearing in the rendering equation, called Monte-Carlo. Finally, we will discuss a variance reduction technique, importance sampling, that can be used to obtain better approximations from the Monte-Carlo method, without making it more expensive. We will see how this technique generates artifacts in the ray distribution in the scene, which is one of the hypotheses of our thesis.
+In this section we will analyze the mathematical foundations of ray tracing, namely Kajiya's rendering equation. Then we will present a statistical method to resolve the integrals appearing in the rendering equation, called Monte-Carlo. Finally, we will discuss a variance reduction technique, importance sampling, that can be used to obtain better approximations from the Monte-Carlo method, without making it more expensive. We will see how this technique generates artifacts in the ray distribution in the scene, which is one of the hypotheses of our thesis.
 
 \subsection{Kajiya's Rendering Equation}
 $$
@@ -666,7 +666,7 @@ As we've seen throughout this chapter, in any of the algorithms of the ray traci
 
 Before delving into the algorithms that can be used to carry out this task, it is important to understand how an object is described in the world of computer graphics. In the history of computer graphics a lot of techniques to represent an object have been developed. Some examples are volumetric rendering with voxels \cite{voxel_rendering}, signed distance fields \cite{sdf} and implicit functions that work best with the ray marching algorithm \cite{ray_marching}, or point clouds. By the way, the most common method to represent 3D objects are polygonal meshes.
 
-A polygonal mesh describes an object by defining its surface via points, edges and faces (usually triangles). Meshes's success derived from the fact that they were one of the first representations proposed in the world of computer graphics. This led to a big part of the research converging to this specific representation form. For example, GPUs are specialized for the rendering of trianglular meshes via rasterization, even though in the last few years their architecture has been made more flexible.
+A polygonal mesh describes an object by defining its surface via points, edges and faces (usually triangles). Meshes's success derived from the fact that they were one of the first representations proposed in the world of computer graphics. This led to a big part of the research converging to this specific representation form. For example, GPUs are specialized for the rendering of triangular meshes via rasterization, even though in the last few years their architecture has been made more flexible.
 
 \begin{figure}[H]
     \centering
@@ -675,7 +675,7 @@ A polygonal mesh describes an object by defining its surface via points, edges a
     \label{fig:triangular_mesh}
 \end{figure}
 
-Meshes are also handy to create for graphic artists, and can be easily modeled to represent many kinds of objects, even though they are not suited to represent liquids or gases, such as clouds. Meshes, since they describe only the outside surface of an object, can prove difficult to use in applications where the interior is important, such as medical visualizations or games where objects can be dynamically destroyed. In these contextes it is usually preferred to employ voxels. Moreover meshes are a discrete representation, meaning that, once created, they cannot be used to visualize the details of the object at an arbitrary resolution, contrary to implicit functions. However, techniques to change the resolution based on the dynamic situation have been developed, such as LODing, tessellation \cite{tessellation} or more recent methods such as Nanite \cite{nanite}.
+Meshes are also handy to create for graphic artists, and can be easily modeled to represent many kinds of objects, even though they are not suited to represent liquids or gases, such as clouds. Meshes, since they describe only the outside surface of an object, can prove difficult to use in applications where the interior is important, such as medical visualizations or games where objects can be dynamically destroyed. In these contexts it is usually preferred to employ voxels. Moreover meshes are a discrete representation, meaning that, once created, they cannot be used to visualize the details of the object at an arbitrary resolution, contrary to implicit functions. However, techniques to change the resolution based on the dynamic situation have been developed, such as LODing, tessellation \cite{tessellation} or more recent methods such as Nanite \cite{nanite}.
 
 Regardless of their advantages and disadvantages, triangular meshes are by far the most used representation, therefore in this work we decided to focus on them in the scenario where the rendering technique is an algorithm of the ray tracing family.
 
@@ -749,7 +749,7 @@ A choice can be a sphere, which is easy to test against a ray. Moreover, buildin
     \label{fig:bounding_sphere}
 \end{figure}
 
-At the opposite side of the spectrum there are polygonal bounding volumes. In this case they are able to thightly enclose the triangles, but building them is not easy, and intersecting them can prove as expensive as intersecting the set of triangles itself.
+At the opposite side of the spectrum there are polygonal bounding volumes. In this case they are able to tightly enclose the triangles, but building them is not easy, and intersecting them can prove as expensive as intersecting the set of triangles itself.
 
 Another option is using Oriented Bounding Boxes (OBB). Oriented bounding boxes in 3D are rectangle parallelepiped. This means that they can have a different extension in 3 different arbitrary directions (each one perpendicular to the remaining two), making them better at tightly enclosing any distribution of triangles compared to spheres. However, computing a tightly enclosing OBB starting from the set of triangles involves using the principal component analysis \cite{obb_construction}, which can be too expensive in real-time scenarios. Moreover, intersecting a ray against an OBB involves a rotation transformation, which, again, can be too slow, especially during the traversal phase. In general OBBs are too slow in many scenarios, but, given their ability to tightly enclose triangles, can be used along with AABBs \cite{obbs_for_bvhs}.
 
@@ -847,7 +847,7 @@ In order to choose which plane to use to split the triangles, some optimizations
 
 Another advantage of using only the 3 cartesian directions is that, in order to detect the half-space a point falls into, it is sufficient to compare one of its coordinates with the coordinates of a point the plane is passing through. This is an optimization compared to computing the cross-product, like in the case where the plane has an arbitrary normal direction.
 
-After choosing a splitting direction, all possible cuts in that direction should be tested. Given an amount on $n$ triangles to be splitted, trying all the possible cuts in one direction means trying $n-1$ subdivisions, where the splitting plane is placed each time on the barycenter of a triangle. Since $n$ can be a big number, especially while running the algorithm on the first levels of the BVH, where nodes are big, a technique called binning can be introduced.
+After choosing a splitting direction, all possible cuts in that direction should be tested. Given an amount on $n$ triangles to be split, trying all the possible cuts in one direction means trying $n-1$ subdivisions, where the splitting plane is placed each time on the barycenter of a triangle. Since $n$ can be a big number, especially while running the algorithm on the first levels of the BVH, where nodes are big, a technique called binning can be introduced.
 
 With binning, instead of trying every possible cut, a predefined number of cuts is attempted. The splitting plane is translated each time by a fixed length (a bin) along the chosen cutting direction from the position of the previous cut. By using binning it is possible to miss some of the possible cuts, especially in a region dense of triangles. However, the most relevant cuts are often positioned where there is a big gap in one direction between two consecutive triangles. This is because it is possible to leverage the big gap to cut off as much space as possible. Whereas, if the gap is small, it is likely that the resulting children nodes' AABBs overlap. For this reason binning is an efficient approximation, especially in the higher levels of the BVH.
 
@@ -1088,7 +1088,7 @@ If a ray is affine to an influence area, it can use the BVH associated with the 
 
 \begin{figure}[]
     \centering
-    \includegraphics[width=\textwidth*\real{0.6}]{Images/TODO.png}
+    \includegraphics[width=\textwidth*\real{0.4}]{Images/direction_affinity.png}
     \caption{Visualization of the method to verify if the direction of a ray is affine with a point influence area.}
     \label{fig:affine_direction}
 \end{figure}
@@ -1099,18 +1099,18 @@ Since influence areas are localized in specific regions of the scene, it would b
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.7}]{Images/double_area.png}
+    \includegraphics[width=\textwidth*\real{0.6}]{Images/double_area.png}
     \caption{Example of why it is necessary to use a conservative approach.}
     \label{fig:conservative_inside}
 \end{figure}
 
-Influence areas do not guarantee to cover the whole scene. It is indeed more frequent that regions of the scene don't have any particular ray distribuition. In this case, those triangles that are not inside any influence area, would not be part of any BVH, and would therefore be invisible to rays during traversal. For this very reason, it is necessary to build a global BVH for the whole scene. In our implementation, this BVH is built by using surface area heuristic.
+Influence areas do not guarantee to cover the whole scene. It is indeed more frequent that regions of the scene don't have any particular ray distribution. In this case, those triangles that are not inside any influence area, would not be part of any BVH, and would therefore be invisible to rays during traversal. For this very reason, it is necessary to build a global BVH for the whole scene. In our implementation, this BVH is built by using surface area heuristic.
 
 When a ray traverses a local BVH and no hit is found, it is necessary to traverse the global BVH. It is indeed possible to find a hit with triangles that are not inside the influence area of the local BVH, as it can be observed in figure \ref{fig:outside_area}. However, if a ray is found in the local BVH, it is guaranteed for it to be the closest one, as shown in figure \ref{fig:conservative_inside}.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.7}]{Images/outside_area.png}
+    \includegraphics[width=\textwidth*\real{0.6}]{Images/outside_area.png}
     \caption{Example of how it is possible that a hit is found in the global BVH, but not in the local one.}
     \label{fig:outside_area}
 \end{figure}
@@ -1122,7 +1122,7 @@ In our implementation we tried to tackle this problem by using two different app
 
 The first approach is to use algorithms described in appendices \ref{sec:point_inside_aabb} and \ref{sec:point_inside_frustum}, and each time we want to check if a point is inside any influence area, iterate over all the influence areas present in the scene. The complexity of this method linearly depends on the amount of influence areas present in the scene. Moreover, the algorithms to find out if a point is inside an OBB or a frustum are not cheap, especially in a scenario where they must be used for every single ray. On the other hand, all the influence areas can be easily stored in an array, therefore there is no overhead in building an ad-hoc structure.
 
-On the opposite side of the spectrum there is the second method we propose. In this case we build an octree, where each leaf contains the influence areas that overlap with it. Building such an octree is not trivial, and it is diffusely described in section \ref{ssec:top_level_octree}. However, once the octree is built, it is extremely cheap to find out what are the influence areas containing any given 3D point. It is indeed succifient to traverse the octree and read the data in the leaf. Considering that it is not necessary to have extremely fine-grained octrees to achieve good results with PAH, we consider octrees the better choice as top level structure. More on the performance can be found in chapter \ref{ch:experimental_results}.
+On the opposite side of the spectrum there is the second method we propose. In this case we build an octree, where each leaf contains the influence areas that overlap with it. Building such an octree is not trivial, and it is diffusely described in section \ref{ssec:top_level_octree}. However, once the octree is built, it is extremely cheap to find out what are the influence areas containing any given 3D point. It is indeed sufficient to traverse the octree and read the data in the leaf. Considering that it is not necessary to have extremely fine-grained octrees to achieve good results with PAH, we consider octrees the better choice as top level structure. More on the performance can be found in chapter \ref{ch:experimental_results}.
 
 \chapter{Splitting Plane Facing Heuristic} \label{ch:splitting_plane_facing_heuristic}
 In chapter \ref{ch:projected_area_heuristic} we described the first heuristic we propose in this thesis. With PAH it is possible to estimate better the probability a ray hits AABBs in a region of the scene where relevant ray distributions are present. This enables us to have more accurate information on how to split a node at each level, during BVH construction. However, as we stated in section \ref{ssec:triangles_splitting}, another important step in building high-quality BVHs is the choosing of the orientation of the splitting plane. In this chapter we will propose a novel method to select the splitting plane, whose main aim is to reduce the overlapping of the projected area of the children nodes. Its name is Splitting Plane Facing Heuristic (SPFH).
@@ -1131,20 +1131,13 @@ As extensively discussed in section \ref{ssec:triangles_splitting}, in today's B
 
 Before continuing to the next paragraph, it is important to talk about the language we will use. In particular, the expression \textit{cut along the $K$ axis} means that the plane we are using to split the AABB into two children has a normal that is parallel to the specified axis $K$. Furthermore, we use the expression \textit{$K$ axis plane} to denote a plane whose normal is parallel to the $K$ cartesian axis.
 
-The most used heuristic to choose the splitting plane orientation, is to cut along the longest dimension of the AABB. The main idea behind this method is that, the longer the axis of the AABB, the more chances there are to cut off space effectively. This happens because, under the assumption that triangles are uniformly distributed in the volume of the AABB, the longer the range, the smaller the density of triangles along the direction of the range.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\textwidth*\real{0.6}]{Images/TODO.png}
-    \caption{A lot of space is cut off by using longest axis splitting.}
-    \label{fig:longest_axis_splitting}
-\end{figure}
+The most used heuristic to choose the splitting plane orientation, is to cut along the longest dimension of the AABB. The main idea behind this method is that, the longer the axis of the AABB, the more chances there are to cut off space effectively.
 
 Our idea instead, based on \cite{bvh_overlapping_metric}, is to use the information about the ray directions in a specific region of the scene, in order to divide a node such that it is less likely that its two children can be hit by the same ray. We can quantify the likeliness that two AABBs are hit by the same ray, by computing the projection of the overlapped area between the two. The projection, as we described in chapter \ref{ch:projected_area_heuristic}, is an orthographic projection in case of a plane influence area, and a perspective projection in case of a point influence area.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.6}]{Images/TODO.png}
+    \includegraphics[width=\textwidth*\real{0.6}]{Images/projection_overlapping.png}
     \caption{Overlapping projected area between two nodes' AABBs.}
     \label{fig:overlapping_projected_area}
 \end{figure}
@@ -1157,7 +1150,7 @@ We can first analyze the simplest case (figure \ref{fig:ray_facing_simplest_case
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=\textwidth*\real{0.6}]{Images/TODO.png}
+	\includegraphics[width=\textwidth*\real{0.45}]{Images/overlapping_by_extension.png}
 	\caption{Overlapping caused by the triangle extension.}
 	\label{fig:triangle_splitting_extension}
 \end{figure}
@@ -1165,15 +1158,15 @@ We can first analyze the simplest case (figure \ref{fig:ray_facing_simplest_case
 \begin{figure}[H]
     \centering
 	\subfloat[$x$ axis plane]{
-    	\includegraphics[width=\textwidth*\real{0.45}]{Images/TODO.png}
+    	\includegraphics[scale=0.15]{Images/x_axis_plane.png}
 	}
 	\qquad
 	\subfloat[$y$ axis plane]{
-    	\includegraphics[width=\textwidth*\real{0.45}]{Images/TODO.png}
+    	\includegraphics[scale=0.15]{Images/y_axis_plane.png}
 	}
 	\qquad
 	\subfloat[$z$ axis plane]{
-    	\includegraphics[width=\textwidth*\real{0.45}]{Images/TODO.png}
+    	\includegraphics[scale=0.15]{Images/z_axis_plane.png}
 	}
     \caption{Visual illustration of the possible splitting plane orientations and how a ray can hit the children AABBs.}
     \label{fig:ray_facing_simplest_case}
@@ -1201,19 +1194,6 @@ A more in-depth explanation of our algorithm can be found in section \ref{ssec:s
 Thanks to the customizable thresholds it is possible to make our algorithm more or less accurate in the choosing of the splitting plane. Having a more accurate algorithm can yield higher-quality BVHs, at the cost of a higher construction time.
 
 Another important factor in the effectiveness of SPFH is the type of influence area. Until now we talked about \textit{the rays direction of the influence area}. If this definition can be unequivocably given to plane influence areas, where all the rays face the same direction (chapter \ref{ch:multi_influence_areas}), the same cannot be stated for point influence areas, where the rays face many different directions. In the case of point influence area, the central direction can be considered as the direction of all the rays. However, if the point influence area have a large spread in its rays' directions, then this approximation doesn't hold. In such cases, it is not possible to use SPFH effectively, and it is therefore advised to fall back to the longest area heuristic.
-
-\begin{figure}[H]
-    \centering
-	\subfloat[Good approximation]{
-    	\includegraphics[width=\textwidth*\real{0.45}]{Images/TODO.png}
-	}
-	\qquad
-	\subfloat[Bad approximation]{
-		\includegraphics[width=\textwidth*\real{0.45}]{Images/TODO.png}
-		}
-		\caption{For spread out point influence areas, approximating the rays' directions to the central direction is not a good approximation.}
-		\label{fig:point_influence_areas_central_dir_approx}
-\end{figure}
 	
 The discussion about the quality of the BVHs built with the splitting plane facing heuristic (SPFH) can be found in chapter \ref{ch:experimental_results}.
 
@@ -1221,7 +1201,7 @@ The discussion about the quality of the BVHs built with the splitting plane faci
 In this chapter we will analyze how we built the framework that allowed us to test the novel techniques we explained in previous chapters, and to compare the results with other methods.
 We will explain all the implementation details we skipped in previous chapters, however we won't dwell on the performance, which is the main subject of chapter \ref{ch:experimental_results}.
 
-At the beginning of the development we used to write prototipes in C\#, in order to be able to immediately visualize the results in Unity. However, as we were convinced of the validity of our ideas, we decided to write code in C++, in order to have more control over it and be independent from a specific engine for visualization purposes. The code of our project can be found on this GitHub repository: \url{TODO}. Furthermore, it is possible to read the documentation of our code, generated with Doxygens\footnote{\url{https://www.doxygen.nl/}}, at this address: \url{TODO}. We decided to provide the documentation in order to help future developments. As explained in the next chapters, we tried to make the framework generic and flexible, in order to be able to test different algorithms without completely rewriting the system.
+At the beginning of the development we used to write prototypes in C\#, in order to be able to immediately visualize the results in Unity. However, as we were convinced of the validity of our ideas, we decided to write code in C++, in order to have more control over it and be independent from a specific engine for visualization purposes. The code of our project can be found on this GitHub repository: \url{TODO}. Furthermore, it is possible to read the documentation of our code, generated with Doxygen\footnote{\url{https://www.doxygen.nl/}}, at this address: \url{TODO}. We decided to provide the documentation in order to help future developments. As explained in the next chapters, we tried to make the framework generic and flexible, in order to be able to test different algorithms without completely rewriting the system.
 
 In parallel with the development of the framework to test our algorithms, we also developed an independent visualizer in Unity. The visualizer receives a JSON generated by the C++ framework, and shows the generated data structures over a scene (usually the BVHs). We decided to build the Unity visualizer in order to help us graphically visualize the results of our algorithms. This approach proved very useful to fix bugs and identify pitfalls in our approaches. We won't describe the Unity visualizer in this thesis, but the code can be found at this address: \url{TODO}.
 
@@ -1313,7 +1293,7 @@ In the $build$ function of the $Bvh$, we iterate over the axes returned by the $
 
 In simple words, if an axis is \textit{excellent}, meaning that a very good triangle split has been found by using it, no more cuts are attempted, no matter what (line 5).
 
-Instead, if no more axes are good enough (based on the threshold at line 8), then, if a cut has alredy been found in previous steps and its quality is \textit{acceptable} (line 9), it is used as splitting plane. Otherwise the fallback method (always SAH in our test cases) is used to find a splitting plane (line 11 and 12).
+Instead, if no more axes are good enough (based on the threshold at line 8), then, if a cut has already been found in previous steps and its quality is \textit{acceptable} (line 9), it is used as splitting plane. Otherwise the fallback method (always SAH in our test cases) is used to find a splitting plane (line 11 and 12).
 
 It is recommended that the $build$ function often looks for the best split by using just one plane, as we suggested in section \ref{ssec:triangles_splitting}. It is possible to achieve this by choosing a not-too-high threshold for what is considered an \textit{acceptable} cut, or by rising the $splitPlaneQualityThreshold$ to discern a good splitting plane from a bad one. Using more than one splitting plane should happen only in exceptional cases if this algorithm is to be used in a real-time scenario.
 
@@ -1356,7 +1336,7 @@ In our implementation we are interested in analyzing whether the BVH cost is acc
 \section{BVH Analyzer} \label{sec:bvh_analyzer}
 In this section we will describe the class used to analyze a BVH and produce a JSON output, that can be passed to the Unity visualizer or to other analyzing tools.
 
-One of the core points in our implementation of the BVH builder was to avoid as much as possible introducing overhead caused by procedures collecting data about the BVH. Nonetheless collecting information about the BVH was one of the most relevant interests of our research. To let these two necessities cohexist, we decided to write a class that receives a BVH as input, along with some functions to analyze it, fully traverses it breadth-first, and outputs a JSON representing the BVH and the required information.
+One of the core points in our implementation of the BVH builder was to avoid as much as possible introducing overhead caused by procedures collecting data about the BVH. Nonetheless collecting information about the BVH was one of the most relevant interests of our research. To let these two necessities coexist, we decided to write a class that receives a BVH as input, along with some functions to analyze it, fully traverses it breadth-first, and outputs a JSON representing the BVH and the required information.
 
 The most challenging part has been to let the user of the framework write its own data-collecting functions, and make it so that it was possible to collect virtually any statistic about the BVH by using these functions. At the end of the day we adopted an approach where the user must specify two functions for each category of data he or she wants to collect:
 \begin{description}
@@ -1420,7 +1400,7 @@ To check if an AABB is fully contained in the OBB, we simply check that all the 
 \subsection{Axis Aligned Bounding Box} \label{ssec:aabb}
 An axis-aligned bounding box (AABB) is an OBB where the three main directions are constrained to be parallel to the three cartesian axes of the reference system. AABBs are the most used 3D region in our implementation. They are the key element of a BVH (section \ref{sec:bvh}), and are also used in the octree top level structure (section \ref{ssec:top_level_octree}).
 
-The fact that AABB are, indeed, axis aligned, make them worse than OBBs as bounding volumes, however make them extremely fast to intersect with a ray in a GPU-frienly way (section \ref{sec:ray_box_intersection}), and also extremely space-effiecient to store:
+The fact that AABB are, indeed, axis aligned, make them worse than OBBs as bounding volumes, however make them extremely fast to intersect with a ray in a GPU-friendly way (section \ref{sec:ray_box_intersection}), and also extremely space-efficient to store:
 \begin{algorithm}[H]
 	\begin{algorithmic}
 		\Class{$Aabb$}
@@ -1489,7 +1469,7 @@ A frustum can be defined by specifying its orientation in space, an origin point
     \label{fig:frustum}
 \end{figure}
 
-Moreover, we can define a perspective projection matrix associated with the frustum. With this matrix it is possible to project a point in the frustum to its near plane. This aspect is particularly relevant in our implementation, since we use frustums to define the region of relevantce of point influence areas (section \ref{ssec:point_influence_area}), and we must have a method to project points of a point influence area to compute PAH.
+Moreover, we can define a perspective projection matrix associated with the frustum. With this matrix it is possible to project a point in the frustum to its near plane. This aspect is particularly relevant in our implementation, since we use frustums to define the region of relevance of point influence areas (section \ref{ssec:point_influence_area}), and we must have a method to project points of a point influence area to compute PAH.
 
 In our implementation the frustum is described as an object of the following class:
 \begin{algorithm}[H]
@@ -1516,7 +1496,7 @@ After the AABB refutation test fails, we use the algorithm described in section 
 To compute the tightest enclosing AABB, we iterate over all the 8 vertices of the frustum and compute the maximum and minimum in every dimension. However, after the first time it is computed, the AABB is cached.
 
 \subsubsection*{$isCollidingWith(aabb)$}
-After the AABB refutation test failure, we use a simplified version the separanting axis test (section \ref{sec:frustum_aabb_intersection}) to detect if the frustum is intersecting an AABB.
+After the AABB refutation test failure, we use a simplified version the separating axis test (section \ref{sec:frustum_aabb_intersection}) to detect if the frustum is intersecting an AABB.
 
 \subsubsection*{$fullyContains(aabb)$}
 In case the AABB refutation test fails, we check that all the vertices of the AABB are inside the frustum, by using the $contains(point)$ method.
@@ -1580,7 +1560,7 @@ The view matrix now is:
 \end{equation}
 
 \subsubsection*{$getProjectedArea(aabb)$}
-In order to compute the area orthographically projected by an AABB to a plane, we can observe that, regardless of the orientation of the plane, the projected hull can be subdivided into three parallelograms\footnote{It is possible that some parallelograms degenerate to a segment, for example in the casw where the plane is parallel to one of the faces of the AABB. The computations handle this case, since the area of a degenerate parallelgoram is 0.}, as it is possible to observe in figure \ref{fig:aabb_parallelograms}. The algorithm to compute the projected area follows the following steps:
+In order to compute the area orthographically projected by an AABB to a plane, we can observe that, regardless of the orientation of the plane, the projected hull can be subdivided into three parallelograms\footnote{It is possible that some parallelograms degenerate to a segment, for example in the case where the plane is parallel to one of the faces of the AABB. The computations handle this case, since the area of a degenerate parallelgoram is 0.}, as it is possible to observe in figure \ref{fig:aabb_parallelograms}. The algorithm to compute the projected area follows the following steps:
 
 \begin{enumerate}
 	\item Choose any vertex of the AABB, let's say vertex $A$.
@@ -1595,7 +1575,7 @@ This method of computing the area consists in only projecting 4 points and compu
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.6}]{Images/TODO.png}
+    \includegraphics[width=\textwidth*\real{0.6}]{Images/three_parallelograms.png}
     \caption{The orthographically projected hull of an AABB can be subdivided in 3 parallelograms.}
     \label{fig:aabb_parallelograms}
 \end{figure}
@@ -1605,7 +1585,7 @@ The projected hull of an AABB is defined as a 2D polygon formed by the silhouett
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=\textwidth*\real{0.6}]{Images/TODO.png}
+	\includegraphics[width=\textwidth*\real{0.45}]{Images/contour_internal_points.png}
 	\caption{The projected hull of an AABB. The blue points are contour points, the purple points are internal points.}
 	\label{fig:aabb_ortho_hull}
 \end{figure}
@@ -1683,8 +1663,8 @@ To compute the perspective projection matrix, we need the bounds of the frustum 
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=\textwidth*\real{0.6}]{Images/TODO.png}
-	\caption{Geometrical visualization of how to compute the right plane starting from the horizontal field of view and the near plane.}
+	\includegraphics[width=\textwidth*\real{0.35}]{Images/right_plane.png}
+	\caption{Geometrical visualization of how to compute the right plane starting from the horizontal field of view and the near plane. $tan({\alpha_{FoV}}) = \frac{opposite}{adjacent}$}
 	\label{fig:fov_to_right}
 \end{figure}
 
@@ -1704,7 +1684,7 @@ Differently from the orthographic case, there are no shortcuts to compute the ar
 The first step is discussed in the next section; how to compute the area of a 2D polygon is detailed in section \ref{sec:2dHull_area_computation}.
 
 \subsection*{$getProjectedHull(aabb)$}
-The idea to compute the projected hull of an AABB in the case where the projection is a perspective, is extremely similar to the one discussed in sectiom \ref{ssec:plane_influence_area}. Indeed, even in this case, we first have to detect what points of the AABB, after the perspective projection, will end up being contour points. The only difference is that now, this set of points can be computed by knowing the relative position of the eye and the AABB; in this case the forward direction of the $Pov$ is irrelevant. 
+The idea to compute the projected hull of an AABB in the case where the projection is a perspective, is extremely similar to the one discussed in section \ref{ssec:plane_influence_area}. Indeed, even in this case, we first have to detect what points of the AABB, after the perspective projection, will end up being contour points. The only difference is that now, this set of points can be computed by knowing the relative position of the eye and the AABB; in this case the forward direction of the $Pov$ is irrelevant. 
 
 For this reason, we can use the same structure we used for $PlaneInfluenceArea$s with $PointInfluenceArea$s too, namely the $hullTable$. In this case, though, when we need to compute what index of the $hullTable$ to read, we must use a different algorithm:
 
@@ -1724,7 +1704,7 @@ For this reason, we can use the same structure we used for $PlaneInfluenceArea$s
 	\end{algorithmic}
 \end{algorithm} 
 
-What the above algorith does, is to check if the eye position is inside the min-max range of the AABB in each dimension. If it is inside in a specific dimension, we deduce that from the eye position we cannot see the faces that are perpendicular to the considered dimension direction. If we repeat this process for all three dimensions, we obtain the set of visible faces, and therefore the contour points. This idea can be visualized in figure \ref{fig:visible_faces_from_eye}.
+What the above algorithm does, is to check if the eye position is inside the min-max range of the AABB in each dimension. If it is inside in a specific dimension, we deduce that from the eye position we cannot see the faces that are perpendicular to the considered dimension direction. If we repeat this process for all three dimensions, we obtain the set of visible faces, and therefore the contour points. This idea can be visualized in figure \ref{fig:visible_faces_from_eye}.
 
 \begin{figure}[H]
 	\centering
@@ -1856,7 +1836,7 @@ It is possible to specify a point in space and a facing direction for any $RayCa
 $CsvExporter$ class objects can be used to specify some of the attributes present in the JSON relative to the BVHs or the top level structure, and export it in the CSV format. Since the JSONs relative to the top level structures can become quite big (in our test cases we obtained JSONs with more than 20000 lines), having a class to extract only the relevant information for a specific analysis has proven invaluably helpful during the experimentation phase.
 
 \chapter{Experimental Results} \label{ch:experimental_results}
-In this chapter we will present the results we obtained by performing experimental tests on our theories. The experiments have been carried out by using our framework, presented in chapter \ref{ch:implementation}. Our experiments aim at simulating some possible situations our techniques may face in a real-world application. We will detail our methodologies and the reason behind the choice of the selected test cases. We also try to provide mathematical indicators, or at least empirical reasonings, about why a certain method works better than another one, given a specific scenario.
+In this chapter we will present the results we obtained by performing experimental tests on our theories. The experiments have been carried out by using our framework, presented in chapter \ref{ch:implementation}. Our experiments aim at simulating some possible situations our techniques may face in a real-world application. We will detail our methodologies and the reason behind the choice of the selected test cases. We also try to provide mathematical indicators, or at least empirical reasoning, about why a certain method works better than another one, given a specific scenario.
 
 Our tests are aimed at comparing how our heuristics change the behavior of a simple and standard BVH builder, compared to the state-of-the-art heuristics, and based on the BVH properties we adopt (section \ref{sec:bvh}). This means that our focus during the testing phase is not to build the fastest possible BVH builder. Our reasoning behind this choice, is that we want to reduce complexity at the bare minimum, in order to be able to isolate what the real focus of this work is, namely the advantages and disadvantages of PAH and SPFH compared to SAH and LSPH.
 
@@ -2221,7 +2201,7 @@ $$Node \; overlapping \; percentage = \frac{V}{min(A_1, A_2)}$$
 
 This process is carried out in a $BvhAnalyzer$ templated function of our framework (section \ref{sec:bvh_analyzer}).
 
-To compute the average overlapping percentage, we sum toghether all the overlapping areas ($V_1 + V_2 + ...$) of each pair of sibling, along with the area of the smallest of the two siblings ($A_{min1} + A_{min2} + ...$), and we compute the total overlapping percentage in the same way:
+To compute the average overlapping percentage, we sum together all the overlapping areas ($V_1 + V_2 + ...$) of each pair of sibling, along with the area of the smallest of the two siblings ($A_{min1} + A_{min2} + ...$), and we compute the total overlapping percentage in the same way:
 
 $$Total \; overlapping \; percentage = \frac{V_1 + V_2 + ...}{A_{min1} + A_{min2} + ...}$$
 
@@ -2355,7 +2335,7 @@ $$attempted \; splitting \; planes = \frac{total\;splitting\;planes\;attempted}{
 
 The fallback splitting method, namely using LSPH and SAH, is used $0.34$ times per node. The fallback method is used when there are no more splitting planes with a quality above $splitPlaneQualityThreshold$ and no split with a hit ratio value less than $acceptableChildrenFatherHitProbabilityRatio$ has already been found. A better explanation of this process can be found in section \ref{ssec:splitting_plane_implementation}.
 
-First, we tried to lower the $splitPlaneQualityThreshold$. The result we expect from this change is to build BVHs with a better quality, at the cost of an increased build time. Indeed, with a less strict threshold on the minimum quality of a splitting plane, more splitting planes will be attempted while trying to divide a node into its two children. The results we obtained fullfill our expectation: the avareage cost of the BVHs is now $88.4$, with an amount of attempted splits per node of $2.4$. Moreover, the fallback method is used fewer times, because, by attempting more splitting planes, it is more likely to find a good split: the amount of nodes generated with the fallback method is now only the $13\%$.
+First, we tried to lower the $splitPlaneQualityThreshold$. The result we expect from this change is to build BVHs with a better quality, at the cost of an increased build time. Indeed, with a less strict threshold on the minimum quality of a splitting plane, more splitting planes will be attempted while trying to divide a node into its two children. The results we obtained fulfill our expectation: the average cost of the BVHs is now $88.4$, with an amount of attempted splits per node of $2.4$. Moreover, the fallback method is used fewer times, because, by attempting more splitting planes, it is more likely to find a good split: the amount of nodes generated with the fallback method is now only the $13\%$.
 
 We then tried to raise the $splitPlaneQualityThreshold$, and, even in this case, we obtained results in line with the expectations. The average BVH cost increased to $148.3$, while the amount of attempted splitting planes decreased to $1.5$ per node. The fallback method is used $0.68$ times per node.
 
@@ -2468,13 +2448,13 @@ Since the $20$ BVHs contains a smaller amount of nodes the cost of each BVH is g
 In this chapter we will briefly talk about some of the potential use cases of the novel techniques presented in this work, and possible development directions. We will conclude our thesis with a summary of the presented methods and some considerations.
 
 \section{Use Cases} \label{sec:use_cases}
-As we said while presenting this thesis, bounnding volume hierarchies are a key component of ray tracing. Their hierarchical structure is fundamental in accelerating the ray-scene intersection process, which is the core mechanism by which algorithms of the ray tracing family are able to render a scene. This means that en improvement in how BVHs work, inherently makes ray tracing faster.
+As we said while presenting this thesis, bounding volume hierarchies are a key component of ray tracing. Their hierarchical structure is fundamental in accelerating the ray-scene intersection process, which is the core mechanism by which algorithms of the ray tracing family are able to render a scene. This means that en improvement in how BVHs work, inherently makes ray tracing faster.
 
-In particular, our work is too general to find specific use cases, nonetheless we can summarize the strong points of our techniques, and some possible broad application contextes.
+In particular, our work is too general to find specific use cases, nonetheless we can summarize the strong points of our techniques, and some possible broad application contexts.
 
 Both projected area heuristic and splitting plane facing heuristic work best when the rays of the influence area they are used on are parallel to a cartesian axis (section \ref{ssec:pah_spfh_vs_sah_lsph}). Since this property can be known as soon as an influence area is discovered, it is possible to decide on-the-fly whether it is worth it to use our technique or not. For example, in a rendering scenario where there is a static light source, it is possible to immediately decide whether it is appropriate to build an influence area for it or not. In case of a dynamic light, things can become more difficult, as it would require to decide on a per-frame basis whether it is worth it to use the BVH associated with the influence area or not. In a real-time scenario this could prove too expensive, however more tests should be carried in different scenarios, in order to prove this claim.
 
-Building BVHs with PAH has proven to be an order of magnitude more expensive than building them with SAH (section \ref{ssec:pah_spfh_vs_sah_lsph}), therefore the technique is not suited for a real-time dynamic scenario. On the other hand, it can bring improvements in non-real-time use cases, where it can be worth it to trade one-time construction time for per-ray traversal time. Indeed, in non-real-time scenarios, usually there are many more rays to trace, on a scene with more geometry. This means that even a small improvement in traversal time can potentially outweight the increased construction time cost.
+Building BVHs with PAH has proven to be an order of magnitude more expensive than building them with SAH (section \ref{ssec:pah_spfh_vs_sah_lsph}), therefore the technique is not suited for a real-time dynamic scenario. On the other hand, it can bring improvements in non-real-time use cases, where it can be worth it to trade one-time construction time for per-ray traversal time. Indeed, in non-real-time scenarios, usually there are many more rays to trace, on a scene with more geometry. This means that even a small improvement in traversal time can potentially outweigh the increased construction time cost.
 
 As we have seen, PAH in isolation doesn't bring benefits in many scenarios compared to SAH, therefore we strongly suggest to the two techniques in pair.
 
@@ -2491,16 +2471,16 @@ A different approach is instead needed for the top level structure. In this case
 
 Another important step would be to port the construction and traversal algorithms on parallel architectures. It may be beneficial to do this in two steps: first implementing a concurrent builder on the CPU, by using a multi-threaded approach. This could be helpful to get insights on what are the most critical points in the change of programming model. Eventually it is also important to transition to a fully parallel builder on the GPU. As shown in \cite{TODO}, building a BVH is a problem that can be effectively resolved by using a parallel approach, and doing so with our heuristics should be no different, except, probably, some considerations on the data layout to make the top level acceleration structure as efficient as possible, especially during traversal.
 
-In case the previous development produces acceptable results, the next step to make our techniques operative would be to create a method to detect influence areas autonomously. At the moment, we artificially create influence areas. While this approach could be used even in a real-world scenario, by adding influence areas where light sources are present, it could bring many improvements if it was possible to detect influence areas by giving as input the rays traced in previous frames. By doing so, there would be two major improvements: first, influence areas near light sources would be more accurate; secons, it would be possible to detect influence areas even in parts of the scene far from light sources, such as near a reflective surface like a mirror. The first method that comes to mind to do so is clustering, but even other directions can be explored. In particular, it could be beneficial to try to recycle results from previous frames in order to make the influence area detections algorithms more lightweight and accurate.
+In case the previous development produces acceptable results, the next step to make our techniques operative would be to create a method to detect influence areas autonomously. At the moment, we artificially create influence areas. While this approach could be used even in a real-world scenario, by adding influence areas where light sources are present, it could bring many improvements if it was possible to detect influence areas by giving as input the rays traced in previous frames. By doing so, there would be two major improvements: first, influence areas near light sources would be more accurate; seconds, it would be possible to detect influence areas even in parts of the scene far from light sources, such as near a reflective surface like a mirror. The first method that comes to mind to do so is clustering, but even other directions can be explored. In particular, it could be beneficial to try to recycle results from previous frames in order to make the influence area detections algorithms more lightweight and accurate.
 
 Another possible development is to try a different top level structure. For example, one structure that could bring some benefits over the octree is the kd-tree \cite{TODO}.
 
 \section{Closing Thoughts} \label{sec:closing_thoughts}
 Designing and developing two new heuristics for BVH construction, in a field with such a long history of development was a challenge, and a very instructive one. In this last section we will only summarize our work, and evaluate it from a more subjective point of view.
 
-Before starting the ideation of the two heuristics, we carried out a detailed phase of studying the state-of-the-art of the rendering methods used nowaday. The study started from a general overview of the most used real-time rednering techniques, from sources like \cite{TODO}, \cite{TODO} and \cite{TODO}. Then we focused more on ray tracing. First, we studied the mathematical theory behind ray tracing, in particular Monte-Carlo and variance reduction methods, culminating with the study of more recent papers on moder techniques, such as ReStir \cite{TODO}. After this, we moved on to studying the more concrete part about acceleration structures, in particular BVHs. Starting from the basis and studying both the theory and the concrete structures, allowed us to put them together and finding the small gap in the hypotheses of SAH.
+Before starting the ideation of the two heuristics, we carried out a detailed phase of studying the state-of-the-art of the rendering methods used nowadays. The study started from a general overview of the most used real-time rendering techniques, from sources like \cite{TODO}, \cite{TODO} and \cite{TODO}. Then we focused more on ray tracing. First, we studied the mathematical theory behind ray tracing, in particular Monte-Carlo and variance reduction methods, culminating with the study of more recent papers on modern techniques, such as ReStir \cite{TODO}. After this, we moved on to studying the more concrete part about acceleration structures, in particular BVHs. Starting from the basis and studying both the theory and the concrete structures, allowed us to put them together and finding the small gap in the hypotheses of SAH.
 
-We then started protoyping a very rough algorithm in Unity, in order to verify if our ideas could work at least in the most basic scenarios. By using Unity, we were also able to directly look at what we were developing, and this lead us to the creation of the second heuristic, namely SPFH. 
+We then started prototyping a very rough algorithm in Unity, in order to verify if our ideas could work at least in the most basic scenarios. By using Unity, we were also able to directly look at what we were developing, and this lead us to the creation of the second heuristic, namely SPFH. 
 
 At this point, we started writing the actual code in C++, without forgetting how important it was to be able to have a visual tool to visualize our results. While writing the C++ code, we decided to try and build an actual framework, and document it, in order to make life easier both for use and for future researchers. This proved invaluably important, as we were able to try out many different configurations with just small changes in the codebase.
 
