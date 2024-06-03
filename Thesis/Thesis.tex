@@ -2465,15 +2465,48 @@ We can now compute the total cost of the structures needed to use our heuristics
 Since the $20$ BVHs contains a smaller amount of nodes the cost of each BVH is greatly reduced. In particular, the dominant part of the cost of the BVH increases exponentially with the number of nodes. This relation allow us to use our structures even in cases with many influence areas of modest size.
 
 \chapter{Conclusion} \label{ch:conclusion}
-\section{Use Cases and Future Developments} \label{sec:use_cases}
-\begin{itemize}
-	\item Improve algorithms
-	\item Port on GPU
-	\item Try other top level structures (e.g. KD tree)
-	\item Find a method to detect the influence areas (e.g. clustering)
-\end{itemize}
+In this chapter we will briefly talk about some of the potential use cases of the novel techniques presented in this work, and possible development directions. We will conclude our thesis with a summary of the presented methods and some considerations.
+
+\section{Use Cases} \label{sec:use_cases}
+As we said while presenting this thesis, bounnding volume hierarchies are a key component of ray tracing. Their hierarchical structure is fundamental in accelerating the ray-scene intersection process, which is the core mechanism by which algorithms of the ray tracing family are able to render a scene. This means that en improvement in how BVHs work, inherently makes ray tracing faster.
+
+In particular, our work is too general to find specific use cases, nonetheless we can summarize the strong points of our techniques, and some possible broad application contextes.
+
+Both projected area heuristic and splitting plane facing heuristic work best when the rays of the influence area they are used on are parallel to a cartesian axis (section \ref{ssec:pah_spfh_vs_sah_lsph}). Since this property can be known as soon as an influence area is discovered, it is possible to decide on-the-fly whether it is worth it to use our technique or not. For example, in a rendering scenario where there is a static light source, it is possible to immediately decide whether it is appropriate to build an influence area for it or not. In case of a dynamic light, things can become more difficult, as it would require to decide on a per-frame basis whether it is worth it to use the BVH associated with the influence area or not. In a real-time scenario this could prove too expensive, however more tests should be carried in different scenarios, in order to prove this claim.
+
+Building BVHs with PAH has proven to be an order of magnitude more expensive than building them with SAH (section \ref{ssec:pah_spfh_vs_sah_lsph}), therefore the technique is not suited for a real-time dynamic scenario. On the other hand, it can bring improvements in non-real-time use cases, where it can be worth it to trade one-time construction time for per-ray traversal time. Indeed, in non-real-time scenarios, usually there are many more rays to trace, on a scene with more geometry. This means that even a small improvement in traversal time can potentially outweight the increased construction time cost.
+
+As we have seen, PAH in isolation doesn't bring benefits in many scenarios compared to SAH, therefore we strongly suggest to the two techniques in pair.
+
+On the other hand, splitting plane facing heuristic has proven to work well even without PAH. Furthermore, SPFH is not more expensive than the state-of-the-art LSPH, therefore it may be worth it to use it even in real-time scenarios. The drawback of using SPFH is that is can be effectively used only in specific regions of the scene, meaning that it is necessary to build the underlying top level structure (chapter \ref{ch:multi_influence_areas}). This fact can hinder the use of SPFH in a real-time scenario, especially in dynamic use cases, such as for dynamic lights.
+
+All in all, without carrying out further tests, we think that our methods are at the moment more suited for non-real-time scenarios, where a faster-to-traverse BVH can reduce the rendering time more effectively.
+
+\section{Future Developments} \label{sec:future_developments}
+The most important development of our work is to improve the algorithms and structures used. While in this thesis we showed PAH and SPFH validity from a theoretical point of view, it is now fundamental to test them in more concrete use cases before continuing the development in other directions.
+
+In order to do so, we suggest to look at the state-of-the-art algorithms used to build BVHs with SAH and LSPH, and then try to change them to use PAH and SPFH. In principle, many of the optimizations used for standard heuristics should perform equally well even for our heuristics.
+
+A different approach is instead needed for the top level structure. In this case it is not possible to perform a one-to-one translation from existing techniques, even though it may be worth is to study how TLAS and BLAS \cite{TODO} are implemented.
+
+Another important step would be to port the construction and traversal algorithms on parallel architectures. It may be beneficial to do this in two steps: first implementing a concurrent builder on the CPU, by using a multi-threaded approach. This could be helpful to get insights on what are the most critical points in the change of programming model. Eventually it is also important to transition to a fully parallel builder on the GPU. As shown in \cite{TODO}, building a BVH is a problem that can be effectively resolved by using a parallel approach, and doing so with our heuristics should be no different, except, probably, some considerations on the data layout to make the top level acceleration structure as efficient as possible, especially during traversal.
+
+In case the previous development produces acceptable results, the next step to make our techniques operative would be to create a method to detect influence areas autonomously. At the moment, we artificially create influence areas. While this approach could be used even in a real-world scenario, by adding influence areas where light sources are present, it could bring many improvements if it was possible to detect influence areas by giving as input the rays traced in previous frames. By doing so, there would be two major improvements: first, influence areas near light sources would be more accurate; secons, it would be possible to detect influence areas even in parts of the scene far from light sources, such as near a reflective surface like a mirror. The first method that comes to mind to do so is clustering, but even other directions can be explored. In particular, it could be beneficial to try to recycle results from previous frames in order to make the influence area detections algorithms more lightweight and accurate.
+
+Another possible development is to try a different top level structure. For example, one structure that could bring some benefits over the octree is the kd-tree \cite{TODO}.
 
 \section{Closing Thoughts} \label{sec:closing_thoughts}
+Designing and developing two new heuristics for BVH construction, in a field with such a long history of development was a challenge, and a very instructive one. In this last section we will only summarize our work, and evaluate it from a more subjective point of view.
+
+Before starting the ideation of the two heuristics, we carried out a detailed phase of studying the state-of-the-art of the rendering methods used nowaday. The study started from a general overview of the most used real-time rednering techniques, from sources like \cite{TODO}, \cite{TODO} and \cite{TODO}. Then we focused more on ray tracing. First, we studied the mathematical theory behind ray tracing, in particular Monte-Carlo and variance reduction methods, culminating with the study of more recent papers on moder techniques, such as ReStir \cite{TODO}. After this, we moved on to studying the more concrete part about acceleration structures, in particular BVHs. Starting from the basis and studying both the theory and the concrete structures, allowed us to put them together and finding the small gap in the hypotheses of SAH.
+
+We then started protoyping a very rough algorithm in Unity, in order to verify if our ideas could work at least in the most basic scenarios. By using Unity, we were also able to directly look at what we were developing, and this lead us to the creation of the second heuristic, namely SPFH. 
+
+At this point, we started writing the actual code in C++, without forgetting how important it was to be able to have a visual tool to visualize our results. While writing the C++ code, we decided to try and build an actual framework, and document it, in order to make life easier both for use and for future researchers. This proved invaluably important, as we were able to try out many different configurations with just small changes in the codebase.
+
+The last part was to test our methods in more concrete scenes, and extrapolate some indicators in order to be able to understand and present our results.
+
+Our work, while it has been tested on concrete scenes, is mostly a theoretical one. We showed how the novel heuristics we proposed can indeed work. However, we think that the way to actually use them is realistically long, but, as we described in section \ref{sec:future_developments}, we believe it is worth it to travel it.
 
 
 % === Bibliography ===
