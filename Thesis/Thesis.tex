@@ -424,7 +424,7 @@ In backward ray tracing light rays don't start from light sources, but from the 
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.6}]{Images/backward_ray_tracing.png}
+    \includegraphics[width=\textwidth*\real{0.4}]{Images/backward_ray_tracing.png}
     \caption{How rays are cast in backward ray tracing.}
     \label{fig:pinhole_camera}
 \end{figure}
@@ -470,7 +470,7 @@ The first part describes the light emitted $L_e(\bar{x}, \bar{\omega}_o)$, and i
     }
 	\qquad
 	\subfloat[Spotlight]{
-        \includegraphics[width=\textwidth*\real{0.15}]{Images/spot_light.png}
+        \includegraphics[width=\textwidth*\real{0.13}]{Images/spot_light.png}
     }
 	\caption{Three possible types of light sources.}
     \label{fig:light_sources}
@@ -489,7 +489,7 @@ The term $\cos(\bar{n}, \bar{\omega}_i)$ is called geometry term, and reflects a
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.5}]{Images/geometry_term.png}
+    \includegraphics[width=\textwidth*\real{0.45}]{Images/geometry_term.png}
     \caption{The geometry term.}
     \label{fig:geometry_term}
 \end{figure}
@@ -500,7 +500,7 @@ In order to compute the $L_i$ term for one specific direction $\overline{\omega_
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.5}]{Images/kajiya_recursive.png}
+    \includegraphics[width=\textwidth*\real{0.45}]{Images/kajiya_recursive.png}
     \caption{Recursiveness of the integral term of the Kajiya rendering equation.}
     \label{fig:kajiya_recursiveness}
 \end{figure}
@@ -697,7 +697,7 @@ The first space partitioning acceleration structure developed is the uniform gri
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.5}]{Images/uniform_grid.png}
+    \includegraphics[width=\textwidth*\real{0.45}]{Images/uniform_grid.png}
     \caption{The uniform grid in 2D.}
     \label{fig:uniform_grid}
 \end{figure}
@@ -708,7 +708,7 @@ In order to solve the adaptability problem of the uniform grid, octrees started 
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.5}]{Images/quadtree.png}
+    \includegraphics[width=\textwidth*\real{0.45}]{Images/quadtree.png}
     \caption{A 2D octree (quadtree).}
     \label{fig:octree}
 \end{figure}
@@ -717,7 +717,7 @@ It is important to note how octrees adapt better to the scene. Indeed, compared 
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.5}]{Images/teapot_stadium.png}
+    \includegraphics[width=\textwidth*\real{0.45}]{Images/teapot_stadium.png}
     \caption{How an octree adapts to a \textit{teapot in the stadium} kind of scene.}
     \label{fig:octree_teapot_stadium}
 \end{figure}
@@ -726,7 +726,7 @@ Another structure that is a generalization of octrees and delivers similar perfo
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.5}]{Images/kd_tree.png}
+    \includegraphics[width=\textwidth*\real{0.45}]{Images/kd_tree.png}
     \caption{A kd-tree in 2D.}
     \label{fig:kd_tree}
 \end{figure}
@@ -744,7 +744,7 @@ A choice can be a sphere, which is easy to test against a ray. Moreover, buildin
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.3}]{Images/bounding_sphere_slack.png}
+    \includegraphics[width=\textwidth*\real{0.25}]{Images/bounding_sphere_slack.png}
     \caption{Bounding circle (2D bounding sphere) can present large slack spaces.}
     \label{fig:bounding_sphere}
 \end{figure}
@@ -755,7 +755,7 @@ Another option is using Oriented Bounding Boxes (OBB). Oriented bounding boxes i
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.35}]{Images/obb_slack.png}
+    \includegraphics[width=\textwidth*\real{0.3}]{Images/obb_slack.png}
     \caption{A 2D OBB.}
     \label{fig:obb}
 \end{figure}
@@ -764,7 +764,7 @@ Axis-Aligned Bounding Boxes (AABB) are the most used bounding volumes. AABBs are
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.3}]{Images/aabb_slack.png}
+    \includegraphics[width=\textwidth*\real{0.25}]{Images/aabb_slack.png}
     \caption{A 2D AABB.}
     \label{fig:aabb}
 \end{figure}
@@ -773,7 +773,7 @@ AABBs are the most used bounding volumes both in real-time and non-real-time ray
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.5}]{Images/bvh_2d.png}
+    \includegraphics[width=\textwidth*\real{0.45}]{Images/bvh_2d.png}
     \caption{A 2-dimensional BVH.}
     \label{fig:bvh_2d}
 \end{figure}
@@ -965,13 +965,13 @@ For what concerns the last hypothesis, we have to remember how Monte-Carlo integ
 \begin{figure}[H]
     \centering
 	\subfloat[Without importance sampling]{
-    	\includegraphics[width=\textwidth*\real{0.45}]{Images/TODO.png}
+    	\includegraphics[width=\textwidth*\real{0.45}]{Images/without_importance_sampling.png}
 	}
 	\qquad
 	\subfloat[With importance sampling]{
-    	\includegraphics[width=\textwidth*\real{0.45}]{Images/TODO.png}
+    	\includegraphics[width=\textwidth*\real{0.45}]{Images/with_importance_sampling.png}
 	}
-    \caption{With importance sampling rays are not distributed uniformly in the scene.}
+    \caption{With importance sampling rays are not distributed uniformly in the scene, but some artifacts naturally arise.}
     \label{fig:non_uniform_rays}
 \end{figure}
 
@@ -1008,7 +1008,7 @@ We can generalize this idea to the case where the rays are parallel to an arbitr
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.5}]{Images/ortho_projection.png}
+    \includegraphics[width=\textwidth*\real{0.45}]{Images/ortho_projection.png}
     \caption{Orthographic projection of an AABB.}
     \label{fig:aabb_ortho_projection}
 \end{figure}
@@ -1055,7 +1055,7 @@ As we have touched on in the last chapter, while ray tracing a scene, it is like
 
 \begin{figure}[]
     \centering
-    \includegraphics[width=\textwidth*\real{0.7}]{Images/multiple_influence_areas.png}
+    \includegraphics[width=\textwidth*\real{0.55}]{Images/multiple_influence_areas.png}
     \caption{A scene with multiple relevant ray distributions.}
     \label{fig:multiple_ray_distributions}
 \end{figure}
@@ -1067,11 +1067,11 @@ Influence areas must first be localized in the scene. To do so, we decided to en
 \begin{figure}[H]
     \centering
 	\subfloat[Plane influence area]{
-    	\includegraphics[width=\textwidth*\real{0.45}]{Images/obb_3d.png}
+    	\includegraphics[width=\textwidth*\real{0.35}]{Images/obb_3d.png}
 	}
 	\qquad
 	\subfloat[Point influence area]{
-    	\includegraphics[width=\textwidth*\real{0.45}]{Images/frustum_3d.png}
+    	\includegraphics[width=\textwidth*\real{0.35}]{Images/frustum_3d.png}
 	}
     \caption{Plane influence areas are described by OBBs, whereas point influence areas are described by frustums.}
     \label{fig:influence_areas}
@@ -1088,7 +1088,7 @@ If a ray is affine to an influence area, it can use the BVH associated with the 
 
 \begin{figure}[]
     \centering
-    \includegraphics[width=\textwidth*\real{0.4}]{Images/direction_affinity.png}
+    \includegraphics[width=\textwidth*\real{0.35}]{Images/direction_affinity.png}
     \caption{Visualization of the method to verify if the direction of a ray is affine with a point influence area.}
     \label{fig:affine_direction}
 \end{figure}
@@ -1099,7 +1099,7 @@ Since influence areas are localized in specific regions of the scene, it would b
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.6}]{Images/double_area.png}
+    \includegraphics[width=\textwidth*\real{0.55}]{Images/double_area.png}
     \caption{Example of why it is necessary to use a conservative approach.}
     \label{fig:conservative_inside}
 \end{figure}
@@ -1110,7 +1110,7 @@ When a ray traverses a local BVH and no hit is found, it is necessary to travers
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.6}]{Images/outside_area.png}
+    \includegraphics[width=\textwidth*\real{0.55}]{Images/outside_area.png}
     \caption{Example of how it is possible that a hit is found in the global BVH, but not in the local one.}
     \label{fig:outside_area}
 \end{figure}
@@ -1383,7 +1383,7 @@ In order to detect if a point is inside an OBB, we project its distance vector f
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.6}]{Images/point_obb_test.png}
+    \includegraphics[width=\textwidth*\real{0.5}]{Images/point_obb_test.png}
     \caption{Check to detect if a point is inside an OBB.}
     \label{fig:oobb_contains}
 \end{figure}
@@ -1451,7 +1451,7 @@ $$\neg Aabb.function \implies \neg Obb.function$$
 The condition is only sufficient, but not necessary. It is thus needed to fall back to the more expensive $Obb$'s implementations in case the $Aabb$'s implementation give a positive response.
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.4}]{Images/obb_aabb_rejection_test.png}
+    \includegraphics[width=\textwidth*\real{0.35}]{Images/obb_aabb_rejection_test.png}
     \caption{If the point (purple) is outside the AABB, it is necessarily outside the OBB too. The inverse (blue and light blue) is not guaranteed.}
     \label{fig:aabb_for_obb_contains}
 \end{figure}
@@ -1575,7 +1575,7 @@ This method of computing the area consists in only projecting 4 points and compu
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.4}]{Images/three_parallelograms.png}
+    \includegraphics[width=\textwidth*\real{0.25}]{Images/three_parallelograms.png}
     \caption{The orthographically projected hull of an AABB can be subdivided in 3 parallelograms.}
     \label{fig:aabb_parallelograms}
 \end{figure}
@@ -1663,7 +1663,7 @@ To compute the perspective projection matrix, we need the bounds of the frustum 
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=\textwidth*\real{0.35}]{Images/right_plane.png}
+	\includegraphics[width=\textwidth*\real{0.3}]{Images/right_plane.png}
 	\caption{Geometrical visualization of how to compute the right plane starting from the horizontal field of view and the near plane. $tan({\alpha_{FoV}}) = \frac{opposite}{adjacent}$}
 	\label{fig:fov_to_right}
 \end{figure}
@@ -1747,7 +1747,7 @@ Octrees are often used to partition 3-dimensional space recursively and adaptive
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=\textwidth*\real{0.7}]{Images/quadtree_for_compression.png}
+	\includegraphics[width=\textwidth*\real{0.65}]{Images/quadtree_for_compression.png}
 	\caption{The image is recursively subdivided, until a cells contains pixels of just one color (or a maximum depth is reached).}
 	\label{fig:quadtree_for_compression}
 \end{figure}
@@ -1882,7 +1882,7 @@ We will now present the eight test scenes and the reasons why we selected each o
 \end{minipage}
 \hfill \begin{minipage}{0.4\textwidth}
 	\begin{figure}[H]
-		\includegraphics[width=\textwidth]{Images/TODO.png}
+		\includegraphics[width=\textwidth]{Images/cottage_scene.png}
 		\caption{Cottage}
 		\label{fig:cottage}
 	\end{figure}
@@ -1890,7 +1890,7 @@ We will now present the eight test scenes and the reasons why we selected each o
 
 \begin{minipage}{0.4\textwidth}
 	\begin{figure}[H]
-		\includegraphics[width=\textwidth]{Images/TODO.png}
+		\includegraphics[width=\textwidth]{Images/cottage_walls_scene.png}
 		\caption{Cottage Walls}
 		\label{fig:cottage_walls}
 	\end{figure}
@@ -1974,7 +1974,7 @@ As we have explained in sections \ref{ssec:plane_influence_area} and \ref{ssec:p
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=\textwidth*\real{0.75}]{Images/near_plane_culling.png}
+	\includegraphics[width=\textwidth*\real{0.65}]{Images/near_plane_culling.png}
 	\caption{The 2D projected hull of the AABB is not fully contained in the viewing area of the near plane.}
 	\label{fig:projection_outside_near_plane}
 \end{figure}
@@ -2111,7 +2111,7 @@ However, the main flaw of this formula is that we assume that the cost of traver
 
 \begin{figure}[H] 
 	\centering
-	\includegraphics[width=\textwidth*\real{0.5}]{Images/local_missing_rays.png}
+	\includegraphics[width=\textwidth*\real{0.45}]{Images/local_missing_rays.png}
 	\caption{The rays that miss in the local BVH are all concentrated in a section of the scene.}
 	\label{fig:ray_missing_local}
 \end{figure}
@@ -2172,13 +2172,6 @@ Given the unexpected results presented in the previous section, we decided to fu
 
 The results in chart \ref{fig:pah_isolation} show that projected area heuristic alone, produces BVHs with a quality comparable, if not worse, to surface area heuristic. By observing with our Unity visualizer tool the BVHs built with PAH and LSPH, we noticed a recurrent issue which partially explains why PAH doesn't perform well with LSPH. In principle, by using PAH we can adopt a more accurate cost metric than SAH. Therefore, by minimizing it, we expect to reach a better result. However, if the splitting plane orientation doesn't allow for splits without overlapping, what happens is that PAH splits the father node into an extremely small child and an extremely big one, as it can be observed in figure \ref{fig:pah_overlapping_children}.
 
-\begin{figure}[H] 
-	\centering
-	\includegraphics[width=\textwidth*\real{0.6}]{Images/TODO.png}
-	\caption{Since the splitting plane doesn't allow for a splitting without overlapping, PAH splits the father node into a small and a big children.}
-	\label{fig:pah_overlapping_children}
-\end{figure}
-
 By doing so, the projected area is indeed locally minimized. However, the split is not ideal, because it creates a large imbalance in the BVH. When we use SPFH this happens very rarely, and the greedy minimizing of the projected area produces the expected results.
 
 \subsection{Siblings Overlapping} \label{ssec:siblings_overlapping}
@@ -2190,7 +2183,7 @@ We measure the overlapping between siblings by first projecting their AABBs to t
 
 \begin{figure}[H] 
 	\centering
-	\includegraphics[width=\textwidth*\real{0.45}]{Images/TODO.png}
+	\includegraphics[width=\textwidth*\real{0.25}]{Images/overlapping.png}
 	\caption{How to compute the overlapping between siblings.}
 	\label{fig:pah_overlapping_siblings}
 \end{figure}
@@ -2232,11 +2225,11 @@ From this diagram it is possible to note how SPFH ($59\%$) is better than LSPH (
 \begin{figure}[H]
     \centering
     \subfloat[Parallel rays]{
-        \includegraphics[width=\textwidth*\real{0.45}]{Images/TODO.png}
+        \includegraphics[width=\textwidth*\real{0.45}]{Images/overlapping_avoidance_parallel.png}
 	}
 	\qquad
 	\subfloat[Oblique rays]{
-        \includegraphics[width=\textwidth*\real{0.45}]{Images/TODO.png} 
+        \includegraphics[width=\textwidth*\real{0.45}]{Images/overlapping_avoidance_oblique.png} 
     }
 	\caption{Overlapping reduction works best if the rays are parallel to a cartesian axis.}
     \label{fig:overlapping_avoidance_parallel_vs_oblique}
@@ -2911,7 +2904,7 @@ In this appendix we explain how we implemented the uniform random sampling from 
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.4}]{Images/TODO.png} 
+    \includegraphics[width=\textwidth*\real{0.35}]{Images/sphere_cap.png} 
     \caption{A sphere cap of angle $\gamma$ and radius $R$.}
     \label{fig:sphere_cap}
 \end{figure}
@@ -2926,8 +2919,8 @@ The issue with this method is how we sample the first random rotation, the yaw. 
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.5}]{Images/TODO.png} 
-    \caption{The more we get far from the center of the sphere cap, the more the circles get bigger.}
+    \includegraphics[width=\textwidth*\real{0.65}]{Images/sphere_cap_density.png} 
+    \caption{The more we get far from the center of the sphere cap, the more the circles get big.}
     \label{fig:concentric_circles}
 \end{figure}
 
@@ -2936,13 +2929,6 @@ To solve this issue, we must sample the yaw with a PDF proportional to the rate 
 Given a sphere of ray $R$ and oriented toward $\overrightarrow{u}$, the length of the circumference passing through the point of the sphere intersected by a vector forming with $\overrightarrow{u}$ an angle $\gamma$, can be obtained by using this formula:
 
 $$C(\gamma) = R \cdot sin(\gamma) \cdot 2\pi$$
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\textwidth*\real{0.4}]{Images/TODO.png} 
-    \caption{By using trigonometry we can obtain the length of the radius of the circle.}
-    \label{fig:radius_from_angle}
-\end{figure}
 
 This means that the yaw angle must be sampled according to a PDF proportional to this function.
 
