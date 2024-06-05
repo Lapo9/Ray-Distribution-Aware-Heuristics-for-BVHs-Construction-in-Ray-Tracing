@@ -121,11 +121,20 @@
 % Abstract
 \makeatletter
 \let\savedchap\@makechapterhead
-\def\@makechapterhead{\vspace*{-3cm}\savedchap}
+\def\@makechapterhead{\vspace*{-2cm}\savedchap}
 \polimichapter{Abstract}
 \let\@makechapterhead\savedchap
 \makeatletter
+
+\begin{tikzpicture}[remember picture,overlay,shift={(current page.north west)}]
+	\node[anchor=north west]{\includegraphics[width=20.7cm]{banner.png}};
+\end{tikzpicture}
+\begin{tikzpicture}[remember picture,overlay,shift={(current page.south west)}]
+	\node[anchor=south west, xshift=2.85cm, yshift=1.8cm]{\textbf{Keywords:} Ray tracing, bounding volume hierarchy, BVH};
+\end{tikzpicture}
+\vspace{-0.5cm}
 \small
+\\
 In the last few years, real-time computer graphics have been transitioning from a pipeline based on rasterization to one using ray tracing.
 Ray tracing makes it possible to accurately simulate the behavior of light rays, enabling developers of graphics content to reproduce high-fidelity scenes without using a plethora of techniques to mimic light transport.
 
@@ -139,13 +148,12 @@ The second, but not least important one, is to design software optimizations to 
 
 One of the problems that is ubiquitous in the ray tracing environment is to detect collisions between a ray and the geometry of the scene to render. Given the huge amount of primitives present in modern graphic applications, it is necessary to use a data structure to accelerate the ray collision retrieval process. The state-of-the-art structure is the Bounding Volume Hierarchy (BVH), which hierarchically organizes primitives, making it possible to skip entire sections of the scene that are spatially far away from the ray that is being traced during BVH traversal.
 
-In this work we propose two novel heuristics that work in pairs to build higher-quality BVHs, a data structure to make it possible to use them, and a comparative analysis of their performance in different scenarios.
+In this thesis we propose two novel heuristics that work in pair to build higher-quality BVHs, a data structure to make it possible to use them, and a comparative analysis of their performance in different scenarios.
 
 The first heuristic, called \textbf{Projected Area Heuristic} (PAH), aims at better estimating the amount of rays that hit each node of the BVH by exploiting some artifacts in the ray distribution in the scene, caused by another optimization used in a previous step of the ray tracing pipeline (namely Monte-Carlo importance sampling).
 
 The second one, \textbf{Splitting Plane Facing Heuristic} (SPFH) aims at reducing the overlap among nodes of the BVH, consequently reducing the number of intersection tests needed during the BVH traversal phase.
 
-\textbf{Keywords:} Ray tracing, bounding volume hierarchy, BVH
 \normalsize
 
 % Abstract in Italian
@@ -1047,6 +1055,12 @@ With this heuristic it is possible to build a BVH for a portion of the scene whe
 
 However, in a scene, there likely is more than a single and global ray distribution. It is possible that ray distributions are localized in definite regions of the scene. This means that, rather than building a single and global BVH valid for all the scene, it is necessary to build partial and localized BVHs for specific regions. This is the main topic of the next chapter \ref{ch:multi_influence_areas}.
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{Images/suzanne_root_visualizer.png}
+    \caption{A BVH seen in our Unity visualizer. The father node is green, and its two children are red and blue.}
+    \label{fig:suzanne_root_visualizer}
+\end{figure}
 
 \chapter{Multiple Influence Areas and the Top Level Structure} \label{ch:multi_influence_areas}
 In this chapter we will show how it is possible to deal with a scene where there are multiple localized ray distributions. We will first introduce the problem in detail and with visual examples, then we will define the concept of ray affinity to region where a relevant ray distribution is present. Eventually we will show how a scene with multiple ray distributions can be traversed by a ray. In this chapter we won't explain all the implementation details of the solution we propose, that will instead be discussed in section \ref{sec:top_level}.
@@ -1123,6 +1137,13 @@ In our implementation we tried to tackle this problem by using two different app
 The first approach is to use algorithms described in appendices \ref{sec:point_inside_aabb} and \ref{sec:point_inside_frustum}, and each time we want to check if a point is inside any influence area, iterate over all the influence areas present in the scene. The complexity of this method linearly depends on the amount of influence areas present in the scene. Moreover, the algorithms to find out if a point is inside an OBB or a frustum are not cheap, especially in a scenario where they must be used for every single ray. On the other hand, all the influence areas can be easily stored in an array, therefore there is no overhead in building an ad-hoc structure.
 
 On the opposite side of the spectrum there is the second method we propose. In this case we build an octree, where each leaf contains the influence areas that overlap with it. Building such an octree is not trivial, and it is diffusely described in section \ref{ssec:top_level_octree}. However, once the octree is built, it is extremely cheap to find out what are the influence areas containing any given 3D point. It is indeed sufficient to traverse the octree and read the data in the leaf. Considering that it is not necessary to have extremely fine-grained octrees to achieve good results with PAH, we consider octrees the better choice as top level structure. More on the performance can be found in chapter \ref{ch:experimental_results}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{Images/octree_dense_wireframe.png}
+    \caption{The wireframe of the octree built on a single point influence area.}
+    \label{fig:octree_dense_wireframe}
+\end{figure}
 
 \chapter{Splitting Plane Facing Heuristic} \label{ch:splitting_plane_facing_heuristic}
 In chapter \ref{ch:projected_area_heuristic} we described the first heuristic we propose in this thesis. With PAH it is possible to estimate better the probability a ray hits AABBs in a region of the scene where relevant ray distributions are present. This enables us to have more accurate information on how to split a node at each level, during BVH construction. However, as we stated in section \ref{ssec:triangles_splitting}, another important step in building high-quality BVHs is the choosing of the orientation of the splitting plane. In this chapter we will propose a novel method to select the splitting plane, whose main aim is to reduce the overlapping of the projected area of the children nodes. Its name is Splitting Plane Facing Heuristic (SPFH).
@@ -1201,7 +1222,9 @@ The discussion about the quality of the BVHs built with the splitting plane faci
 In this chapter we will analyze how we built the framework that allowed us to test the novel techniques we explained in previous chapters, and to compare the results with other methods.
 We will explain all the implementation details we skipped in previous chapters, however we won't dwell on the performance, which is the main subject of chapter \ref{ch:experimental_results}.
 
-At the beginning of the development we used to write prototypes in C\#, in order to be able to immediately visualize the results in Unity. However, as we were convinced of the validity of our ideas, we decided to write code in C++, in order to have more control over it and be independent from a specific engine for visualization purposes. The code of our project can be found on this GitHub repository: \url{TODO}. Furthermore, it is possible to read the documentation of our code, generated with Doxygen\footnote{\url{https://www.doxygen.nl/}}, at this address: \url{TODO}. We decided to provide the documentation in order to help future developments. As explained in the next chapters, we tried to make the framework generic and flexible, in order to be able to test different algorithms without completely rewriting the system.
+At the beginning of the development we used to write prototypes in C\#, in order to be able to immediately visualize the results in Unity. However, as we were convinced of the validity of our ideas, we decided to write code in C++, in order to have more control over it and be independent from a specific engine for visualization purposes. The code of our project can be found on this GitHub repository: \url{TODO}.
+
+Furthermore, it is possible to read the documentation of our code, generated with Doxygen\footnote{\url{https://www.doxygen.nl/}}, at this address: \url{TODO}. We decided to provide the documentation in order to help future developments. As explained in the next chapters, we tried to make the framework generic and flexible, in order to be able to test different algorithms without completely rewriting the system.
 
 In parallel with the development of the framework to test our algorithms, we also developed an independent visualizer in Unity. The visualizer receives a JSON generated by the C++ framework, and shows the generated data structures over a scene (usually the BVHs). We decided to build the Unity visualizer in order to help us graphically visualize the results of our algorithms. This approach proved very useful to fix bugs and identify pitfalls in our approaches. We won't describe the Unity visualizer in this thesis, but the code can be found at this address: \url{TODO}.
 
@@ -1332,6 +1355,13 @@ The BVH traversal process is more straightforward than the build process. The ma
 \end{algorithm} 
 
 In our implementation we are interested in analyzing whether the BVH cost is accurate. For this reason we made some addition to the presented algorithm to artificially compute the real cost of the traversal of a BVH. In particular, we introduce a variable to keep track of the cost of the traversal which simulates the SAH or PAH. When we enter a leaf node, the value is incremented by $current.triangles.size() \cdot 1$. When a non leaf node is hit the value is incremented by $2 \cdot 1.2$. It is possible to observe the similarities with what we discussed in section \ref{ssec:cost_computation}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{Images/suzanne_visualizer.png}
+    \caption{The BVH built over the Blender Suzanne mesh, as seen in our visualizer.}
+    \label{fig:suzanne_visualizer}
+\end{figure}
 
 \section{BVH Analyzer} \label{sec:bvh_analyzer}
 In this section we will describe the class used to analyze a BVH and produce a JSON output, that can be passed to the Unity visualizer or to other analyzing tools.
@@ -1807,6 +1837,20 @@ To check if a region $R$ fully contains the current node's AABB, we can use the 
 In the algorithm presented in figure \ref{fig:octree_build_flowchart} we stop when a node is marked as a leaf, and a node is marked as a leaf when it is fully contained by all the influence areas it overlaps with. Since the nodes are represented by AABBs, and the influence areas by OBBs and frustums, it is many case impossible to reach a point where the recursive calls of the algorithm end. It would require an infinite amount of subdivisions. For this reason, in our implementation, it is possible to set a maximum depth for the top level octree. Once the maximum depth is reached, a node is by definition a leaf node, and it contains as $data$ all the influence areas that even partially overlap with it. This means that in our implementation we are using a conservative approximation of the influence areas: influence areas as represented in the octree can have a bigger volume than the real influence areas, but never a smaller one. Consequently, it is possible that a ray is considered affine to a certain influence area even though it doesn't respect the first affinity condition (section \ref{sec:ray_influence_area_affinity}). As we will analyze in chapter \ref{ch:experimental_results}, this is not a problem. Indeed we will experimentally show that even with a low maximum depth of the octree, it is possible to achieve the desired results during ray-scene traversal.
 
 Once the octree is built, it is possible to use it to detect which regions are present in a given point of the scene.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{Images/octree_dense_visualizer.png}
+    \caption{5-level octree built on a single point influence area.}
+    \label{fig:octree_dense_visualizer}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{Images/octree_visualizer.png}
+    \caption{4-level octree built on a single point influence area.}
+    \label{fig:octree_visualizer}
+\end{figure}
 
 \section{Additional Structures} \label{sec:additional_structures}
 In the previous sections of this chapter we described the main structures used in our framework to test the validity of the theoretical claims of this thesis. In the framework many other structures and algorithms are present. However, since these other structures are not as strongly related to the theory of our thesis as the ones we described above, we will only briefly list some of them and their responsibilities.
