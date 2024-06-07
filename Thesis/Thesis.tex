@@ -32,7 +32,6 @@
 \usepackage{subfig} % Numbered and caption sub-figures using \subfloat.
 \usepackage{tikz} % A package for high-quality hand-made figures.
 \usetikzlibrary{}
-\usepackage{caption} % Coloured captions
 \usepackage{xcolor} % Coloured captions
 \usepackage{amsthm,thmtools,xcolor} % Coloured "Theorem"
 \usepackage{float}
@@ -187,7 +186,6 @@ Abstract Italiano
 
 % === Intro ===
 \chapter*{Introduction}
-%\iffalse TODO
 \section*{What Is Ray Tracing}
 In the field of computer graphics, we refer to ray tracing as a family of rendering algorithms that simulate light transport, in order to transition from a mathematical representation of a scene to an image on the screen. 
 
@@ -202,7 +200,7 @@ The core algorithm of ray tracing is conceptually simple. First, we cast some ra
 
 The process described above is a simplification of the behavior of the light in real world, and the way in which our brain can see. A lot of different specializations of the ray tracing algorithm exist. Some of them are designed to simulate light very precisely, such as bidirectional path tracing techniques \cite{bidirectional_path_tracing}. Others are designed to be fast.
 
-What all the techniques have in common is the fact that simulating light is an expensive task. The main reason lies in the number of rays that must be cast in order to obtain an accurate rendering of the scene. In the real-world a $100W$ light bulb is estimated to produce $10^{20}$ photons each second \cite{monte_carlo_integration}. Of course, even in a non real-time scenario, it is computationally impossible to ray trace an image with such an high amount of rays per light. Therefore, one of the most studied research directions in ray tracing is how to reduce the number of photons, while still obtaining an high quality image.
+What all the techniques have in common is the fact that simulating light is an expensive task. The main reason lies in the number of rays that must be cast in order to obtain an accurate rendering of the scene. In the real-world a $100W$ lightbulb is estimated to produce $10^{20}$ photons each second \cite{monte_carlo_integration}. Of course, even in a non real-time scenario, it is computationally impossible to ray trace an image with such an high amount of rays per light. Therefore, one of the most studied research directions in ray tracing is how to reduce the number of photons, while still obtaining an high quality image.
 
 \section*{Monte-Carlo and Kajiya Rendering Equation}
 The tool used to achieve this result is Monte-Carlo integration \ref{TODO}. With Monte-Carlo methods it is possible to integrate an arbitrary function with a given amount of random samples. In our case, the function to integrate is inside the Kajiya's rendering equation \cite{rendering_equation}.

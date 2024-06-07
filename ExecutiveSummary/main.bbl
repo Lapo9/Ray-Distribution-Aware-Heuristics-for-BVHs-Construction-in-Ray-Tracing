@@ -1,0 +1,8 @@
+\begin{thebibliography}{1}
+
+\bibitem{bvh_overlapping_metric}
+Timo Aila, Tero Karras, and Samuli Laine.
+\newblock On quality metrics of bounding volume hierarchies.
+\newblock In {\em Proceedings of the 5th High-Performance Graphics Conference}, pages 101--107, 2013.
+
+\end{thebibliography}
