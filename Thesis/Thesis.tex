@@ -220,7 +220,7 @@ Going back to the Kajiya's rendering equation, as we said, it needs in input the
 
 What we described in the previous paragraph is a simplification of the Monte-Carlo method. With Monte-Carlo we have the mathematical proof that we can obtain a good estimate of the light incoming to a point by following this process, which involves the random sampling of the directions where to cast the probe rays.
 
-Monte-Carlo variance reduction techniques, such as importance sampling \cite{multi_light_sampling}, help us to achieve a precise approximation of the light incoming to a point with a low amount of probe rays, which is the goal we set.
+Monte-Carlo variance reduction techniques, such as importance sampling \cite{importance_sampling}\cite{multi_light_sampling}, help us to achieve a precise approximation of the light incoming to a point with a low amount of probe rays, which is the goal we set.
 
 However, importance sampling, creates artifacts in the distribution of the probe rays in the scene. If, with plain Monte-Carlo, the rays are distributed uniformly in the scene, by using importance sampling their distribution changes, and more rays tend to go toward light sources. This effect is the main hypothesis of the the novel heuristics we propose in this work.
 
@@ -842,7 +842,7 @@ To choose the best split, a BVH construction algorithm sorts the splits proposed
 
 The aim of a cost function is to accurately predict how \textit{good} the final BVH will be. The concept of \textit{goodness} or \textit{quality} of a BVH is directly related to how fast an arbitrary ray is able to traverse it to find the first intersection with a triangle. It is possible to evaluate the cost function for every node as if it was a leaf node, and this is useful while building the BVH with the greedy algorithm. It is also possible to compute the cost function of the overall BVH, which is used to evaluate the quality of the BVH built.
 
-The most used cost function is called Surface Area Heuristic (SAH), and is based on a very simple idea: the smaller the surface area of a node's AABB, the less likely is for this node to be hit by a ray. If a node is hit less times by a ray, it means that fewer checks are needed to traverse the BVH, therefore its quality, as we defined it above, is higher.
+The most used cost function is called Surface Area Heuristic (SAH) \cite{sah}, and is based on a very simple idea: the smaller the surface area of a node's AABB, the less likely is for this node to be hit by a ray. If a node is hit less times by a ray, it means that fewer checks are needed to traverse the BVH, therefore its quality, as we defined it above, is higher.
 
 Given an AABB, it is trivial to compute its surface area as: 
 $$A=(max_x-min_x)\cdot (max_y-min_y) + (max_x-min_x)\cdot (max_z-min_z) + (max_y-min_y)\cdot (max_z-min_z)$$

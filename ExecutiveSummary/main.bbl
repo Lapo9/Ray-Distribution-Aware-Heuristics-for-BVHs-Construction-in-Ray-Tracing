@@ -5,4 +5,19 @@ Timo Aila, Tero Karras, and Samuli Laine.
 \newblock On quality metrics of bounding volume hierarchies.
 \newblock In {\em Proceedings of the 5th High-Performance Graphics Conference}, pages 101--107, 2013.
 
+\bibitem{rendering_equation}
+James~T Kajiya.
+\newblock The rendering equation.
+\newblock In {\em Proceedings of the 13th annual conference on Computer graphics and interactive techniques}, pages 143--150, 1986.
+
+\bibitem{sah}
+J~David MacDonald and Kellogg~S Booth.
+\newblock Heuristics for ray tracing using space subdivision.
+\newblock {\em The Visual Computer}, 6:153--166, 1990.
+
+\bibitem{importance_sampling}
+Matt Pharr.
+\newblock On the importance of sampling.
+\newblock {\em Ray Tracing Gems: High-Quality and Real-Time Rendering with DXR and Other APIs}, pages 207--222, 2019.
+
 \end{thebibliography}
