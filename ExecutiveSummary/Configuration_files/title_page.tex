@@ -1,0 +1,38 @@
+% DO NOT REMOVE SPACES BETWEEN LINES!
+
+\newgeometry{left=3cm, right=3cm}
+\twocolumn[{\begin{@twocolumnfalse}
+
+\AddToShipoutPicture*{\BackgroundPic}
+
+\hspace{-0.8cm}\includegraphics[width=0.75\textwidth]{logo_polimi_ing_indinf.eps}
+\AddToShipoutPicture{%
+	\put(0.5\paperwidth-18,21){\includegraphics[scale=0.05]{Images/triangle_logo.png}}
+}
+
+\vspace{2cm}
+\Large \bfseries \textsc{\color{bluePoli} Executive Summary of the Thesis}\\
+
+\Huge{\textbf{\color{bluePoli}{\title}}}\\
+
+\vspace{0.5cm}
+\Large \bfseries \textsc{\color{bluePoli} Laurea Magistrale in\\ \course}\\
+
+\vspace{-0.2cm}
+\footnotesize \normalfont Author: \textsc{\textbf{\author}} \hspace{0.8cm}
+\footnotesize \normalfont Advisor: \textsc{\textbf{\advisor}} \hspace{0.8cm}
+\footnotesize \normalfont Academic year: \textsc{\textbf{\YEAR}}
+
+\vspace{11pt}
+
+\centerline{\rule{1.0\textwidth}{0.4pt}}
+
+\thispagestyle{empty} % In order to not show the header in the first page
+
+% === Bibliography ===
+\vspace{3cm}
+\scriptsize
+\bibliography{../Thesis/bibliography.bib}
+\end{@twocolumnfalse}}]
+\setcounter{page}{1}
+\restoregeometry
