@@ -347,7 +347,7 @@ namespace pah {
 			if (rootArea < 0) return { node.aabb.surfaceArea() * node.triangles.size() * cost, 1, node.aabb.surfaceArea()};
 
 			float surfaceArea = node.aabb.surfaceArea();
-			float hitProbability = surfaceArea / rootArea;
+			float hitProbability = glm::min(surfaceArea / rootArea, 1.0f);
 			return { hitProbability * node.triangles.size() * cost, hitProbability, surfaceArea };
 		}
 
@@ -396,7 +396,7 @@ namespace pah {
 			//basically, for each axis, decide whether to include it or not, and add a quality metric for this split axis
 			for (int i = 0; const auto & [length, axis] : axisLengths) {
 				float ratio = length / longestAxis;
-				if (ratio > qualityThreshold) {
+				if (ratio >= qualityThreshold) {
 					result.emplace_back(axis, ratio);
 					i++; //counts how many axis we analyzed
 					continue;

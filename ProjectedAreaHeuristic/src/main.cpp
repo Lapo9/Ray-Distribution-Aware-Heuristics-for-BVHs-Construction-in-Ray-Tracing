@@ -107,7 +107,7 @@ int main() {
 	Bvh fallbackBvh{ bvhProperties, bvhStrategies::computeCostSah, bvhStrategies::chooseSplittingPlanesLongest<0.f>, bvhStrategies::shouldStopThresholdOrLevel, "fallback" };
 	fallbackBvh.setFallbackComputeCostStrategy(bvhStrategies::computeCostSah);
 
-#define BVH_TESTS 0
+#define BVH_TESTS 1
 #if BVH_TESTS
 	// Filter test scenes to run
 #define and_or &&
@@ -116,20 +116,20 @@ int main() {
 	constexpr bool PLANE = ALL || false;
 	constexpr bool POINT = ALL || false;
 	constexpr bool PLANE_LONGEST = ALL || false;
-	constexpr bool POINT_LONGEST = ALL || false;
+	constexpr bool POINT_LONGEST = ALL || true;
 	constexpr bool PLANE_FACING = ALL || false;
-	constexpr bool POINT_FACING = ALL || false;
-	constexpr bool PLANE_STANDARD = ALL || true;
-	constexpr bool POINT_STANDARD = ALL || true;
+	constexpr bool POINT_FACING = ALL || true;
+	constexpr bool PLANE_STANDARD = ALL || false;
+	constexpr bool POINT_STANDARD = ALL || false;
 
-	constexpr bool WOOD_SCENE = ALL || true;
-	constexpr bool SUZANNE_SCENE = ALL || true;
-	constexpr bool COTTAGE_SCENE = ALL || true;
+	constexpr bool WOOD_SCENE = ALL || false;
+	constexpr bool SUZANNE_SCENE = ALL || false;
+	constexpr bool COTTAGE_SCENE = ALL || false;
 	constexpr bool COTTAGE_WALLS_SCENE = ALL || false;
 	constexpr bool CROWD_SCENE = ALL || false;
 	constexpr bool RANDOM100_SCENE = ALL || false;
-	constexpr bool RANDOM1000_SCENE = ALL || true;
-	constexpr bool SPONZA_SCENE = ALL || false;
+	constexpr bool RANDOM1000_SCENE = ALL || false;
+	constexpr bool SPONZA_SCENE = ALL || true;
 
 	constexpr string_view RESULTS_DIRECTORY = "E:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/Results/";
 	constexpr float spfhSplitPlaneQualityThreshold = 0.4f;
@@ -2919,10 +2919,10 @@ int main() {
 		}
 	};
 	
-	csvTraversal.generateCsv("D:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/Results/ExportedCsvFullSplittingPlanesCountHigher2.csv");
+	csvTraversal.generateCsv("D:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/Results/ExportedCsvPlaneSponza4.csv");
 #endif //BVH_TESTS
 
-#define OCTREE_TESTS 1
+#define OCTREE_TESTS 0
 #if OCTREE_TESTS
 	// OCTREE VS AABBS
 	{

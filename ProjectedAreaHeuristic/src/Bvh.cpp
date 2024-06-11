@@ -104,9 +104,10 @@ void pah::Bvh::splitNode(Node& node, Axis fatherSplittingAxis, float fatherHitPr
 
 	//the final action simply adds the measured time to the total split time
 	TIME(TimeLogger timeLoggerSplitting{ [&timingInfo = node.nodeTimingInfo](DurationMs duration) { timingInfo.logSplittingTot(duration); } };);
+	Axis lastUsedAxis = Axis::None;
 	//try to split for each axis provided by chooseSplittingPlanes
 	for (auto [axis, quality] : splittingPlanes) {
-		float bestCutSoFarQuality = (bestLeftCostSoFar.hitProbability + bestRightCostSoFar.hitProbability) / fatherHitProbability;
+		float bestCutSoFarQuality = bestLeftCostSoFar.hitProbability == MAX ? MAX : (bestLeftCostSoFar.hitProbability + bestRightCostSoFar.hitProbability) / fatherHitProbability;
 		if (bestCutSoFarQuality <= properties.excellentChildrenFatherHitProbabilityRatio) break;
 		bool forceFallback = false; // whether to use the standard SAH strategies in place of the user selected ones
 		//if the quality of this split plane is too low...
@@ -115,7 +116,8 @@ void pah::Bvh::splitNode(Node& node, Axis fatherSplittingAxis, float fatherHitPr
 			if (bestCutSoFarQuality <= properties.acceptableChildrenFatherHitProbabilityRatio) break;
 
 			forceFallback = true;
-			Axis sahAxis = chooseSplittingPlanesWrapper(node, influenceArea, fatherSplittingAxis, rng, currentLevel, forceFallback)[influenceArea ? 0 : 1].first; // if there is no influence area, it means we've already used the longest option, so try a different one
+			auto chooseSplittingPlanesResult = chooseSplittingPlanesWrapper(node, influenceArea, fatherSplittingAxis, rng, currentLevel, forceFallback);
+			Axis sahAxis = chooseSplittingPlanesResult[0].first == lastUsedAxis ? chooseSplittingPlanesResult[1].first : chooseSplittingPlanesResult[0].first; // we have already used the longest option, so try a different one
 			axis = sahAxis;
 			bestLeftCostSoFar = { MAX,MAX,MAX }; bestRightCostSoFar = { MAX,MAX,MAX };
 		}
@@ -145,6 +147,7 @@ void pah::Bvh::splitNode(Node& node, Axis fatherSplittingAxis, float fatherHitPr
 			}
 		}
 		if (forceFallback) break; //if it was forced to use SAH, it means that the splitting plane quality was low. Therefore it is useless to keep trying (since planes are sorted by their quality).
+		lastUsedAxis = axis;
 	}
 	TIME(timeLoggerSplitting.stop();); //log the time it took to split this node
 
