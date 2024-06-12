@@ -203,7 +203,7 @@ The process described above is a simplification of the behavior of the light in 
 What all the techniques have in common is the fact that simulating light is an expensive task. The main reason lies in the number of rays that must be cast in order to obtain an accurate rendering of the scene. In the real-world a $100W$ lightbulb is estimated to produce $10^{20}$ photons each second \cite{monte_carlo_integration}. Of course, even in a non real-time scenario, it is computationally impossible to ray trace an image with such an high amount of rays per light. Therefore, one of the most studied research directions in ray tracing is how to reduce the number of photons, while still obtaining an high quality image.
 
 \section*{Monte-Carlo and Kajiya Rendering Equation}
-The tool used to achieve this result is Monte-Carlo integration \ref{TODO}. With Monte-Carlo methods it is possible to integrate an arbitrary function with a given amount of random samples. In our case, the function to integrate is inside the Kajiya's rendering equation \cite{rendering_equation}.
+The tool used to achieve this result is Monte-Carlo integration \cite{TODO}. With Monte-Carlo methods it is possible to integrate an arbitrary function with a given amount of random samples. In our case, the function to integrate is inside the Kajiya's rendering equation \cite{rendering_equation}.
 
 The Kajiya's rendering equation is, in summary, a recursive integral equation which calculates the amount of light a point in a scene gets from the surrounding environment. Once we know how much light a point receives, we can compute how much of this energy is reflected toward a given direction, by using the BRDF \cite{brdf}.
 
@@ -1214,7 +1214,7 @@ The $properies$ are values upon which depends how the BVH is built. We will now 
 	\item[\boldmath$maxTrianglesPerLeaf$] If a node has fewer triangles than this threshold, it is a leaf.
 	\item[\boldmath$maxLevels$] If a node is at a level higher than this threshold, it is a leaf.
 	\item[\boldmath$bins$] How many cuts to try to split a node into its children. A higher value generates more accurate BVHs, but is is also more expensive (section \ref{ssec:triangles_splitting}).
-	\item[\boldmath$maxNonFallbackLevels$] If a node is at a level higher than this threshold, the specified fallback strategies (usually SAH and longest splitting plane heuristic) will be used to split it into children. This can be used to avoid using an expensive strategy (such as PAH) even at deep levels, where there is less to gain (section \ref{TODO}).
+	\item[\boldmath$maxNonFallbackLevels$] If a node is at a level higher than this threshold, the specified fallback strategies (usually SAH and longest splitting plane heuristic) will be used to split it into children. This can be used to avoid using an expensive strategy (such as PAH) even at deep levels, where there is less to gain.
 	\item[\boldmath$splitPlaneQualityThreshold$] $[0, 1]$. If the quality of the split plane (chapter \ref{ch:splitting_plane_facing_heuristic}) is less than this threshold, two things can happen: if a satisfactory split plane has already been found (look at the next two properties), it is used; if not, use the fallback strategy to find the splitting plane. A low value will leave the algorithm find the best splitting plane more times, but will slow the construction down. More details in section \ref{ssec:splitting_plane_implementation}.
 	\item[\boldmath$acceptableChildrenFatherHitProbabilityRatio$] Defined as $\frac{leftChildHit\% + rightChildHit\%}{fatherHit\%}$. This value is used to determine if a splitting plane cut is acceptable when no more planes with the minimum quality are present. The value is used to approximate the overlapping of the two children nodes: in the ideal case (no overlapping) this value is less than 1. A low value forces the algorithm to use the fallback strategy more often, therefore will also slow the construction down. More details in section \ref{ssec:splitting_plane_implementation}.
 	\item[\boldmath$excellentChildrenFatherHitProbabilityRatio$] Same as above, but in this case this value is compared with the best children found after each splitting plane cut: if such value is lower than this threshold, no more splitting planes are attempted, even if they had the required quality. This allows an early out during the search for the splitting plane. More details in section \ref{ssec:splitting_plane_implementation}.
@@ -1476,7 +1476,7 @@ In case the AABB refutation test fails, we check that all the vertices of the AA
 Influence areas, as described in chapter \ref{ch:multi_influence_areas}, in our implementation are those objects responsible for defining a 3D region of space where there is a relevant ray distribution. The main task of an influence area is to provide an interface that can be queried to retrieve information related to its associated ray distribution. The most important methods, present in the base $InfluenceArea$ class, are:
 \begin{description}
 	\item[\boldmath$getProjectedArea(aabb)$] Returns the area projected by an AABB, based on the associated ray distribution of the influence area: an orthographic projection for a plane influence area, and a perspective projection for a point influence area. Used during PAH based BVH construction.
-	\item[\boldmath$getProjectedHull(aabb)$] Returns an array of 2D points, representing the projection of the contour points of an AABB as seen  from the point of view of the influence area. Used during TODO(it is used during tests to cull the projected root AABB to the near plane size)
+	\item[\boldmath$getProjectedHull(aabb)$] Returns an array of 2D points, representing the projection of the contour points of an AABB as seen from the point of view of the influence area. Its use can be observed in section \ref{ssec:projected_area_culling}.
 	\item[\boldmath$getRayDirection(aabb)$] Returns the direction of a ray intersecting the center of the specified AABB. Used in BVH construction when SPFH is adopted.
 	\item[\boldmath$isDirectionAffine(ray)$] Returns whether the ray direction is affine to the underlying ray distribution. Affinity is a concept explained in section \ref{sec:ray_influence_area_affinity}, and is used during BVH construction, if SPFH is employed.
 \end{description}
@@ -1709,7 +1709,7 @@ In the AABBs for regions data structure, all the influence areas are stored in a
 
 Since this top level structure uses a simple array, there is no overhead in creating it given the influence areas present in the scene. Moreover, it doesn't present any approximation of the 3D regions of the influence areas. On the other hand, employing it each time we have to detect what influence areas a ray is possibly affine with is not ideal, because the complexity of such a task grows linearly with the number of influence areas present in the scene. Furthermore, the algorithms of the $contains(point)$ functions, discussed in section \ref{sec:point_inside_frustum}, are too expensive to be used in this scenario. The optimization of caching the AABB of the 3D region of the influence areas and using it for rejection tests improves performance, but doesn't change the algorithm complexity.
 
-A more accurate analysis of the performance of this top level structure can be found in section \ref{TODO}.
+A more accurate analysis of the performance of this top level structure can be found in section \ref{sec:octree_vs_aabbs}.
 
 \subsection{Octree} \label{ssec:top_level_octree}
 The top level structure we present in this section is based upon an octree. As we have already explained in section \ref{ssec:need_for_acceleration_structures}, an octree is a tree where each node has exactly 8 children, which partition the volume enclosed by the father into 8 octants with the same shape and the same volume. An illustration of a quadtree (a 2-dimensional octree) can be found in figure \ref{fig:octree}.
@@ -1946,7 +1946,7 @@ To present the results, we decided to aggregate data based on the influence area
 	\label{fig:pah_accuracy_chart}
 \end{figure}
 
-As it is possible so observe from the chart \ref{fig:pah_accuracy_chart}, the error of PAH is always smaller than SAH's. On average PAH error is $7\%$, and SAH's $26\%$.
+As it is possible so observe from the chart \ref{fig:pah_accuracy_chart}, the error of PAH is always smaller than SAH's. On average PAH error is $7\%$, and SAH's $36\%$.
 
 It is also possible to observe that PAH is more precise when the influence area is a plane influence area. In this case the average error is $2\%$, compared to the $12\%$ error in case of point influence areas.
 
@@ -1982,7 +1982,7 @@ The set-up for this test is exactly the same described in section \ref{ssec:pah_
 
 $faster_{PAH+SPFH}$ and $faster \; full$ are indicators agnostic to the hardware used. Whereas the average times depends on the hardware on which the algorithm is run on. Another option we took into consideration was to perform a low level analysis on the assembly instructions each heuristic is translated into by the compiler. However, as we already stated in the introduction to this chapter, our focus is to compare the heuristics, therefore we are not interested in the absolute values, but in their relative magnitudes. For this reason, we opted to use the raw run time as indicator.
 
-The properties (section \ref{sec:bvh}) for the PAH BVHs are set to default values we found out work well empirically. In section \ref{TODO} we carry out a comparison among different choices of these values:
+The properties (section \ref{sec:bvh}) for the PAH BVHs are set to default values we found out work well empirically. In section \ref{sec:testing_different_properties} we carry out a comparison among different choices of these values:
 
 \begin{table}[H]
 	\centering
@@ -2006,7 +2006,7 @@ The properties (section \ref{sec:bvh}) for the PAH BVHs are set to default value
 	\label{tab:standard_properties}
 \end{table}
 
-In this section we mainly take into account the $faster_{PAH+SPFH}$ indicator, as the $faster \; full$ is analyzed in section \ref{TODO}.
+In this section we mainly take into account the $faster_{PAH+SPFH}$ indicator, as the $faster \; full$ is analyzed in section \ref{ssec:breakeven_hit_percentage}.
 
 \begin{figure}[H] 
 	\centering
@@ -2053,7 +2053,7 @@ For what concerns SPFH, it is possible to note from chart \ref{fig:spfh_build_ti
 
 We also considered to analyze the amount of splitting plane orientations that are attempted at each node with SPFH and a $splitPlaneQualityThreshold$ of $0.4$, as stated in table \ref{tab:standard_properties}. On average with SPFH $1.39$ splitting plane orientations are attempted. Whereas, with LSPH, $1.34$ splitting planes orientations are attempted. With LSPH we adopted a $splitPlaneQualityThreshold$ of $0.9$.
 
-In section \ref{TODO} we will analyze how the $splitPlaneQualityThreshold$ and other properties affect the building speed and traversal performance of the BVHs.
+In section \ref{sec:testing_different_properties} we will analyze how the $splitPlaneQualityThreshold$ and other properties affect the building speed and traversal performance of the BVHs.
 
 \subsection{Breakeven Hit Percentage} \label{ssec:breakeven_hit_percentage}
 In the previous section we focused on the raw performance of BVHs built with PAH and SPFH, by analyzing the values of the $faster_{PAH+SPFH}$ indicator in various situations. However, in a real case scenario, when a search in the BVH associated with an influence area fails, a search in the global BVH must be performed, as described in section \ref{sec:local_and_global_bvhs}. For this reason, the $faster \; full$ indicator is better at predicting if BVHs built with our heuristics are actually faster to traverse than BVHs built with SAH and LSPH.
@@ -2220,7 +2220,7 @@ From this diagram it is possible to note how SPFH ($59\%$) is better than LSPH (
     \label{fig:overlapping_avoidance_parallel_vs_oblique}
 \end{figure}
 
-It is also interesting to see how SPFH is more effective at reducing overlapping in the first levels of the BVH, whereas it tends to LSPH-like overlapping levels on the full BVH.
+It is also interesting to see how SPFH is more effective at reducing overlapping in the first levels of the BVH, whereas it is worse than LSPH on the full BVH.
 
 \begin{figure}[H] 
 	\centering
@@ -2229,7 +2229,7 @@ It is also interesting to see how SPFH is more effective at reducing overlapping
 	\label{fig:overlapping_percentage_by_level}
 \end{figure}
 
-This fact can be exploited, and it is therefore possible to use SPFH only on the higher levels of a BVH, and then directly fallback to LSPH. With this optimization it is possible to use more quality-oriented properties for the BVH construction, such as a lower $splittingPlaneQualityThreshold$ or $acceptableChildrenFatherHitProbabilityRatio$. We will talk about this in section \ref{TODO}.
+This fact can be exploited, and it is therefore possible to use SPFH only on the higher levels of a BVH, and then directly fallback to LSPH. With this optimization it is possible to use more quality-oriented properties for the BVH construction, such as a lower $splittingPlaneQualityThreshold$ or $acceptableChildrenFatherHitProbabilityRatio$. We will talk about this in section \ref{sec:testing_different_properties}.
 
 \section{Octree versus AABBs for Regions Top Level Structures} \label{sec:octree_vs_aabbs}
 In this chapter we will present a comparison between the two top level acceleration structures we implemented in our framework, namely the octree and the AABBs for regions (section \ref{sec:top_level}). We will also analyze how many levels the octree must have in order to approximate in an acceptable way the influence areas it is built on, and how the approximation affects the traversal of the contained BVHs.
