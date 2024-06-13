@@ -203,7 +203,7 @@ The process described above is a simplification of the behavior of the light in 
 What all the techniques have in common is the fact that simulating light is an expensive task. The main reason lies in the number of rays that must be cast in order to obtain an accurate rendering of the scene. In the real-world a $100W$ lightbulb is estimated to produce $10^{20}$ photons each second \cite{monte_carlo_integration}. Of course, even in a non real-time scenario, it is computationally impossible to ray trace an image with such an high amount of rays per light. Therefore, one of the most studied research directions in ray tracing is how to reduce the number of photons, while still obtaining an high quality image.
 
 \section*{Monte-Carlo and Kajiya Rendering Equation}
-The tool used to achieve this result is Monte-Carlo integration \cite{TODO}. With Monte-Carlo methods it is possible to integrate an arbitrary function with a given amount of random samples. In our case, the function to integrate is inside the Kajiya's rendering equation \cite{rendering_equation}.
+The tool used to achieve this result is Monte-Carlo integration \cite{monte_carlo_integration}. With Monte-Carlo methods it is possible to integrate an arbitrary function with a given amount of random samples. In our case, the function to integrate is inside the Kajiya's rendering equation \cite{rendering_equation}.
 
 The Kajiya's rendering equation is, in summary, a recursive integral equation which calculates the amount of light a point in a scene gets from the surrounding environment. Once we know how much light a point receives, we can compute how much of this energy is reflected toward a given direction, by using the BRDF \cite{brdf}.
 
@@ -1490,7 +1490,7 @@ As explained in chapter \ref{ch:multi_influence_areas}, plane influence areas de
 
 In order to build a $PlaneInfluenceArea$, it is necessary to specify a plane (namely a direction, a point it passes through and a 2D extent to specify the size of the plane) and a forward size, which describes how long the influence area is along the plane normal direction. Starting from this information, it is possible to create an $Obb$ delimiting the region of 3D space where the relevant ray distribution is located. It is also possible to generate an orthographic projection matrix and a view matrix, that can then be multiplied to a view-projection matrix.
 
-Given the extents of the plane ($top$, $bottom$, $right$ and $left$) and the range in the forward direction ($0$ to $far$), the orthographic projection matrix can be built in this way \cite{TODO}.
+Given the extents of the plane ($top$, $bottom$, $right$ and $left$) and the range in the forward direction ($0$ to $far$), the orthographic projection matrix can be built in this way \cite{matrices_3d}.
 
 \begin{equation}
 	\begin{bmatrix}
@@ -1639,7 +1639,7 @@ To compute the perspective projection matrix, we need the bounds of the frustum 
 	\label{fig:fov_to_right}
 \end{figure}
 
-Now we can calculate the perspective projection matrix \cite{TODO}:
+Now we can calculate the perspective projection matrix \cite{matrices_3d}:
 \begin{equation}
 	\begin{bmatrix}
 		\frac{2\cdot near}{right-left} & 0 & -\frac{right+left}{right-left} & 0 \\
@@ -1714,7 +1714,7 @@ A more accurate analysis of the performance of this top level structure can be f
 \subsection{Octree} \label{ssec:top_level_octree}
 The top level structure we present in this section is based upon an octree. As we have already explained in section \ref{ssec:need_for_acceleration_structures}, an octree is a tree where each node has exactly 8 children, which partition the volume enclosed by the father into 8 octants with the same shape and the same volume. An illustration of a quadtree (a 2-dimensional octree) can be found in figure \ref{fig:octree}.
 
-Octrees are often used to partition 3-dimensional space recursively and adaptively, such that a leaf node contains the information about the volume of space it represents. This means that the volume of a leaf node must be uniform with reference to the information the octree is built upon. A classic example of the use of quadtrees, is in image compression \cite{TODO}: the image is recursively subdivided into cells, until a cell contains only one color (figure \ref{fig:quadtree_for_compression}). In this case, the color is the information upon which the quadtree is built, and it must therefore be uniform in leaf nodes.
+Octrees are often used to partition 3-dimensional space recursively and adaptively, such that a leaf node contains the information about the volume of space it represents. This means that the volume of a leaf node must be uniform with reference to the information the octree is built upon. A classic example of the use of quadtrees, is in image compression \cite{image_compression_quadtree}: the image is recursively subdivided into cells, until a cell contains only one color (figure \ref{fig:quadtree_for_compression}). In this case, the color is the information upon which the quadtree is built, and it must therefore be uniform in leaf nodes.
 
 \begin{figure}[H]
 	\centering
@@ -1825,7 +1825,7 @@ In this chapter we will present the results we obtained by performing experiment
 
 Our tests are aimed at comparing how our heuristics change the behavior of a simple and standard BVH builder, compared to the state-of-the-art heuristics, and based on the BVH properties we adopt (section \ref{sec:bvh}). This means that our focus during the testing phase is not to build the fastest possible BVH builder. Our reasoning behind this choice, is that we want to reduce complexity at the bare minimum, in order to be able to isolate what the real focus of this work is, namely the advantages and disadvantages of PAH and SPFH compared to SAH and LSPH.
 
-If we tried to build an extremely performant BVH builder, we would have needed to introduce a lot of low-level optimizations. For example, we would have needed to take into account memory access patterns to increase data locality, as introduced in this paper \cite{TODO}; or we would have needed to build an algorithm running on the GPU. Getting these optimizations right would have required a lot of very specific expertise and trial and error, therefore we would have needed to use an existing BVH builder and modify it, losing the full control over it, which was one of our guiding principles. Furthermore, introducing low-level optimizations can often lead to unintuitive behaviors and difficult to correctly analyze scenarios, which would have made it more difficult to carry out a really objective comparison between the heuristics. Most of these optimizations are not strictly related to a specific way a BVH is built, and can therefore be implemented for state-of-the-art BVH builders as well as for ours.
+If we tried to build an extremely performant BVH builder, we would have needed to introduce a lot of low-level optimizations. For example, we would have needed to take into account memory access patterns to increase data locality, as introduced in this paper \cite{cache_efficient_bvhs}; or we would have needed to build an algorithm running on the GPU. Getting these optimizations right would have required a lot of very specific expertise and trial and error, therefore we would have needed to use an existing BVH builder and modify it, losing the full control over it, which was one of our guiding principles. Furthermore, introducing low-level optimizations can often lead to unintuitive behaviors and difficult to correctly analyze scenarios, which would have made it more difficult to carry out a really objective comparison between the heuristics. Most of these optimizations are not strictly related to a specific way a BVH is built, and can therefore be implemented for state-of-the-art BVH builders as well as for ours.
 
 \section{Test Scenes} \label{sec:test_scenes}
 We will now present the eight test scenes and the reasons why we selected each one of them.
@@ -2445,18 +2445,18 @@ The most important development of our work is to improve the algorithms and stru
 
 In order to do so, we suggest to look at the state-of-the-art algorithms used to build BVHs with SAH and LSPH, and then try to change them to use PAH and SPFH. In principle, many of the optimizations used for standard heuristics should perform equally well even for our heuristics.
 
-A different approach is instead needed for the top level structure. In this case it is not possible to perform a one-to-one translation from existing techniques, even though it may be worth is to study how TLAS and BLAS \cite{TODO} are implemented.
+A different approach is instead needed for the top level structure. In this case it is not possible to perform a one-to-one translation from existing techniques, even though it may be worth is to study how TLAS and BLAS \cite{tlas_blas} are implemented.
 
-Another important step would be to port the construction and traversal algorithms on parallel architectures. It may be beneficial to do this in two steps: first implementing a concurrent builder on the CPU, by using a multi-threaded approach. This could be helpful to get insights on what are the most critical points in the change of programming model. Eventually it is also important to transition to a fully parallel builder on the GPU. As shown in \cite{TODO}, building a BVH is a problem that can be effectively resolved by using a parallel approach, and doing so with our heuristics should be no different, except, probably, some considerations on the data layout to make the top level acceleration structure as efficient as possible, especially during traversal.
+Another important step would be to port the construction and traversal algorithms on parallel architectures. It may be beneficial to do this in two steps: first implementing a concurrent builder on the CPU, by using a multi-threaded approach. This could be helpful to get insights on what are the most critical points in the change of programming model. Eventually it is also important to transition to a fully parallel builder on the GPU. As shown in \cite{parallel_bvhs}, building a BVH is a problem that can be effectively resolved by using a parallel approach, and doing so with our heuristics should be no different, except, probably, some considerations on the data layout to make the top level acceleration structure as efficient as possible, especially during traversal.
 
 In case the previous development produces acceptable results, the next step to make our techniques operative would be to create a method to detect influence areas autonomously. At the moment, we artificially create influence areas. While this approach could be used even in a real-world scenario, by adding influence areas where light sources are present, it could bring many improvements if it was possible to detect influence areas by giving as input the rays traced in previous frames. By doing so, there would be two major improvements: first, influence areas near light sources would be more accurate; seconds, it would be possible to detect influence areas even in parts of the scene far from light sources, such as near a reflective surface like a mirror. The first method that comes to mind to do so is clustering, but even other directions can be explored. In particular, it could be beneficial to try to recycle results from previous frames in order to make the influence area detections algorithms more lightweight and accurate.
 
-Another possible development is to try a different top level structure. For example, one structure that could bring some benefits over the octree is the kd-tree \cite{TODO}.
+Another possible development is to try a different top level structure. For example, one structure that could bring some benefits over the octree is the kd-tree \cite{kd_trees}.
 
 \section{Closing Thoughts} \label{sec:closing_thoughts}
 Designing and developing two new heuristics for BVH construction, in a field with such a long history of development was a challenge, and a very instructive one. In this last section we will only summarize our work, and evaluate it from a more subjective point of view.
 
-Before starting the ideation of the two heuristics, we carried out a detailed phase of studying the state-of-the-art of the rendering methods used nowadays. The study started from a general overview of the most used real-time rendering techniques, from sources like \cite{TODO}, \cite{TODO} and \cite{TODO}. Then we focused more on ray tracing. First, we studied the mathematical theory behind ray tracing, in particular Monte-Carlo and variance reduction methods, culminating with the study of more recent papers on modern techniques, such as ReStir \cite{TODO}. After this, we moved on to studying the more concrete part about acceleration structures, in particular BVHs. Starting from the basis and studying both the theory and the concrete structures, allowed us to put them together and finding the small gap in the hypotheses of SAH.
+Before starting the ideation of the two heuristics, we carried out a detailed phase of studying the state-of-the-art of the rendering methods used nowadays. The study started from a general overview of the most used real-time rendering techniques, from sources like \cite{real_time_rendering_book}, \cite{pbr_book} and \cite{ray_tracing_gems_book}. Then we focused more on ray tracing. First, we studied the mathematical theory behind ray tracing, in particular Monte-Carlo and variance reduction methods, culminating with the study of more recent papers on modern techniques, such as ReStir \cite{restir}. After this, we moved on to studying the more concrete part about acceleration structures, in particular BVHs. Starting from the basis and studying both the theory and the concrete structures, allowed us to put them together and find the small gap in the hypotheses of SAH.
 
 We then started prototyping a very rough algorithm in Unity, in order to verify if our ideas could work at least in the most basic scenarios. By using Unity, we were also able to directly look at what we were developing, and this lead us to the creation of the second heuristic, namely SPFH. 
 
@@ -2917,7 +2917,7 @@ $$C(\gamma) = R \cdot sin(\gamma) \cdot 2\pi$$
 
 This means that the yaw angle must be sampled according to a PDF proportional to this function.
 
-In order to do the sampling, we adopted the inverted CDF method \cite{TODO}. This method can be summarized in four steps:
+In order to do the sampling, we adopted the inverted CDF method \cite{inverse_cdf}. This method can be summarized in four steps:
 \begin{enumerate}
 	\item Normalize the function ($C(\gamma)$ in this case) to obtain the PDF.
 	\item Compute the CDF from the PDF.

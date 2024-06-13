@@ -1,4 +1,4 @@
-This is BibTeX, Version 0.99d (TeX Live 2023)
+This is BibTeX, Version 0.99d (TeX Live 2024)
 Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
 The top-level auxiliary file: Thesis.aux
 The style file: abbrvnat.bst
@@ -13,56 +13,60 @@ Warning--can't use both volume and number fields in distribution_aware_bvhs
 Warning--empty year in nanite
 Warning--empty publisher in path_tracing_movies
 Warning--empty journal in bidirectional_path_tracing
+Warning--empty year in tlas_blas
 Warning--empty publisher in multi_light_sampling
+Warning--empty publisher in ray_tracing_gems_book
 Warning--empty year in convex_hull_culling
 Warning--empty year in monte_carlo_estimators_scratchapixel
 Warning--empty year in monte_carlo_properties
 Warning--empty year in ray_triangle_intersection
+Warning--empty year in inverse_cdf
 Warning--empty year in lotus
 Warning--empty year in mis
 Warning--empty year in monte_carlo_integration
 Warning--empty publisher in path_guiding
 Warning--can't use both volume and number fields in ray_coherency
 Warning--empty year in obb_construction
-You've used 50 entries,
+Warning--can't use both volume and number fields in cache_efficient_bvhs
+You've used 60 entries,
             2773 wiz_defined-function locations,
-            862 strings with 12583 characters,
-and the built_in function-call counts, 22129 in all, are:
-= -- 1975
-> -- 1160
-< -- 48
-+ -- 405
-- -- 351
-* -- 1589
-:= -- 3314
-add.period$ -- 169
-call.type$ -- 50
-change.case$ -- 262
-chr.to.int$ -- 46
-cite$ -- 120
-duplicate$ -- 1089
-empty$ -- 1922
-format.name$ -- 420
-if$ -- 4743
-int.to.chr$ -- 5
+            905 strings with 13792 characters,
+and the built_in function-call counts, 26504 in all, are:
+= -- 2348
+> -- 1438
+< -- 57
++ -- 502
+- -- 435
+* -- 1913
+:= -- 3984
+add.period$ -- 205
+call.type$ -- 60
+change.case$ -- 317
+chr.to.int$ -- 53
+cite$ -- 144
+duplicate$ -- 1294
+empty$ -- 2283
+format.name$ -- 524
+if$ -- 5670
+int.to.chr$ -- 8
 int.to.str$ -- 1
-missing$ -- 40
-newline$ -- 270
-num.names$ -- 200
-pop$ -- 664
+missing$ -- 50
+newline$ -- 323
+num.names$ -- 240
+pop$ -- 816
 preamble$ -- 1
-purify$ -- 216
+purify$ -- 264
 quote$ -- 0
-skip$ -- 816
+skip$ -- 963
 stack$ -- 0
-substring$ -- 655
-swap$ -- 170
-text.length$ -- 17
+substring$ -- 720
+swap$ -- 200
+text.length$ -- 19
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 530
-warning$ -- 20
-while$ -- 207
+type$ -- 625
+warning$ -- 24
+while$ -- 241
 width$ -- 0
-write$ -- 654
-(There were 21 warnings)
+write$ -- 782
+(There were 25 warnings)
