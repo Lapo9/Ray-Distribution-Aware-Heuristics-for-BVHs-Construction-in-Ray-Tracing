@@ -1,4 +1,4 @@
-\begin{thebibliography}{50}
+\begin{thebibliography}{60}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -10,10 +10,15 @@ T.~Aila, T.~Karras, and S.~Laine.
 \newblock On quality metrics of bounding volume hierarchies.
 \newblock In \emph{Proceedings of the 5th High-Performance Graphics Conference}, pages 101--107, 2013.
 
-\bibitem[Akenine-M\"{o}ller et~al.(2023)Akenine-M\"{o}ller, Haines, Hoffman, Pesce, Iwanicki, and Hillaire]{separating_axis_test}
+\bibitem[Akenine-M\"{o}ller et~al.(2023{\natexlab{a}})Akenine-M\"{o}ller, Haines, Hoffman, Pesce, Iwanicki, and Hillaire]{real_time_rendering_book}
+T.~Akenine-M\"{o}ller, E.~Haines, N.~Hoffman, A.~Pesce, M.~Iwanicki, and S.~Hillaire.
+\newblock Real-time rendering 4th edition.
+\newblock In \emph{Real-Time Rendering 4th Edition}. CRC Press, 2023{\natexlab{a}}.
+
+\bibitem[Akenine-M\"{o}ller et~al.(2023{\natexlab{b}})Akenine-M\"{o}ller, Haines, Hoffman, Pesce, Iwanicki, and Hillaire]{separating_axis_test}
 T.~Akenine-M\"{o}ller, E.~Haines, N.~Hoffman, A.~Pesce, M.~Iwanicki, and S.~Hillaire.
 \newblock Intersection test methods.
-\newblock In \emph{Real-Time Rendering 4th Edition}, chapter~22. 2023.
+\newblock In \emph{Real-Time Rendering 4th Edition}, chapter~22. 2023{\natexlab{b}}.
 
 \bibitem[Anonymous()]{kajiya_equation_drawing}
 Anonymous.
@@ -58,6 +63,11 @@ B.~Fabianowski, C.~Fowler, and J.~Dingliana.
 \newblock A cost metric for scene-interior ray origins.
 \newblock In \emph{Eurographics (Short Papers)}, pages 49--52, 2009.
 
+\bibitem[Fussell and Subramanian(1988)]{kd_trees}
+D.~Fussell and K.~R. Subramanian.
+\newblock \emph{Fast ray tracing using kd trees}.
+\newblock University of Texas at Austin, Department of Computer Sciences, 1988.
+
 \bibitem[Gribb and Hartmann(2001)]{point_inside_frustum_test}
 G.~Gribb and K.~Hartmann.
 \newblock Fast extraction of viewing frustum planes from the world-view-projection matrix.
@@ -82,6 +92,11 @@ J.~T. Kajiya.
 B.~Karis, R.~Stubbe, and G.~Wihlidal.
 \newblock Nanite: A deep dive.
 \newblock SIGGRAPH '21: Advances in Real-Time Rendering in Games.
+
+\bibitem[Karras(2012)]{parallel_bvhs}
+T.~Karras.
+\newblock Maximizing parallelism in the construction of bvhs, octrees, and k-d trees.
+\newblock \emph{The Eurographics Association}, 2012.
 
 \bibitem[Kaufman and Mueller(2005)]{voxel_rendering}
 A.~E. Kaufman and K.~Mueller.
@@ -113,15 +128,26 @@ Y.~Lee and W.~Lim.
 \newblock Shoelace formula: Connecting the area of a polygon and the vector cross product.
 \newblock \emph{The Mathematics Teacher}, 110\penalty0 (8):\penalty0 631--636, 2017.
 
+\bibitem[Lefrancois and Gautron()]{tlas_blas}
+M.-K. Lefrancois and P.~Gautron.
+\newblock Dx12 raytracing tutorial.
+\newblock \url{https://developer.nvidia.com/rtx/raytracing/dxr/dx12-raytracing-tutorial-part-1}.
+\newblock Accessed: (14/11/2023).
+
 \bibitem[MacDonald and Booth(1990)]{sah}
 J.~D. MacDonald and K.~S. Booth.
 \newblock Heuristics for ray tracing using space subdivision.
 \newblock \emph{The Visual Computer}, 6:\penalty0 153--166, 1990.
 
-\bibitem[Moreau and Clarberg(2019)]{multi_light_sampling}
+\bibitem[Moreau and Clarberg(2019{\natexlab{a}})]{multi_light_sampling}
 P.~Moreau and P.~Clarberg.
 \newblock Importance sampling of many lights on the gpu.
-\newblock In \emph{Ray Tracing Gems}, chapter~18. 2019.
+\newblock In \emph{Ray Tracing Gems}, chapter~18. 2019{\natexlab{a}}.
+
+\bibitem[Moreau and Clarberg(2019{\natexlab{b}})]{ray_tracing_gems_book}
+P.~Moreau and P.~Clarberg.
+\newblock \emph{Ray Tracing Gems}.
+\newblock 2019{\natexlab{b}}.
 
 \bibitem[Owen(1999)]{ray_plane_intersection}
 S.~Owen.
@@ -146,11 +172,16 @@ M.~Pharr.
 \newblock On the importance of sampling.
 \newblock \emph{Ray Tracing Gems: High-Quality and Real-Time Rendering with DXR and Other APIs}, pages 207--222, 2019.
 
-\bibitem[Pharr et~al.(2023)Pharr, Jakob, and Humphreys]{microfacet_brdf}
+\bibitem[Pharr et~al.(2023{\natexlab{a}})Pharr, Jakob, and Humphreys]{microfacet_brdf}
 M.~Pharr, W.~Jakob, and G.~Humphreys.
 \newblock \emph{Physically based rendering: From theory to implementation}.
-\newblock MIT Press, 2023.
+\newblock MIT Press, 2023{\natexlab{a}}.
 \newblock Chapter 8.4.
+
+\bibitem[Pharr et~al.(2023{\natexlab{b}})Pharr, Jakob, and Humphreys]{pbr_book}
+M.~Pharr, W.~Jakob, and G.~Humphreys.
+\newblock \emph{Physically based rendering: From theory to implementation}.
+\newblock MIT Press, 2023{\natexlab{b}}.
 
 \bibitem[Prunier({\natexlab{a}})]{monte_carlo_estimators_scratchapixel}
 J.-C. Prunier.
@@ -185,6 +216,17 @@ A.~Shelankov and G.~Pikus.
 \newblock Reciprocity in reflection and transmission of light.
 \newblock \emph{Physical Review B}, 46\penalty0 (6):\penalty0 3326, 1992.
 
+\bibitem[Shusterman and Feder(1994)]{image_compression_quadtree}
+E.~Shusterman and M.~Feder.
+\newblock Image compression via improved quadtree decomposition algorithms.
+\newblock \emph{IEEE Transactions on Image Processing}, 3\penalty0 (2):\penalty0 207--215, 1994.
+
+\bibitem[Sigmam()]{inverse_cdf}
+K.~Sigmam.
+\newblock Inverse transform method.
+\newblock Columbia University.
+\newblock Lecture notes.
+
 \bibitem[Soch()]{lotus}
 J.~Soch.
 \newblock Proof: Law of the unconscious statistician.
@@ -195,11 +237,6 @@ J.~Soch.
 M.~Stich, H.~Friedrich, and A.~Dietrich.
 \newblock Spatial splits in bounding volume hierarchies.
 \newblock In \emph{Proceedings of the Conference on High Performance Graphics 2009}, pages 7--13, 2009.
-
-\bibitem[TODO(TODO)]{TODO}
-TODO.
-\newblock Todo.
-\newblock \emph{TODO}, TODO\penalty0 (TODO):\penalty0 TODO, TODO.
 
 \bibitem[Veach({\natexlab{a}})]{mis}
 E.~Veach.
@@ -257,14 +294,30 @@ S.~Woop, C.~Benthin, I.~Wald, G.~S. Johnson, and E.~Tabellion.
 \newblock Exploiting local orientation similarity for efficient ray traversal of hair and fur.
 \newblock \emph{High Performance Graphics}, 3, 2014.
 
+\bibitem[Wyman et~al.(2023)Wyman, Kettunen, Lin, Bitterli, Yuksel, Jarosz, and Kozlow]{restir}
+C.~Wyman, M.~Kettunen, D.~Lin, B.~Bitterli, C.~Yuksel, W.~Jarosz, and P.~Kozlow.
+\newblock A gentle introduction to restir path reuse in real-time.
+\newblock In \emph{A Gentle Introduction to ReSTIR Path Reuse in Real-Time}. SIGGRAPH'23 Courses, 2023.
+
 \bibitem[Wynn(2000)]{brdf}
 C.~Wynn.
 \newblock An introduction to brdf-based lighting.
 \newblock \emph{Nvidia Corporation}, 4\penalty0 (3), 2000.
 
+\bibitem[Yoon and Manocha(2006)]{cache_efficient_bvhs}
+S.-E. Yoon and D.~Manocha.
+\newblock Cache-efficient layouts of bounding volume hierarchies.
+\newblock In \emph{Computer Graphics Forum}, volume~25, pages 507--516. Wiley Online Library, 2006.
+
 \bibitem[Young(1989)]{pinhole_camera}
 M.~Young.
 \newblock The pinhole camera.
 \newblock \emph{The Phys. Teacher}, pages 648--655, 1989.
+
+\bibitem[Yuksel(2021)]{matrices_3d}
+C.~Yuksel.
+\newblock Intro to graphics 06 - 3d transformations.
+\newblock \url{https://www.youtube.com/watch?v=1z1S2kQKXDs}, 2021.
+\newblock Accessed: (16/05/2023).
 
 \end{thebibliography}
