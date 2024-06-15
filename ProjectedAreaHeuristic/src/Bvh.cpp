@@ -45,6 +45,7 @@ void pah::Bvh::build(const std::vector<const Triangle*>& triangles, unsigned int
 	//from an array of triangles, to an array to pointers
 	root = { triangles }; //initizalize root
 	rootMetric = computeCost(root, influenceArea, -1).area; //initialize the root metric (generally its area/projected area)
+	rootMetricFallback = computeCostFallback(root, influenceArea, -1).area; //initialize the root metric (generally its area/projected area)
 	
 	splitNode(root, Axis::X, std::numeric_limits<float>::max(), 1);
 }
@@ -133,8 +134,8 @@ void pah::Bvh::splitNode(Node& node, Axis fatherSplittingAxis, float fatherHitPr
 			Node left = { leftTriangles }, right = { rightTriangles };
 			TIME(timeLoggerNodes.stop(););
 
-			auto costLeft = computeCostWrapper(node, left, influenceArea, rootMetric, currentLevel, forceFallback);
-			auto costRight = computeCostWrapper(node, right, influenceArea, rootMetric, currentLevel, forceFallback);
+			auto costLeft = computeCostWrapper(node, left, influenceArea, forceFallback ? rootMetricFallback : rootMetric, currentLevel, forceFallback);
+			auto costRight = computeCostWrapper(node, right, influenceArea, forceFallback ? rootMetricFallback : rootMetric, currentLevel, forceFallback);
 
 			//update best split (also check that we have triangles on both sides, else we might get stuck)
 			if (costLeft.cost + costRight.cost < bestLeftCostSoFar.cost + bestRightCostSoFar.cost) {

@@ -313,6 +313,7 @@ namespace pah {
 		
 		Node root;
 		float rootMetric; //stores the cost metric of the root (e.g. surface area if we use SAH, projected area if we use PAH, ...)
+		float rootMetricFallback; 
 		Properties properties;
 		const InfluenceArea* influenceArea;
 

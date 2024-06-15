@@ -31,6 +31,7 @@ int main() {
 		ACCESSOR("Intersections with fallback",					AT::PAH,["total"]["intersectionTests"]["intersectionTestsAveragePerRay"]),
 		ACCESSOR("Real cost without fallback",					AT::PAH,["cost"]["traversalCostForBvhPerRay"].at(0).at(1)),
 		ACCESSOR("Intersections without fallback",				AT::PAH,["fallback"]["intersectionTests"]["intersectionTestsNonFallbackAveragePerRay"]),
+		ACCESSOR("Fallback BVH cost",							AT::FALLBACK,["cost"]["traversalCostAveragePerRay"]),
 		ACCESSOR("Only fallback cost",							AT::PAH,["cost"]["traversalCostForBvhPerRay"].back().at(1)),
 		ACCESSOR("Hit percentage",								AT::PAH,["total"]["hitMiss"]["hitsPercentage"]),
 		ACCESSOR("Overlapping % 4",								AT::TOP_LEVEL,["bvhs"].at(0)["globalInfo"]["siblingsOverlappingPercentage4"]),
@@ -45,14 +46,10 @@ int main() {
 		ACCESSOR("Split plane quality threshold",				AT::TOP_LEVEL,["bvhs"].at(0)["globalInfo"]["properties"]["splitPlaneQualityThreshold"]),
 		ACCESSOR("Acceptable children/father hit probability",	AT::TOP_LEVEL,["bvhs"].at(0)["globalInfo"]["properties"]["acceptableChildrenFatherHitProbabilityRatio"]),
 		ACCESSOR("Excellent children/father hit probability",	AT::TOP_LEVEL,["bvhs"].at(0)["globalInfo"]["properties"]["excellentChildrenFatherHitProbabilityRatio"]),
-		ACCESSOR("Compute cost PAH average",					AT::TOP_LEVEL,["bvhs"].at(0)["totalTiming"]["computeCostTot"]),
-		ACCESSOR("Compute cost SAH average",					AT::TOP_LEVEL,["bvhs"].back()["totalTiming"]["computeCostTot"]),	
+		ACCESSOR("Compute cost PAH average",					AT::TOP_LEVEL,["bvhs"].at(0)["totalTiming"]["computeCostTot"]),	
 		ACCESSOR("Compute cost PAH average count",				AT::TOP_LEVEL,["bvhs"].at(0)["totalTiming"]["computeCostCountPerNode"]),
-		ACCESSOR("Compute cost SAH average count",				AT::TOP_LEVEL,["bvhs"].back()["totalTiming"]["computeCostCountPerNode"]),
 		ACCESSOR("Choose split plane PAH average",				AT::TOP_LEVEL,["bvhs"].at(0)["totalTiming"]["chooseSplittingPlanesTot"]),
-		ACCESSOR("Choose split plane SAH average",				AT::TOP_LEVEL,["bvhs"].back()["totalTiming"]["chooseSplittingPlanesTot"]),
-		ACCESSOR("Choose split plane PAH average count",		AT::TOP_LEVEL,["bvhs"].at(0)["totalTiming"]["chooseSplittingPlanesCountPerNode"]),
-		ACCESSOR("Choose split plane SAH average count",		AT::TOP_LEVEL,["bvhs"].back()["totalTiming"]["chooseSplittingPlanesCountPerNode"])
+		ACCESSOR("Choose split plane PAH average count",		AT::TOP_LEVEL,["bvhs"].at(0)["totalTiming"]["chooseSplittingPlanesCountPerNode"])
 	};
 
 	//generate triangles for different scenes
@@ -114,13 +111,13 @@ int main() {
 	constexpr bool ALL = false;
 
 	constexpr bool PLANE = ALL || false;
-	constexpr bool POINT = ALL || false;
+	constexpr bool POINT = ALL || true;
 	constexpr bool PLANE_LONGEST = ALL || false;
-	constexpr bool POINT_LONGEST = ALL || true;
+	constexpr bool POINT_LONGEST = ALL || false;
 	constexpr bool PLANE_FACING = ALL || false;
-	constexpr bool POINT_FACING = ALL || true;
+	constexpr bool POINT_FACING = ALL || false;
 	constexpr bool PLANE_STANDARD = ALL || false;
-	constexpr bool POINT_STANDARD = ALL || false;
+	constexpr bool POINT_STANDARD = ALL || true;
 
 	constexpr bool WOOD_SCENE = ALL || false;
 	constexpr bool SUZANNE_SCENE = ALL || false;
@@ -132,6 +129,7 @@ int main() {
 	constexpr bool SPONZA_SCENE = ALL || true;
 
 	constexpr string_view RESULTS_DIRECTORY = "E:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/Results/";
+	constexpr string_view CSV_FILE = "D:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/Results/Point_FullStandard_Sponza.csv";
 	constexpr float spfhSplitPlaneQualityThreshold = 0.4f;
 	constexpr float lsphSplitPlaneQualityThreshold = 0.99f;
 
@@ -2919,7 +2917,7 @@ int main() {
 		}
 	};
 	
-	csvTraversal.generateCsv("D:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/Results/ExportedCsvPlaneSponza4.csv");
+	csvTraversal.generateCsv(std::string(CSV_FILE));
 #endif //BVH_TESTS
 
 #define OCTREE_TESTS 0
