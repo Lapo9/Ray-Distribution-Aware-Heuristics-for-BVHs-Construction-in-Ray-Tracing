@@ -151,7 +151,7 @@ Until now, we have assumed we know where a ray intersects an object of the scene
 
 Therefore, the problem of finding the ray-scene intersection can be reduced to the problem of ray-triangle intersection, which has a known and very optimized solution. The first, naive, way of finding the intersection between a ray and the scene is a brute-force loop over all the triangles present in the scene. However, the complexity of this method increases linearly with the number of triangles or the number of rays in the scene. 
 
-A better technique, which is used in state-of-the-art ray tracers, is to organize the triangles hierarchically, in a spatial binary tree called Bounding Volume Hierarchy (BVH). The idea is to divide the scene into two parts, and enclose the triangles inside each one into two parallelepipeds aligned with the cartesian axes, called Axis-Aligned Bounding Boxes (AABB). Now, if a ray doesn't intersect an AABB, it won't intersect any of the triangles inside it, therefore AABBs can be used as rejection tests. In a BVH, this simple idea is applied recursively: the scene is divided into two AABBs, then each one is further divided into two, and so on, until a stopping criterion is met.
+A better technique, which is used in state-of-the-art ray tracers, is to organize the triangles hierarchically, in a spatial binary tree called Bounding Volume Hierarchy (BVH). The idea is to divide the scene into two parts, and enclose the triangles inside each one into two parallelepipeds aligned with the cartesian axes, called Axis-Aligned Bounding Boxes (AABB). Now, if a ray doesn't intersect an AABB, it won't intersect any of the triangles inside it, therefore AABBs can be used as rejection tests. In a BVH, this simple idea is applied recursively: the scene is divided into two AABBs, then each one is further divided into two, and so on, until a stopping criterion is met. 
 
 With a balanced BVH, finding the ray-scene intersection becomes logarithmic with reference to the number of triangles, and is therefore a big improvement over the brute-force approach, considering how many rays are cast.
 
@@ -170,9 +170,7 @@ In summary, the formula tries to approximate the probability that the AABB is hi
 The fact that the hit probability can be computed as $\frac{SurfaceArea_{Aabb}}{SurfaceArea_{root}}$ has as hypothesis that the rays are uniformly randomly distributed in the scene. However, as we noted while talking about importance sampling, we know this is not the case.
 
 \section{Projected Area Heuristic}
-The first novelty we propose in our work is the Projected Area Heuristic (PAH). The core principle behind PAH is to try to estimate better the hit probability of an AABB, by leveraging the knowledge about the ray distribution in the scene, caused by light importance sampling.
-
-In particular, we take into account two possible ray distributions:
+The first novelty we propose in our work is the Projected Area Heuristic (PAH). The core principle behind PAH is to try to estimate better the hit probability of an AABB, by leveraging the knowledge about the ray distribution in the scene, caused by light importance sampling. In particular, we take into account two possible ray distributions:
 \begin{description}
     \item[Parallel ray distributions] arise in proximity of planar area light sources;
     \item[Radial ray distributions] arise in proximity of point light sources, such as spotlights. 
@@ -206,7 +204,7 @@ If one of these ray distributions is present in a given region of the scene, the
     \label{fig:projections}
 \end{figure}
 
-\section{Splitting Plane Facing Heuristic}
+\section*{4. Splitting Plane Facing Heuristic}
 The second novel heuristic we propose is a possible alternative to LSPH, and is called Splitting Plane Facing Heuristic (SPFH). It is based on the same considerations we made for PAH, but it is applicable to how to decide the orientation of the splitting plane, and takes into consideration if the AABB is in a region with a parallel or radial ray distribution.
 
 As described by \cite{bvh_overlapping_metric}, a large 3D overlap between children nodes, leads to a low-quality BVH. With SPFH, we try to minimize the overlap between children nodes in the 2D space of their projections. The idea is based on the observation that, if the splitting plane is perpendicular to a ray, there is a large probability that the ray will intersect both the resulting children AABBs. Conversely, if the plane is parallel to a ray, it is not probable that it will hit both, because the overlap of their projections will be a lot smaller in many scenarios.
@@ -327,20 +325,20 @@ We carried out tests to measure the quality and build time of the BVHs built wit
 \subsection{BVH analysis}
 The analysis of the BVHs has been carried out on 8 different scenes, each one with peculiar characteristics. In each test case, we created a single influence area, covering the majority of the scene. For each scene we executed 8 test cases: 4 with plane influence areas and 4 with point ones. For each influence area, we changed its orientation: parallel to one cartesian direction, 15°, 45° and oblique.
 
-We started by performing tests where both PAH and SPFH are used. We first measured the accuracy of PAH in estimating the cost of the BVH. To do so, we developed a way to measure the actual cost of the traversal of a BVH, and compared it to the cost estimated by PAH. To measure the real cost of a BVH, we traverse it with rays and, for each ray intersection with an AABB, we compute its cost as $\#triangles \cdot K$. This cost function is the same as the PAH cost function, without the probability part, which is intrinsically taken into account by the fact that we are actually tracing rays.
+We started by performing tests where both PAH and SPFH are used. We first measured the accuracy of PAH in estimating the cost of the BVH. To do so, we developed a way to measure the actual cost of the traversal of a BVH, and compared it to the cost estimated by PAH. To measure the real cost of a BVH, we traverse it with rays and, for each ray intersection with an AABB, we compute its cost as $\#triangles \cdot K$. This cost function is the same as the PAH cost function, without the probability part, which is intrinsically taken into account by the fact that we are actually tracing rays. We found out that PAH is extremely accurate at estimating a BVH cost: its average error is $7\%$, whereas SAH's is $36\%$.
 
-We found out that PAH is extremely accurate at estimating a BVH cost: its average error is $7\%$, whereas SAH's is $26\%$.
+We then used the real cost of the traversal, computed as explained above, and compared it to the cost of BVHs built with SAH and LSPH over the exact same geometry. The results showed that our heuristics combined, cannot produce better BVHs than state-of-the-art, except when rays are parallel to one cartesian axis.
 
-We then used the real cost of the traversal, computed as explained above, and compared it to the cost of BVHs built with SAH and LSPH over the exact same geometry. The results can be observed in the graph below. The take-away point is that our heuristics produce higher quality BVHs, especially in the test cases where rays are parallel or \textit{almost parallel} to a cartesian axis.
+We therefore decided to test both heuristics in isolation: the take-away point is that SPFH produces higher-quality BVHs than state-of-the-art, especially in the test cases where rays are parallel or \textit{almost parallel} to a cartesian axis, as it can be observed in chart \ref{fig:spfh_iso_chart}. 
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.48}]{Images/pah_without_fallback_faster_chart.png}
-    \caption{PAH and SPFH vs SAH and LSPH.}
-    \label{fig:pah_without_fallback_faster_chart}
+    \includegraphics[width=\textwidth*\real{0.47}]{Images/spfh_isolation.png}
+    \caption{SPFH vs LSPH.}
+    \label{fig:spfh_iso_chart}
 \end{figure}
 
-We then decided to analyze PAH and SPFH in isolation, and we found out that SPFH is the component that brings more improvements to the BVHs quality. Instead, PAH works better than SAH only in pair with SPFH.
+On the other hand, PAH cannot match state-of-the-art performance, despite it being a way more accurate measurement of BVH quality. The main drawback of PAH is that, when the projections of the sibling nodes overlap, it tends to produce very unbalanced BVHs.
 
 We also measured the time required to use PAH and LSPH. We found out that PAH is an order of magnitude slower than SAH. On the other hand, SPFH is on average as fast as LSPH.
 
@@ -355,20 +353,18 @@ We then carried out analyses to find out the optimal number of levels for the oc
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.48}]{Images/octree_error_faster_chart.png}
+    \includegraphics[width=\textwidth*\real{0.47}]{Images/octree_error_faster_chart.png}
     \caption{Octree error vs speed.}
     \label{fig:octree_levels}
 \end{figure}
 
-As it is possible to observe, as the number of levels increases, the error decreases. With the term error, we refer to the fact that an octree approximates the influence areas with cubic blocks. The octree approximation is conservative, which means that it can consider a point inside a region even if it is not, but never the opposite.
-
-Of course, an octree with more levels is exponentially slower to traverse and build. By looking at the graph we decided to use 5-level octrees in our tests, even though the maximum difference between error and speed would be with 6-level octrees.
+As it is possible to observe, as the number of levels increases, the error decreases. With the term error, we refer to the fact that an octree approximates the influence areas with cubic blocks. The octree approximation is conservative, which means that it can consider a point inside a region even if it is not, but never the opposite. Of course, an octree with more levels is exponentially slower to traverse and build. By looking at the graph we decided to use 5-level octrees in our tests, even though the maximum difference between error and speed would be with 6-level octrees.
 
 \section{Conclusions}
-Many future development directions can be studied. Future researchers may try to improve the algorithms of our framework, in order to optimize them and, ultimately, run them on a parallel architecture like a GPU. Another important development would be to write a clustering algorithm to automatically identify the relevant ray distributions in the 6D space of the scene.
+Many future development directions can be studied. The most important direction would be to try to tweak PAH in order to avoid its main drawback, which we described above. Future researchers may also try to improve the algorithms of our framework, in order to optimize them and, ultimately, run them on a parallel architecture like a GPU. Another important development would be to write a clustering algorithm to automatically identify the relevant ray distributions in the 6-dimensional space of the scene.
 
 \rule{0.471\textwidth}{0.5pt}
 
-In our thesis, we propose two novel heuristics to build higher-quality BVHs, by leveraging some artifacts in the ray distribution produced by Monte-Carlo importance sampling. The experimental results, obtained by running our implementation on many different test cases, show how, when the influence areas have rays parallel to a cartesian axis, our heuristics produce a BVH with a lower traversal cost than state-of-the-art heuristics. SPFH contributes the most to the reduction of the cost, while not being more expensive than LSPH. Whereas PAH, in isolation, is not better than SAH, but can be used to better estimate the cost of a BVH without tracing any ray, thanks to its high accuracy.
+In our thesis, we propose two novel heuristics to build higher-quality BVHs, by leveraging some artifacts in the ray distribution produced by Monte-Carlo importance sampling. The experimental results, obtained by running our implementation on many different test cases, show how, when the influence areas have rays parallel to a cartesian axis, SPFH produces a BVH with a lower traversal cost than state-of-the-art heuristics, without it being more expensive. Whereas PAH, in isolation, is not better than SAH, but can be used to better estimate the cost of a BVH without tracing any ray, thanks to its high accuracy.
 
 \end{document}

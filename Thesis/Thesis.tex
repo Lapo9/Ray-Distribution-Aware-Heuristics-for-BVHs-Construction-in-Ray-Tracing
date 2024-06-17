@@ -147,7 +147,7 @@ The second, but not least important one, is to design software optimizations to 
 
 One of the problems that is ubiquitous in the ray tracing environment is to detect collisions between a ray and the geometry of the scene to render. Given the huge amount of primitives present in modern graphic applications, it is necessary to use a data structure to accelerate the ray collision retrieval process. The state-of-the-art structure is the Bounding Volume Hierarchy (BVH), which hierarchically organizes primitives, making it possible to skip entire sections of the scene that are spatially far away from the ray that is being traced during BVH traversal.
 
-In this thesis we propose two novel heuristics that work in pair to build higher-quality BVHs, a data structure to make it possible to use them, and a comparative analysis of their performance in different scenarios.
+In this thesis we propose two novel heuristics, working upon the same assumptions, to build higher-quality BVHs, a data structure to make it possible to use them, and a comparative analysis of their performance in different scenarios.
 
 The first heuristic, called \textbf{Projected Area Heuristic} (PAH), aims at better estimating the amount of rays that hit each node of the BVH by exploiting some artifacts in the ray distribution in the scene, caused by another optimization used in a previous step of the ray tracing pipeline (namely Monte-Carlo importance sampling).
 
@@ -2015,7 +2015,7 @@ In this section we mainly take into account the $faster_{PAH+SPFH}$ indicator, a
 	\label{fig:pah_without_fallback_faster_chart}
 \end{figure}
 
-As it is possible to observe in the chart \ref{fig:pah_without_fallback_faster_chart}, our heuristics on average produce a faster to traverse BVH in all the test cases. The difference in cost between a BVH built with PAH and SPFH compared to one built with SAH and LSPH is around $65$ points, however our heuristics perform better in case of influence areas where the rays are parallel or almost parallel (15 degrees) to one cartesian axis. In this case the difference is on average $90$ points. The reason behind these results is overlapping, and we will talk about it in section \ref{ssec:siblings_overlapping}.
+As it is possible to observe in the chart \ref{fig:pah_without_fallback_faster_chart}, the results of our combined heuristics are better than state of the art heuristics ones only in the test case of the plane influence area with rays parallel to a cartesian axis. Results are comparable to state of the art ones also in the case of rays \textit{almost parallel} to a cartesian axis. The most relevant reason behind these results is overlapping, and we will talk about it in section \ref{ssec:siblings_overlapping}.
 
 Another way of looking at this data, is to compare the average number of intersections with nodes and triangles each ray has during the traversal of the BVH. The presented numbers of intersections per ray is referred to the total number of nodes and triangles a ray collides with, and doesn't stop when the closest hit is found. This allows us to estimate better some qualities of the BVH, such as the effect overlapping has on it, and is less susceptible to the particular layout of a scene (such as a scene with a blocking object near the camera).
 
@@ -2026,7 +2026,7 @@ Another way of looking at this data, is to compare the average number of interse
 	\label{fig:pah_without_fallback_faster_intersections_chart}
 \end{figure}
 
-As it is possible to see, the data on the intersections very closely approximates the data on the BVH cost, while being a less abstract concept to understand. On average a ray cast against BVH built with our heuristics, hits half the objects the same ray would have hit if it was cast against a standard BVH. Of course, these results can only be obtained in a portion of the scene where a parallel or point distribution is present.
+As it is possible to see, the data on the intersections very closely approximates the data on the BVH cost, while being a less abstract concept to understand. These results can only be obtained in a portion of the scene where a parallel or point distribution is present.
 
 \subsection{Building Performance} \label{ssec:building_performance}
 For what concerns the building phase of the BVHs, the timing results can be observed in charts \ref{fig:pah_build_time_chart} and \ref{fig:spfh_build_time_chart}. We measured the time of each relevant phase of the BVH building by storing the timestamp of entrance in the relevant section, and subtracting it by a timestamp obtained at the end of the profiled section.
@@ -2051,32 +2051,14 @@ For what concerns SPFH, it is possible to note from chart \ref{fig:spfh_build_ti
 	\label{fig:spfh_build_time_chart}
 \end{figure}
 
-We also considered to analyze the amount of splitting plane orientations that are attempted at each node with SPFH and a $splitPlaneQualityThreshold$ of $0.4$, as stated in table \ref{tab:standard_properties}. On average with SPFH $1.39$ splitting plane orientations are attempted. Whereas, with LSPH, $1.34$ splitting planes orientations are attempted. With LSPH we adopted a $splitPlaneQualityThreshold$ of $0.9$.
+We also considered to analyze the amount of splitting plane orientations that are attempted at each node with SPFH and a $splitPlaneQualityThreshold$ of $0.4$, as stated in table \ref{tab:standard_properties}. On average with SPFH $2.1$ splitting plane orientations are attempted. Whereas, with LSPH, $1.5$ splitting planes orientations are attempted. With LSPH we adopted a $splitPlaneQualityThreshold$ of $0.99$.
 
 In section \ref{sec:testing_different_properties} we will analyze how the $splitPlaneQualityThreshold$ and other properties affect the building speed and traversal performance of the BVHs.
 
 \subsection{Breakeven Hit Percentage} \label{ssec:breakeven_hit_percentage}
 In the previous section we focused on the raw performance of BVHs built with PAH and SPFH, by analyzing the values of the $faster_{PAH+SPFH}$ indicator in various situations. However, in a real case scenario, when a search in the BVH associated with an influence area fails, a search in the global BVH must be performed, as described in section \ref{sec:local_and_global_bvhs}. For this reason, the $faster \; full$ indicator is better at predicting if BVHs built with our heuristics are actually faster to traverse than BVHs built with SAH and LSPH.
 
-\begin{figure}[H] 
-	\centering
-	\includegraphics[width=\textwidth]{Images/pah_faster_chart.png}
-	\caption{How much faster is a BVH built with PAH and SPFH compared to one built with SAH and LSPH, considering also the fallback searches.}
-	\label{fig:pah_faster_chart}
-\end{figure}
-
-The results in \ref{fig:pah_faster_chart} are the same as in \ref{fig:pah_without_fallback_faster_chart}, but shifted around $12\%$ lower. We then tried to analyze the results of each scene individually, instead of in their aggregate form. We found out that the results were directly related to how many of the rays hit the geometry present in the BVH associated with the influence area. For example, in the \textit{Sponza} scene, where the hit percentage of the rays was close to $100\%$, the results are much better than in a scene like \textit{Random100}, where the hit percentage is around $10\%$ on average:
-
-\begin{figure}[H] 
-	\centering
-	\includegraphics[width=\textwidth]{Images/sponza_vs_random100.png}
-	\caption{$faster\; full$ indicator for \textit{Sponza} and \textit{Random100}, along with their hit percentage.}
-	\label{fig:sponza_vs_random100}
-\end{figure}
-
-The higher hit percentage in the \textit{Sponza} scene leads to a lower number of fallback searches, therefore a much lower overhead during the search for ray-scene intersections.
-
-We therefore attempted to formalize this concept, and find a formula to detect when it is worth it to build a local BVH based on the hit percentage:
+We found out that the results are directly related to how many of the rays hit the geometry present in the BVH associated with the influence area. We therefore attempted to formalize this concept, and find a formula to detect when it is worth it to build a local BVH based on the hit percentage:
 
 \begin{subequations}
 	\begin{align*}
@@ -2092,7 +2074,7 @@ In the first line, on the left we sum the cost of the rays traversing only the B
 
 This formula is useful at approximating the required hit percentage, because all the needed parameters can be computed before traversing the BVH. Indeed it is possible to use the estimated costs of the local and global BVHs to get the breakeven hit percentage. In section \ref{ssec:pah_vs_sah_precision} we showed how good is PAH at predicting the cost of a BVH.
 
-However, the main flaw of this formula is that we assume that the cost of traversing the global BVH for the rays that miss the local one, is the same as the cost of the full global BVH. This is not always the case, indeed, in many scenarios, the rays that miss the local BVH will have some peculiar characteristics. For example, as it is possible to observe in figure \ref{fig:ray_missin_local}, all they rays missing in the local BVH are concentrated in a section of the scene, and therefore hit a specific part of the global BVH, which cannot be accurately approximated by the whole BVH.
+However, the main flaw of this formula is that we assume that the cost of traversing the global BVH for the rays that miss the local one, is the same as the cost of the full global BVH. This is not always the case, indeed, in many scenarios, the rays that miss the local BVH will have some peculiar characteristics. For example, as it is possible to observe in figure \ref{fig:ray_missing_local}, all they rays missing in the local BVH are concentrated in a section of the scene, and therefore hit a specific part of the global BVH, which cannot be accurately approximated by the whole BVH.
 
 \begin{figure}[H] 
 	\centering
@@ -2123,27 +2105,25 @@ However, in order to compute it, the scene must be traversed first, so that it i
 	\label{fig:breakeven_hit_perc_accuracy}
 \end{figure}
 
-Considering all the test cases, the average breakeven hit percentage is $83\%$ this means that, in order to be worth it to build a local BVH in an area with a parallel or radial point distribution, at least $83\%$ of the rays affine to the associated influence area must hit a triangle that is part of the local BVH.
-
 \subsection{SPFH in Isolation} \label{ssec:spfh_in_isolation}
 In this section we analyze the performance of splitting plane facing heuristic used to build BVHs that adopts SAH as cost heuristic. In other words we analyze the performance of SPFH in isolation.
 
 The reason behind this specific test case is that, as we observed in section \ref{ssec:pah_spfh_vs_sah_lsph}, the building performance of SPFH is not worse than the performance of LSPH. On the other hand, PAH is much slower than SAH, at least in our naive implementation. Therefore, with this test case, we want to verify whether it can be worth it to use SPFH without PAH to build BVHs with a higher quality, rather than BVHs built by using SAH and LSPH.
 
-\begin{figure}[H] 
+\begin{figure}[H]
 	\centering
 	\includegraphics[width=\textwidth]{Images/spfh_isolation.png}
 	\caption{Comparison of how much faster SPFH and SAH is compared to SPFH and PAH.}
 	\label{fig:spfh_isolation}
 \end{figure}
 
-Unexpectedly, the results suggest that using SPFH along with SAH, produces BVHs with a quality comparable to the BVHs built by using both of our two novel heuristics. 
+Unexpectedly, the results suggest that using SPFH along with SAH, produces BVHs with a better quality than the BVHs built by using both of our two novel heuristics, and also better BVHs than state of the art heuristics.
 
 As in the analysis in section \ref{ssec:pah_spfh_vs_sah_lsph}, the results are better in scenes where the rays are parallel or \textit{almost parallel} to one cartesian axis. Moreover, SPFH seems to work best with plane influence areas.
 
 As it is possible to observe, using SFPH with influence areas with oblique rays, produces BVHs of similar quality to the BVHs produced by LSPH. This is expected, since, as explained in section \ref{ssec:splitting_plane_implementation}, SPFH falls back to using LSPH in case an acceptable split is not found, and this happens often when the rays are not parallel to any cartesian axis.
 
-The reason why SPFH works well can be explained with the overlapping amount between the children of a node. This topic is discussed in section \ref{ssec:siblings_overlapping}.
+The reason why SPFH works well can be explained by the overlapping amount between the children of a node. This topic is discussed in section \ref{ssec:siblings_overlapping}.
 
 \subsection{PAH in Isolation} \label{ssec:pah_isolation}
 Given the unexpected results presented in the previous section, we decided to further investigate, and performed analyses on the quality of BVHs built with PAH and LSPH.
@@ -2155,9 +2135,16 @@ Given the unexpected results presented in the previous section, we decided to fu
 	\label{fig:pah_isolation}
 \end{figure}
 
-The results in chart \ref{fig:pah_isolation} show that projected area heuristic alone, produces BVHs with a quality comparable, if not worse, to surface area heuristic. By observing with our Unity visualizer tool the BVHs built with PAH and LSPH, we noticed a recurrent issue which partially explains why PAH doesn't perform well with LSPH. In principle, by using PAH we can adopt a more accurate cost metric than SAH. Therefore, by minimizing it, we expect to reach a better result. However, if the splitting plane orientation doesn't allow for splits without overlapping, what happens is that PAH splits the father node into an extremely small child and an extremely big one, as it can be observed in figure \ref{fig:pah_overlapping_children}.
+The results in chart \ref{fig:pah_isolation} show that projected area heuristic alone, produces BVHs with a worse quality than surface area heuristic, and also worse than using our two heuristics combined. By observing with our Unity visualizer tool the BVHs built with PAH and LSPH, we noticed a recurrent issue which partially explains why PAH doesn't perform well with LSPH. In principle, by using PAH we can adopt a more accurate cost metric than SAH. Therefore, by minimizing it, we expect to reach a better result. However, if the splitting plane orientation doesn't allow for splits without overlapping, what happens is that PAH splits the father node into an extremely small child and an extremely big one, as it can be observed in figure \ref{fig:pah_overlapping_children_figure}.
 
-By doing so, the projected area is indeed locally minimized. However, the split is not ideal, because it creates a large imbalance in the BVH. When we use SPFH this happens very rarely, and the greedy minimizing of the projected area produces the expected results.
+\begin{figure}[H] 
+	\centering
+	\includegraphics[width=\textwidth*\real{0.9}]{Images/overlapping_children.png}
+	\caption{Issue when using PAH with overlapping children. Father node is green, big child is blue and small child is red.}
+	\label{fig:pah_overlapping_children_figure}
+\end{figure} 
+
+By doing so, the projected area is indeed locally minimized. However, the split is not ideal, because it creates a large imbalance in the BVH. When we use SPFH this happens less frequently, and the greedy minimizing of the projected area produces better results.
 
 \subsection{Siblings Overlapping} \label{ssec:siblings_overlapping}
 This paper \cite{bvh_overlapping_metric} from Alia, Karras and Laine discusses how overlapping in 3-dimensional space among BVH nodes leads SAH to underestimate the BVH cost. The tests presented in this section show how, also in the scenarios where PAH and SPFH can be used, overlapping can be a good predictor of the quality of a BVH. In our case, the overlapping is not calculated in 3-dimensional space, but in the 2-dimensional space where the AABBs get projected. We will eventually show how SPFH is able to reduce overlapping compared to LSPH.
@@ -2187,7 +2174,7 @@ $$Total \; overlapping \; percentage = \frac{V_1 + V_2 + ...}{A_{min1} + A_{min2
 	\centering
 	\includegraphics[width=\textwidth]{Images/overlapping_quality_scatter.png}
 	\caption{High overlapping leads to worse BVH cost.}
-	\label{fig:pah_overlapping_children}
+	\label{fig:overlapping_scatter}
 \end{figure}
 
 This result confirms the findings in the paper from Alia, Karras and Laine, and extends it to our context. The intuitive reason behind this behavior is that, if the projections of two siblings do not overlap, it is impossible for a ray to hit both. Missing at least one of the two leads to a smaller number of intersection tests, because it is possible to discard a subtree of the BVH.
@@ -2201,7 +2188,7 @@ We also noted how SPFH can drastically reduce the overlapping percentage between
 	\label{fig:pah_overlapping_children}
 \end{figure}
 
-From this diagram it is possible to note how SPFH ($59\%$) is better than LSPH ($70\%$) at minimizing the overlapping. SPFH works better when rays tend to be parallel to one cartesian axis. This can be associated with two factors: 
+From this diagram it is possible to note how SPFH ($59\%$) is better than LSPH ($66\%$) at minimizing the overlapping. SPFH works better when rays tend to be parallel to one cartesian axis. This can be associated with two factors: 
 \begin{itemize}
 	\item As we have seen in section \ref{ssec:spfh_in_isolation}, SPFH falls back to LSPH more often in oblique test cases;
 	\item Since BVHs are made up of AABBs, if the rays are parallel to a cartesian axis, it is possible to maximize overlapping reduction, as it can be better observed in figure \ref{fig:overlapping_avoidance_parallel_vs_oblique}.
@@ -2220,14 +2207,14 @@ From this diagram it is possible to note how SPFH ($59\%$) is better than LSPH (
     \label{fig:overlapping_avoidance_parallel_vs_oblique}
 \end{figure}
 
-It is also interesting to see how SPFH is more effective at reducing overlapping in the first levels of the BVH, whereas it is worse than LSPH on the full BVH.
+It is also interesting to see how SPFH is more effective at reducing overlapping in the first levels of the BVH, whereas it is worse than LSPH on deeper levels.
 
 \begin{figure}[H] 
 	\centering
 	\includegraphics[width=\textwidth]{Images/overlapping_percentage_by_level.png}
 	\caption{Overlapping percentage by level.}
 	\label{fig:overlapping_percentage_by_level}
-\end{figure}
+\end{figure} 
 
 This fact can be exploited, and it is therefore possible to use SPFH only on the higher levels of a BVH, and then directly fallback to LSPH. With this optimization it is possible to use more quality-oriented properties for the BVH construction, such as a lower $splittingPlaneQualityThreshold$ or $acceptableChildrenFatherHitProbabilityRatio$. We will talk about this in section \ref{sec:testing_different_properties}.
 
@@ -2348,7 +2335,7 @@ In table \ref{tab:different_properties_summary} it is possible to look at all th
 In this section we try to estimate the memory consumption of the objects needed to support our heuristics, and compare them with the memory footprint of a standard BVH.
 
 \subsection*{Estimate of the Cost of a BVH}
-In order to estimate the memory occupied by a BVH, we first have to estimate the number of nodes in it. On average the BVHs of the test cases has $18.4$ levels, which we can approximate to $18$. A binary tree with $18$ level, in case it is balanced, has $2^{18}-1 = 262143$ nodes, half of which are leaf nodes.
+In order to estimate the memory occupied by a BVH, we first have to estimate the number of nodes in it. On average the BVHs of the test cases have $20.9$ levels, which we can approximate to $21$. A binary tree with $21$ level, in case it is balanced, has $2^{21}-1 = 2097151$ nodes, half of which are leaf nodes.
 
 In our implementation, a node is represented by a structure (section \ref{sec:bvh}) holding an $Aabb$, two pointers to the children nodes and a list of triangles. We decided to keep the list of triangles in internal nodes for debugging and visualization reasons, however it is only necessary in leaf nodes. For the sake of this analysis, we will only consider leaf nodes containing a list of pointers to triangles. 
 
@@ -2359,9 +2346,9 @@ Assuming that floating points are stored in $4$ bytes, and pointers in $8$ bytes
 To compute the weight of a leaf node, we have to add the size of the array of triangles' indices. Since, in our test cases, the algorithm stopped when the number of triangles in a node was less than 3, we can assume\footnote{It is also possible to have a leaf node with more than $2$ triangles, in case it was impossible to split due to the relative position of the triangles' centers.} that all the leaf nodes carried $2$ triangles. In this case their weight is $40B + 2 \cdot 4B = 48B$.
 
 We can now compute the cost of a balanced BVH of $18$ levels as:
-\boldmath{$$(2^{18-1}-1) \cdot 40B + 2^{18-1} \cdot 48B \approx 11.53MB$$}\unboldmath
+\boldmath{$$(2^{21-1}-1) \cdot 40B + 2^{21-1} \cdot 48B \approx 92.27MB$$}\unboldmath
 
-\subsection*{Estimate of the Cost of a Influence Areas}
+\subsection*{Estimate of the Cost of an Influence Areas}
 When a BVH has an associated influence area, we must add the cost of it to the one of the array. A $PlaneInfluenceArea$ is made up of a $Plane$, a $4x4$ view projection matrix (used to accelerate the projection process), and an $AabbForObb$ (section \ref{ssec:aabb_for_obb}).
 
 The $Plane$ holds two 3D floating-point vectors, one for the passing point and one for the normal ($24 Bytes$). The $AabbForObb$ contains $6$ 3D floating-point vectors, respectively for the center, forward, right and up directions, and the half size in all directions. Moreover it contains an $Aabb$ for the rejection tests: the total cost is $6 \cdot 3 \cdot 4B + 24B= 96 Bytes$.
@@ -2396,27 +2383,27 @@ We can not put everything together and calculate the cost of our structures. In 
 \begin{subequations}
 	\begin{align*}
 	Total\;cost &= Cost\;local\;BVH + Cost\;influence\;area + Cost\;global\;BVH + Cost\;octree\\
-	&= 11.53MB + 260B + 11.53MB + 1.9MB \approx 24.96MB
+	&= 92.27MB + 260B + 92.27MB + 1.9MB \approx 186.44MB
 	\end{align*}
 \end{subequations}
 
 If we used only the global BVH, the cost would have been only $11.53MB$, which means that using our heuristics is costing $2.16$ times more.
 
 \noindent\rule{\textwidth}{1pt}
-In case there are $20$ influence areas, we assume that they contain roughly the same amount of triangles, and that only $50\%$ of all the triangles in the scene are contained in at least one influence area. Before we assumed that the BVH has $18$ levels, is balanced and each leaf contains $2$ triangles. 
+In case there are $20$ influence areas, we assume that they contain roughly the same amount of triangles, and that only $50\%$ of all the triangles in the scene are contained in at least one influence area. Before we assumed that the BVH has $21$ levels, is balanced and each leaf contains $2$ triangles. 
 
-This means that the total number of triangles in the scene is $2^{18-1} \cdot 2 = 524288$. Only half of these are included in a BVH, therefore each BVH roughly contains $\frac{524288}{2\cdot 20} \approx 13000$ triangles. A balanced BVH with $13000$ triangles has an amount of levels equals to\footnote{The division by $2$ comes from the fact that each leaf contains $2$ triangles on average, as we explained above.}:
+This means that the total number of triangles in the scene is $2^{21-1} \cdot 2 = 2097152$. Only half of these are included in a BVH, therefore each BVH roughly contains $\frac{2097152}{2\cdot 20} \approx 50000$ triangles. A balanced BVH with $50000$ triangles has an amount of levels equals to\footnote{The division by $2$ comes from the fact that each leaf contains $2$ triangles on average, as we explained above.}:
 
-$$\Big\lceil\log_2\Big(\frac{13000}{2}\Big)+1\Big\rceil = 14$$ 
+$$\Big\lceil\log_2\Big(\frac{50000}{2}\Big)+1\Big\rceil = 16$$ 
 
-A BVH with 14 levels has a cost of \boldmath{$(2^{14-1}-1) \cdot 40B + 2^{14-1} \cdot 48B \approx 0.72MB$}\unboldmath.
+A BVH with 14 levels has a cost of \boldmath{$(2^{16-1}-1) \cdot 40B + 2^{16-1} \cdot 48B \approx 2.88MB$}\unboldmath.
 
 We can now compute the total cost of the structures needed to use our heuristics in this scenario:
 
 \begin{subequations}
 	\begin{align*}
 		Total\;cost &= (Cost\;local\;BVH + Cost\;influence\;area) \cdot 20 + Cost\;global\;BVH + Cost\;octree\\
-		&= (0.72MB + 260B) \cdot 20 + 11.53MB + 1.9MB \approx 27.8MB
+		&= (2.88MB + 260B) \cdot 20 + 186.44MB + 1.9MB \approx 191.22MB
 	\end{align*}
 \end{subequations}
 
@@ -2434,9 +2421,7 @@ Both projected area heuristic and splitting plane facing heuristic work best whe
 
 Building BVHs with PAH has proven to be an order of magnitude more expensive than building them with SAH (section \ref{ssec:pah_spfh_vs_sah_lsph}), therefore the technique is not suited for a real-time dynamic scenario. On the other hand, it can bring improvements in non-real-time use cases, where it can be worth it to trade one-time construction time for per-ray traversal time. Indeed, in non-real-time scenarios, usually there are many more rays to trace, on a scene with more geometry. This means that even a small improvement in traversal time can potentially outweigh the increased construction time cost.
 
-As we have seen, PAH in isolation doesn't bring benefits in many scenarios compared to SAH, therefore we strongly suggest to the two techniques in pair.
-
-On the other hand, splitting plane facing heuristic has proven to work well even without PAH. Furthermore, SPFH is not more expensive than the state-of-the-art LSPH, therefore it may be worth it to use it even in real-time scenarios. The drawback of using SPFH is that is can be effectively used only in specific regions of the scene, meaning that it is necessary to build the underlying top level structure (chapter \ref{ch:multi_influence_areas}). This fact can hinder the use of SPFH in a real-time scenario, especially in dynamic use cases, such as for dynamic lights.
+As we have seen, PAH in isolation doesn't bring benefits in many scenarios compared to SAH; on the other hand, splitting plane facing heuristic has proven to work well even without PAH. Furthermore, SPFH is not more expensive than the state-of-the-art LSPH, therefore it may be worth it to use it even in real-time scenarios. The drawback of using SPFH is that is can be effectively used only in specific regions of the scene, meaning that it is necessary to build the underlying top level structure (chapter \ref{ch:multi_influence_areas}). This fact can hinder the use of SPFH in a real-time scenario, especially in dynamic use cases, such as for dynamic lights.
 
 All in all, without carrying out further tests, we think that our methods are at the moment more suited for non-real-time scenarios, where a faster-to-traverse BVH can reduce the rendering time more effectively.
 
@@ -2464,7 +2449,7 @@ At this point, we started writing the actual code in C++, without forgetting how
 
 The last part was to test our methods in more concrete scenes, and extrapolate some indicators in order to be able to understand and present our results.
 
-Our work, while it has been tested on concrete scenes, is mostly a theoretical one. We showed how the novel heuristics we proposed can indeed work. However, we think that the way to actually use them is realistically long, but, as we described in section \ref{sec:future_developments}, we believe it is worth it to travel it.
+Our work, while it has been tested on concrete scenes, is mostly a theoretical one. We showed how the novel heuristics we proposed can indeed work in some specific scenarios. However, we think that the way to actually use them is realistically long, but, as we described in section \ref{sec:future_developments}, we believe it is worth it to travel it.
 
 
 % === Bibliography ===
