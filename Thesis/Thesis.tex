@@ -35,6 +35,7 @@
 \usepackage{xcolor} % Coloured captions
 \usepackage{amsthm,thmtools,xcolor} % Coloured "Theorem"
 \usepackage{float}
+\usepackage{geometry}
 \usepackage[font=small]{caption} % To make captions small
 \usepackage{eso-pic} % Background pictures for each page
 \newcommand*\triangleLogo{
@@ -120,7 +121,7 @@
 % Abstract
 \makeatletter
 \let\savedchap\@makechapterhead
-\def\@makechapterhead{\vspace*{-2cm}\savedchap}
+\def\@makechapterhead{\savedchap}
 \polimichapter{Abstract}
 \let\@makechapterhead\savedchap
 \makeatletter
@@ -128,46 +129,48 @@
 \begin{tikzpicture}[remember picture,overlay,shift={(current page.north west)}]
 	\node[anchor=north west]{\includegraphics[width=20.7cm]{banner.png}};
 \end{tikzpicture}
-\begin{tikzpicture}[remember picture,overlay,shift={(current page.south west)}]
-	\node[anchor=south west, xshift=2.85cm, yshift=1.8cm]{\textbf{Keywords:} Ray tracing, bounding volume hierarchy, BVH};
-\end{tikzpicture}
-\vspace{-0.5cm}
-\small
-\\
+
 In the last few years, real-time computer graphics have been transitioning from a pipeline based on rasterization to one using ray tracing.
-Ray tracing makes it possible to accurately simulate the behavior of light rays, enabling developers of graphics content to reproduce high-fidelity scenes without using a plethora of techniques to mimic light transport.
+Ray tracing makes it possible to accurately simulate the physical behavior of light rays, enabling developers of graphics content to reproduce high-fidelity scenes without using a plethora of techniques to mimic light transport.
 
 While ray tracing is widely used for off-line rendering, such as for CGI effects in films or animated movies, the same cannot be stated for on-line applications, such as videogames. The main problem with ray tracing is that simulating light transport is computationally expensive, reason why in recent videogames ray tracing is only used on small portions of the scene, or to simulate some effects (such as reflections, shadows, or ambient occlusion).
 
-In order to increase the spread of ray tracing in on-line rendering applications too, research is moving in two macro directions.
+In order to increase the spread of ray tracing in on-line rendering applications too, research is moving in two macro directions. The first one is to build GPUs with an architecture more suited for ray tracing, such as the RT cores from Ampere Nvidia GPUs. The second, but not least important one, is to design software optimizations to make ray tracing cheaper.
 
-The first one is to build GPUs with an architecture more suited for ray tracing, such as the RT cores from Ampere Nvidia GPUs.
+One of the problems that is ubiquitous in the ray tracing environment is to detect collisions between a ray and the geometry of the scene to render. Given the huge amount of primitives present in modern graphic applications, it is necessary to use a data structure to accelerate the ray collision retrieval process. The state-of-the-art structure is the Bounding Volume Hierarchy (BVH), a spatial binary tree which hierarchically organizes primitives, making it possible to skip entire sections of the scene that are spatially far away from the ray that is being traced. 
 
-The second, but not least important one, is to design software optimizations to make ray tracing cheaper.
+Building an optimal BVH is an NP-complete problem, therefore greedy algorithms and heuristics are used to construct them in real-world applications. The two heuristics used in state-of-the-art, namely Surface Area Heuristic (SAH) and Longest Splitting Plane Heuristic (LSPH), lay their foundations on some assumptions, the most relevant of which is that the ray distribution of the scene is uniform.
 
-One of the problems that is ubiquitous in the ray tracing environment is to detect collisions between a ray and the geometry of the scene to render. Given the huge amount of primitives present in modern graphic applications, it is necessary to use a data structure to accelerate the ray collision retrieval process. The state-of-the-art structure is the Bounding Volume Hierarchy (BVH), which hierarchically organizes primitives, making it possible to skip entire sections of the scene that are spatially far away from the ray that is being traced during BVH traversal.
+However, another optimization used in a previous step of the ray tracing algorithm, called Monte Carlo Importance Sampling, generates artifacts in the distribution of the rays in the scene, rendering the SAH and LSPH hypotesis not accurate.
 
-In this thesis we propose two novel heuristics, working upon the same assumptions, to build higher-quality BVHs, a data structure to make it possible to use them, and a comparative analysis of their performance in different scenarios.
+In this thesis we propose two novel heuristics which are aware of the artifacts in the ray distribution, and leverage them to build potentially better BVHs. We also develop a top level structure enabling the use of the heuristics, along with a modern C++ implementation of the presented ideas. The implementation is eventually used in the testing phase, where we extract experimental results and comment on them.
 
-The first heuristic, called \textbf{Projected Area Heuristic} (PAH), aims at better estimating the amount of rays that hit each node of the BVH by exploiting some artifacts in the ray distribution in the scene, caused by another optimization used in a previous step of the ray tracing pipeline (namely Monte-Carlo importance sampling).
+The first heuristic is called \textbf{Projected Area Heuristic} (PAH), and aims at better estimating the amount of rays that hit each node of the BVH, in order to have a better cost function during its construction.
 
-The second one, \textbf{Splitting Plane Facing Heuristic} (SPFH) aims at reducing the overlap among nodes of the BVH, consequently reducing the number of intersection tests needed during the BVH traversal phase.
+The second one, namely \textbf{Splitting Plane Facing Heuristic} (SPFH), aims at reducing the overlap among nodes of the BVH, consequently reducing the number of intersection tests needed during the BVH traversal phase.
 
+\small
+\textit{\textbf{Keywords:} Ray tracing, bounding volume hierarchy, BVH}
 \normalsize
+\\\\
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth*\real{0.7}]{Images/abstract_image.png}
+	\caption{BVH built with PAH and SPFH on Suzanne the monkey, from our visualizer tool.}
+\end{figure}
+
 
 % Abstract in Italian
 \makeatletter
 \let\savedchap\@makechapterhead
-\def\@makechapterhead{\vspace*{-3cm}\savedchap}
+\def\@makechapterhead{\savedchap}
 \polimichapter{Abstract in Lingua Italiana}
 \let\@makechapterhead\savedchap
 \makeatletter
-\small
 Abstract Italiano
 \\
 \\
-\textbf{Parole chiave:} Ray tracing, bounding volume hierarchy, BVH
-\normalsize
+\textit{\textbf{Parole chiave:} Ray tracing, bounding volume hierarchy, BVH}
 
 
 % === Table of contents ===
@@ -222,7 +225,7 @@ What we described in the previous paragraph is a simplification of the Monte-Car
 
 Monte-Carlo variance reduction techniques, such as importance sampling \cite{importance_sampling}\cite{multi_light_sampling}, help us to achieve a precise approximation of the light incoming to a point with a low amount of probe rays, which is the goal we set.
 
-However, importance sampling, creates artifacts in the distribution of the probe rays in the scene. If, with plain Monte-Carlo, the rays are distributed uniformly in the scene, by using importance sampling their distribution changes, and more rays tend to go toward light sources. This effect is the main hypothesis of the the novel heuristics we propose in this work.
+However, importance sampling, creates artifacts in the distribution of the probe rays in the scene. If, with plain Monte-Carlo, the rays are distributed uniformly in the scene, by using importance sampling their distribution changes, and more rays tend to go toward light sources. This effect is the main hypothesis of the novel heuristics we propose in this work.
 
 \section*{Bounding Volume Hierarchies}
 Another fundamental task that any ray tracing algorithm must perform, is to find the intersection between a ray and the geometry of the scene. Usually the objects in the scene are described as surfaces made up of a big number of small triangles. Therefore, finding the intersection of a ray with a scene, reduces to finding the intersection between a ray and a large amount of triangles.
@@ -1213,7 +1216,7 @@ The $properies$ are values upon which depends how the BVH is built. We will now 
 	\item[\boldmath$maxLeafHitProbability$] If the hit probability (section \ref{ssec:cost_computation}) of this node is less than this threshold, it is a leaf.
 	\item[\boldmath$maxTrianglesPerLeaf$] If a node has fewer triangles than this threshold, it is a leaf.
 	\item[\boldmath$maxLevels$] If a node is at a level higher than this threshold, it is a leaf.
-	\item[\boldmath$bins$] How many cuts to try to split a node into its children. A higher value generates more accurate BVHs, but is is also more expensive (section \ref{ssec:triangles_splitting}).
+	\item[\boldmath$bins$] How many cuts to try to split a node into its children. A higher value generates more accurate BVHs, but it is also more expensive (section \ref{ssec:triangles_splitting}).
 	\item[\boldmath$maxNonFallbackLevels$] If a node is at a level higher than this threshold, the specified fallback strategies (usually SAH and longest splitting plane heuristic) will be used to split it into children. This can be used to avoid using an expensive strategy (such as PAH) even at deep levels, where there is less to gain.
 	\item[\boldmath$splitPlaneQualityThreshold$] $[0, 1]$. If the quality of the split plane (chapter \ref{ch:splitting_plane_facing_heuristic}) is less than this threshold, two things can happen: if a satisfactory split plane has already been found (look at the next two properties), it is used; if not, use the fallback strategy to find the splitting plane. A low value will leave the algorithm find the best splitting plane more times, but will slow the construction down. More details in section \ref{ssec:splitting_plane_implementation}.
 	\item[\boldmath$acceptableChildrenFatherHitProbabilityRatio$] Defined as $\frac{leftChildHit\% + rightChildHit\%}{fatherHit\%}$. This value is used to determine if a splitting plane cut is acceptable when no more planes with the minimum quality are present. The value is used to approximate the overlapping of the two children nodes: in the ideal case (no overlapping) this value is less than 1. A low value forces the algorithm to use the fallback strategy more often, therefore will also slow the construction down. More details in section \ref{ssec:splitting_plane_implementation}.
@@ -1619,11 +1622,11 @@ To create a $PointInfluenceArea$, it is required to specify a $Pov$ and a pair o
 	\end{algorithmic}
 \end{algorithm} 
 
-Given a $Pov$ and a near and far planes, it is possible to directly compute the perspective matrix and the view matrix, that are then combined in a view-projection matrix via multiplication.
+Given a $Pov$ and a near and far planes, it is possible to directly compute the perspective matrix and the view matrix, which are then combined in a view-projection matrix via multiplication.
 
 The process to compute the view matrix has already been explained in section \ref{ssec:plane_influence_area}, thus it won't be repeated here.
 
-To compute the perspective projection matrix, we need the bounds of the frustum the projection matrix is associated with. We already have the $near$ and $far$ planes, but we lack the $right$, $left$, $top$ and $bottom$ limits. We can compute them starting from the the horizontal and vertical fields of view, as it is possible to visualize in figure \ref{fig:fov_to_right}:
+To compute the perspective projection matrix, we need the bounds of the frustum the projection matrix is associated with. We already have the $near$ and $far$ planes, but we lack the $right$, $left$, $top$ and $bottom$ limits. We can compute them starting from the horizontal and vertical fields of view, as it is possible to visualize in figure \ref{fig:fov_to_right}:
 
 \begin{align*}
 	&right = near \cdot tan(\frac{fovX}{2}) \\
@@ -2258,7 +2261,7 @@ Last, we wanted to quantify the error an octree introduces. The octree is indeed
 
 In chart \ref{fig:octree_error_faster_chart} we show the average error of the octrees queries in percentage, and how much faster they are compared to the AABBs for regions structure. An octree with $4$ levels has an error percentage of $110\%$, in particular of the $9136$ influence areas the points were considered contained into, $4795$ were false positives. The error decreases exponentially, and already with $5$ levels it is $40\%$, while the octree is only $3$ percentage points slower compared to the one with $4$ levels.
 
-From the chart is is possible to observe that the maximum difference between how faster is the octree and its error percentage is reached with an octree of $6$ levels. However, in our test cases (section \ref{ssec:pah_spfh_vs_sah_lsph}) we adopted octrees with $5$ levels, in order to reduce the building times. Indeed, as it can be observed in the chart above, the building time grows exponentially, which is expected given that the number of nodes in the tree also grows exponentially, as mentioned a few paragraphs above.
+From the chart it is possible to observe that the maximum difference between how faster is the octree and its error percentage is reached with an octree of $6$ levels. However, in our test cases (section \ref{ssec:pah_spfh_vs_sah_lsph}) we adopted octrees with $5$ levels, in order to reduce the building times. Indeed, as it can be observed in the chart above, the building time grows exponentially, which is expected given that the number of nodes in the tree also grows exponentially, as mentioned a few paragraphs above.
 
 The last analysis we carried out concerns the average traversal cost of the BVHs as related to the approximation error of the underlying octree. If the approximation of the octree is too coarse, too many rays that are not affine to a certain influence area will be cast towards it regardless. This leads to searching the ray-scene intersection in a BVH that doesn't follow the PAH and SPFH hypotheses. Furthermore, it is more likely for such a ray to completely miss the BVH, and fall back to the global BVH, wasting time. The experimental results show that with a $4$ level octree the average cost of traversing the BVH for the scenes \textit{Cottage}, \textit{Random1000}, \textit{Wood}, \textit{Suzanne} is $100.5$, and increases to $115.5$ if we consider also the fallback searches. With an octree with $5$ levels the costs go down respectively to $88.7$ and $101.4$. However, if we use a $6$ levels octree the costs only decrease to $87.6$ and $99.8$. All the analyses were performed on octrees built over $20$ influence areas.
 
