@@ -189,10 +189,10 @@ Abstract Italiano
 
 % === Intro ===
 \chapter*{Introduction}
-\section*{What Is Ray Tracing}
+\section*{What Ray Tracing Is}
 In the field of computer graphics, we refer to ray tracing as a family of rendering algorithms that simulate light transport, in order to transition from a mathematical representation of a scene to an image on the screen. 
 
-The core algorithm of ray tracing is conceptually simple. First, we cast some rays from each light source in the scene. The rays will collide and bounce away from the objects present in the scene, losing part of their energy. At some point a ray will either lose all of its energy and disappear, or hit the eye of an observer at a specific position. The eye of the observer can be though as a camera, and the position on the camera as the pixel. This means that we can assign a color to the hit pixel, based on the remaining energy of the ray. If more than one ray hits the pixel, the contributions are summed together, if none hits it, the pixel remains black.
+The core algorithm of ray tracing is conceptually simple. First, we cast some rays from each light source in the scene. The rays will collide and bounce away from the objects present in the scene, losing part of their energy. At some point a ray will either lose all of its energy and disappear, or hit the eye of an observer at a specific position. The eye of the observer can be though of as a camera, and the position on the camera as the pixel. This means that we can assign a color to the hit pixel, based on the remaining energy of the ray. If more than one ray hits the pixel, the contributions are summed together, if none hits it, the pixel remains black.
 
 \begin{figure}[H]
     \centering
@@ -201,9 +201,9 @@ The core algorithm of ray tracing is conceptually simple. First, we cast some ra
     \label{fig:ray_tracing_intro}
 \end{figure}
 
-The process described above is a simplification of the behavior of the light in real world, and the way in which our brain can see. A lot of different specializations of the ray tracing algorithm exist. Some of them are designed to simulate light very precisely, such as bidirectional path tracing techniques \cite{bidirectional_path_tracing}. Others are designed to be fast.
+The process described above is a simplification of the behavior of the light in real world, and the way in which our brain can see. A lot of different specializations of the ray tracing algorithm exist. Some of them are designed to simulate light very precisely, such as bidirectional path tracing techniques \cite{bidirectional_path_tracing}. Others are designed to be fast. A very common implementation of ray tracing is backward ray tracing. With this technique rays are cast from the camera toward the scene. Given the light reciprocity principle \cite{light_reciprocity}, which states that light transmits in the same way in both directions, this process is equivalent to the forward ray tracing method, with the advantage that we don't waste the rays that don't hit the camera, and therefore don't contribute to the final color of the pixels. From now on in this introductory chapter, we will always refer to backward ray tracing.
 
-What all the techniques have in common is the fact that simulating light is an expensive task. The main reason lies in the number of rays that must be cast in order to obtain an accurate rendering of the scene. In the real-world a $100W$ lightbulb is estimated to produce $10^{20}$ photons each second \cite{monte_carlo_integration}. Of course, even in a non real-time scenario, it is computationally impossible to ray trace an image with such an high amount of rays per light. Therefore, one of the most studied research directions in ray tracing is how to reduce the number of photons, while still obtaining an high quality image.
+What all the techniques have in common is the fact that simulating light is an expensive task. The main reason lies in the number of rays that must be cast in order to obtain an accurate rendering of the scene. In the real-world a $100W$ lightbulb is estimated to produce $10^{20}$ photons each second \cite{TODO}. Of course, even in a non real-time scenario, it is computationally impossible to ray trace an image with such an high amount of rays per light. Therefore, one of the most studied research directions in ray tracing is how to reduce the number of photons, while still obtaining an high quality image.
 
 \section*{Monte-Carlo and Kajiya Rendering Equation}
 The tool used to achieve this result is Monte-Carlo integration \cite{monte_carlo_integration}. With Monte-Carlo methods it is possible to integrate an arbitrary function with a given amount of random samples. In our case, the function to integrate is inside the Kajiya's rendering equation \cite{rendering_equation}.
@@ -228,13 +228,13 @@ Monte-Carlo variance reduction techniques, such as importance sampling \cite{imp
 However, importance sampling, creates artifacts in the distribution of the probe rays in the scene. If, with plain Monte-Carlo, the rays are distributed uniformly in the scene, by using importance sampling their distribution changes, and more rays tend to go toward light sources. This effect is the main hypothesis of the novel heuristics we propose in this work.
 
 \section*{Bounding Volume Hierarchies}
-Another fundamental task that any ray tracing algorithm must perform, is to find the intersection between a ray and the geometry of the scene. Usually the objects in the scene are described as surfaces made up of a big number of small triangles. Therefore, finding the intersection of a ray with a scene, reduces to finding the intersection between a ray and a large amount of triangles.
+Another fundamental task that any ray tracing algorithm must perform, is to find the intersection between a ray and the geometry of the scene. Usually the objects in the scene are described as surfaces made up of a big number of small triangles. Therefore, finding the intersection of a ray with a scene, can be reduced to finding the intersection between a ray and a large amount of triangles.
 
 One way to do so is by using the brute-force approach: for each ray, we perform the ray-triangle intersection test with each triangle. If we have $n$ rays and $m$ triangles, $m*n$ intersection tests must be carried out.
 
-Considering that we need a lot\footnote{at least one per pixel, at least $1080 \cdot 1920 = 2073600$ on HD displays.} of rays to achieve realistic images, and that we need a lot of triangles design accurate objects, the brute-force method is too slow.
+Considering that we need a lot\footnote{At least one per pixel, at least $1080 \cdot 1920 = 2073600$ on HD displays.} of rays to achieve realistic images, and that we need a lot of triangles to design accurate objects, the brute-force method is too slow.
 
-A better way to perform ray-scene intersection is to organize the triangles in a hierarchical fashion. We can first divide the scene into two sections, and delimit each one with a parallelepiped (an Axis-Aligned Bounding Box, or AABB): if the ray doesn't hit one of the two, we can exclude all the triangles present in that part of the scene. Bounding Volume Hierarchies (BVHs) extend this simple idea recursively. First the scene is divided into two parts; then each one of the two parts, is further divided into two sub-parts, and so on. The structure originating from this process is a binary tree. This means that, in order to perform ray-scene intersection, on average only $log_2 n \cdot m$ intersection tests are needed.
+A better way to perform ray-scene intersection is to organize the triangles in a hierarchical fashion. We can first divide the scene into two sections, and delimit each one with a parallelepiped (an Axis-Aligned Bounding Box, or AABB): if the ray doesn't hit one of the two, we can exclude all the triangles present in that part of the scene. Bounding Volume Hierarchies (BVHs) extend this simple idea recursively. First the scene is divided into two parts; then each one of the two parts, is further divided into two sub-parts, and so on. The structure originating from this process is a binary tree. This means that, in order to perform ray-scene intersection, on average only $log_2 n \cdot m$ intersection tests are needed, if the binary tree is sufficiently balanced.
 
 \begin{figure}[]
     \centering
@@ -243,9 +243,11 @@ A better way to perform ray-scene intersection is to organize the triangles in a
     \label{fig:suzanne_intro}
 \end{figure}
 
-One of the main concerns while building a BVH is how to split a BVH node into two parts so that the final binary tree actually allows to achieve the logarithmic complexity we described, during traversal. The idea is to group triangles that are close together, while minimizing the surface area of the two resulting AABBs. This heuristic is called Surface Area Heuristic (SAH), and is applied at each level of the BVH while it is built. SAH tries to estimate the probability an AABB is hit, and reduce it to the minimum, even though by using a greedy algorithm, due to time constraints.
+One of the main concerns while building a BVH is how to split a BVH node into two parts so that the final binary tree actually allows to achieve the logarithmic complexity we described, during traversal. Building the optimal BVH is an NP-complete problem, therefore a greedy algorithm and heuristics must be used. The idea is to group triangles that are close together, while minimizing the surface area of the two resulting AABBs. This heuristic is called Surface Area Heuristic (SAH), and is applied at each level of the BVH while it is built. SAH tries to estimate the probability an AABB is hit by a random ray, and reduce it to the minimum, locally.
 
-SAH works under the hypothesis that the ray distribution in the scene is uniform. However, as we described in the previous section, we know that, due to Monte-Carlo importance sampling this is not the case.
+Another important heuristic is employed to choose in which direction the AABB of a node is \textit{cut} into its two children. The state-of-the-art heuristic is called Longest Splitting Plane Heuristic (LSPH). With LSPH a node is cut into its two children by using a plane perpendicular to the cartesian direction where the AABB has the longest extension. The core concept behind the heuristic is that, the longer the extension, the more opportunities there are to find a good split. Moreover, LSPH only takes into account the three cartesian directions, in order to make the splitting process faster. Furthermore, since we are using axis-aligned parallelepipeds as bounding volumes in the BVH, using only cartesian axes during the splitting plane search, also has the advantage that the planes lines up with the faces of the AABBs, making it more likely to find a satisfactory pair of children.
+
+SAH and LSPH work under the hypothesis that the ray distribution in the scene is uniform. However, as we described in the previous section, we know that, due to Monte-Carlo importance sampling this is not the case.
 
 By leveraging this finding, we propose two novel heuristics that are aware of some ray distributions in the scene, and use this knowledge to take better decisions while building the BVH.
 
@@ -253,7 +255,7 @@ The ray distributions our heuristics take into consideration are two: parallel r
 
 Parallel ray distributions are usually found in proximity of planar area light sources, where, as the name suggests, rays tend to be parallel among them, and perpendicular to the light source. By knowing the presence of this distribution, we can try to estimate better the probability a ray hits an AABB present in that region. Indeed, if all rays are parallel, we know that only some faces of the AABB can be hit, while faces facing away from the camera can never be hit. Knowing this, we state that the probability of an AABB to be hit by a ray is proportional to the area of the polygon obtained by projecting it to a plane perpendicular to the rays. In other words, we use an orthographic projection to project the AABB to the planar area light, and compute the area of the projection.
 
-For what concerns radial ray distributions, they tend to be present near point light sources, such as spotlights. In this case all the rays pass through the point light, forming a radial distribution over a certain solid angle. In this case, we estimate the hit probability by using a perspective projection, with focal point the position of the light source.
+For what concerns radial ray distributions, they tend to be present near point light sources, such as spotlights. In this case all the rays pass through the point light, forming a radial distribution over a certain solid angle. We estimate the hit probability by using a perspective projection, having as focal point the position of the light source.
 
 We call this heuristic to approximate the probability an AABB is hit Projected Area Heuristic (PAH).
 
@@ -277,7 +279,7 @@ We call this method Splitting Plane Facing Heuristic (SPFH), as opposed to the s
 \end{figure}
 
 \section*{Top Level Structure}
-If we build a BVH using SAH and LSPH, the information required by the heuristics are uniform in all of the scene, therefore just one BVH can be built. However, PAH and SPFH inherently divide the scene in local regions, where the relevant ray distributions are present. For this reason, we need a top level structure in order to find out whether, given a ray, it is \textit{affine} with a certain ray distribution present in the scene, and can therefore be traced against the associated BVH.
+If we build a BVH using SAH and LSPH, the information required by the heuristics are uniform in all of the scene, therefore just one BVH can be built. However, PAH and SPFH inherently divide the scene in local regions, where the relevant ray distributions are present. For this reason, we need a top level structure in order to find out whether, given a ray, it is \textit{affine} to a certain ray distribution present in the scene, and can therefore be traced against the associated BVH.
 
 With the term \textit{affine} we refer to the fact that, not only the ray origin must be inside the region where a certain distribution is present, but also its direction must be \textit{similar} to the directions of the rays present in the distribution.
 
@@ -297,28 +299,28 @@ Once we know that a ray origin is inside a certain ray distribution region, it i
 	\item In chapter \ref{ch:background_theory} we will introduce the research context our thesis is part of, and we will explain the theory that is needed to fully understand our work. The focus will be on the parts that are operationally relevant, and we will try to highlight them with concrete examples, along with more rigorous mathematical proofs where needed. In particular we talk about the foundations of ray tracing, the Monte Carlo integration method and a variance reduction technique called importance sampling. Eventually we will explain what a ray tracing acceleration structure is, and why BVHs are the most popular ones.
 	\item In chapters \ref{ch:projected_area_heuristic}, \ref{ch:multi_influence_areas} and \ref{ch:splitting_plane_facing_heuristic} we will expose our novel heuristics to improve the building of BVHs in some specific scenarios. In these chapters we will mainly explain the theory, and we will only briefly talk about our implementation. The implementation will be diffusely discussed in chapter \ref{ch:implementation}.
 	\begin{itemize}
-		\item In chapter \ref{ch:projected_area_heuristic} we will detail the first novel heuristic we propose: the surface area heuristic (SAH). SAH aims at better estimating the quality of a BVH, in order to be able to make better decisions during the building phase.
+		\item In chapter \ref{ch:projected_area_heuristic} we will detail the first novel heuristic we propose: the Surface Area Heuristic (SAH). SAH aims at better estimating the quality of a BVH, in order to be able to make better decisions during the building phase.
 		\item In chapter \ref{ch:multi_influence_areas} we will describe the data structures needed to enable the use of SAH, from a theoretical point of view.
-		\item In chapter \ref{ch:splitting_plane_facing_heuristic} we will explain the second novel heuristic, called splitting plane facing heuristic (SPFH). SPFH is focused on the selection of the best plane to split the triangles during BVH construction.
+		\item In chapter \ref{ch:splitting_plane_facing_heuristic} we will explain the second novel heuristic, called Splitting Plane Facing Heuristic (SPFH). SPFH is focused on the selection of the best plane to split the triangles during BVH construction.
 	\end{itemize}
 	\item In chapter \ref{ch:implementation} we will extensively explain the implementation details we omitted from the previous three chapters. We decided to subdivide the thesis like this for two main reasons: do not overload the theory chapters, in order to be able to concisely get to the core concepts; and leave the reader with a section where all the implementation details are concentrated, so that, in case he or she wants to try our framework, this section can be used as a reference.
-	\item In chapter \ref{ch:experimental_results} we will show the experimental results related to our heuristics, which we omitted or only briefly mentioned in the previous chapters. We will test our theory with the framework described in the previous chapter, and compare the results with those obtained by using different parameters or scenes, and also with the results obtained by using the state-of-the-art heuristics, namely the Surface Area Heuristic (SAH) and the Longest Splitting Plane Heuristic (LSPH).
-	\item In chapter \ref{ch:conclusion} we will list some possible scenarios where our techniques can be effectively used, based on the results obtained in the previous section. Moreover, we will produce a list of possible future development directions for the novel topics discussed in our thesis. Eventually, we will draw the main take-away points of our work.
+	\item In chapter \ref{ch:experimental_results} we will show the experimental results related to our heuristics, which we omitted or only briefly mentioned in the previous chapters. We will test our theory with the framework described in the previous chapter, and compare the results with those obtained by using different parameters or scenes, and also with the results obtained by using the state-of-the-art heuristics, namely the Surface Area Heuristic (SAH) and the Longest Splitting Plane Heuristic (LSPH). We will also analyze the performance of the octree top level structure, and compare it to the naive method of iterating over all the influence areas. Eventually we will carry out a theoretical analysis on the memory footprint of our methods.
+	\item In chapter \ref{ch:conclusion} we will list some possible scenarios where our techniques can be effectively used, based on the results obtained in the previous section. Moreover, we will produce a list of possible future development directions for the novel topics discussed in our thesis. Eventually, we will describe the journey that led the writing of this thesis, and draw the main take-away points of our work.
 \end{itemize}
 
 
 \chapter{Background Theory}
 \label{ch:background_theory}
-In this chapter we will summarize the background knowledge needed to fully comprehend this work.
+In this chapter we summarize the background knowledge needed to fully comprehend this work.
 
-In section \ref{sec:ray_tracing_principles} we will introduce ray tracing in simple terms, and list some of its advantages, disadvantages and its today's applications.
+In section \ref{sec:ray_tracing_principles} we introduce ray tracing in simple terms, and list some of its advantages, disadvantages and its today's applications.
 
-In section \ref{sec:monte_carlo_and_variance_reduction_techniques} we will analyze from a mathematical standpoint how the most used ray tracing algorithms work.
+In section \ref{sec:monte_carlo_and_variance_reduction_techniques} we analyze from a mathematical standpoint how the most used ray tracing algorithms work.
 
-Last, in section \ref{sec:ray_tracing_acceleration_structures}, we will describe the state-of-the-art acceleration structure to make a fundamental ray tracing procedure (ray-scene intersection) faster.
+Last, in section \ref{sec:ray_tracing_acceleration_structures}, we describe the state-of-the-art acceleration structure to make a fundamental ray tracing procedure (ray-scene intersection) faster.
 
 \section{Ray Tracing Principles} \label{sec:ray_tracing_principles}
-Ray tracing is a family of rendering algorithms that is used in computer graphics to transition from a mathematical representation of a scene, to an image on the screen.
+Ray tracing is a family of rendering algorithms that is used in computer graphics to transition from a mathematical representation of a scene to an image on the screen.
 
 Conceptually ray tracing is an extremely straightforward technique, that can be summarized in a few steps:
 \begin{enumerate}
@@ -585,7 +587,7 @@ It is possible to note that the function is made up of 3 terms: the $BRDF$, the 
 	\item[Light sampling] The sampling PDF should be proportional to the $L_i$ term of the rendering equation.
 \end{description}
 
-Light sampling is particularly problematic because we almost never have an analytical form of the $L_i$ function. The most used form of light sampling is called next event estimation (NEE), and is achieved by casting rays towards direct light sources. The way in which the light source to sample is chosen can be completely random or require complex strategies, such as in the case described in this article in the book \textit{Ray Tracing Gems}: \cite{multi_light_sampling}.
+Light sampling is particularly problematic because we almost never have an analytical form of the $L_i$ function. The most used form of light sampling is called Next Event Estimation (NEE), and is achieved by casting rays towards direct light sources. The way in which the light source to sample is chosen can be completely random or require complex strategies, such as in the case described in this article in the book \textit{Ray Tracing Gems}: \cite{multi_light_sampling}.
 
 The main issue with next event estimation is that a direct light can be occluded by an object, or, conversely, a strong light could come from an indirect source, such as a reflection. For this reason, another technique, called path guiding \cite{path_guiding}, has been developed to consider mainly indirect lighting in the sampling PDF. Path guiding can be computationally expensive, therefore is often used in non-real-time scenarios, even though approximations have been proposed even for real-time ray tracing, such as \cite{real_time_path_guiding}.
 
@@ -967,8 +969,8 @@ We can generalize this idea to the case where the rays are parallel to an arbitr
 
 The details of our implementation will be extensively discussed in section \ref{ch:implementation}.
 
-\section{Point Ray Distribution} \label{sec:point_ray_distribution}
-Another ray distribution commonly found in proximity of point lights is what we call the point ray distribution. In this distribution, rays all pass through the same point in 3D space, creating a radial pattern over a solid angle, as it is shown in the figure below.
+\section{Radial Ray Distribution} \label{sec:point_ray_distribution}
+Another ray distribution, commonly found in proximity of point lights, is what we call the radial or point ray distribution. In this distribution, rays all pass through the same point in 3D space, creating a radial pattern over a solid angle, as it is shown in the figure below.
 
 \begin{figure}[H]
     \centering

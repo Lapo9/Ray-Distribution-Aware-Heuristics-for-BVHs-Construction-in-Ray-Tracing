@@ -1,4 +1,4 @@
-This is BibTeX, Version 0.99d (TeX Live 2023)
+This is BibTeX, Version 0.99d (TeX Live 2024)
 Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
 The top-level auxiliary file: Thesis.aux
 The style file: abbrvnat.bst
@@ -28,45 +28,45 @@ Warning--empty publisher in path_guiding
 Warning--can't use both volume and number fields in ray_coherency
 Warning--empty year in obb_construction
 Warning--can't use both volume and number fields in cache_efficient_bvhs
-You've used 60 entries,
+You've used 61 entries,
             2773 wiz_defined-function locations,
-            905 strings with 13792 characters,
-and the built_in function-call counts, 26504 in all, are:
-= -- 2348
-> -- 1438
-< -- 57
-+ -- 502
-- -- 435
-* -- 1913
-:= -- 3984
-add.period$ -- 205
-call.type$ -- 60
-change.case$ -- 317
-chr.to.int$ -- 53
-cite$ -- 144
-duplicate$ -- 1294
-empty$ -- 2283
-format.name$ -- 524
-if$ -- 5670
+            907 strings with 13800 characters,
+and the built_in function-call counts, 26855 in all, are:
+= -- 2379
+> -- 1448
+< -- 58
++ -- 506
+- -- 438
+* -- 1938
+:= -- 4039
+add.period$ -- 208
+call.type$ -- 61
+change.case$ -- 321
+chr.to.int$ -- 54
+cite$ -- 146
+duplicate$ -- 1314
+empty$ -- 2320
+format.name$ -- 528
+if$ -- 5744
 int.to.chr$ -- 8
 int.to.str$ -- 1
-missing$ -- 50
-newline$ -- 323
-num.names$ -- 240
-pop$ -- 816
+missing$ -- 51
+newline$ -- 328
+num.names$ -- 244
+pop$ -- 823
 preamble$ -- 1
-purify$ -- 264
+purify$ -- 267
 quote$ -- 0
-skip$ -- 963
+skip$ -- 976
 stack$ -- 0
-substring$ -- 720
-swap$ -- 200
+substring$ -- 734
+swap$ -- 201
 text.length$ -- 19
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 625
+type$ -- 636
 warning$ -- 24
-while$ -- 241
+while$ -- 245
 width$ -- 0
-write$ -- 782
+write$ -- 795
 (There were 25 warnings)
