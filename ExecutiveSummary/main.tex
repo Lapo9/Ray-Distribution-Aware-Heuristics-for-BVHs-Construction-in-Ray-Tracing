@@ -142,7 +142,7 @@ Computing the emissive term $L_e$, knowing where the light sources are located, 
 
 The more probe rays we cast, the more the estimation of the light entering a point is accurate, and, consequently, the rendered image. The issue is that, by a fundamental Monte-Carlo estimator property, to cut the estimation error in half, we need 4 times more probe rays. For this reason, some variance reduction techniques have been developed to reduce error without increasing the number of rays.
 
-The variance reduction technique relevant for this thesis is called importance sampling. Instead of casting the probe rays toward uniformly random directions, we cast them by following a non-uniform Probability Density Function (PDF). The PDF should be proportional to the integrand function but, since it is unknown, we can approximate it by casting more rays directly toward light sources. This importance sampling method is called light sampling, or Next Event Estimation (NEE).
+The variance reduction technique relevant for this thesis is called \textit{importance sampling}. Instead of casting the probe rays toward uniformly random directions, we cast them by following a non-uniform Probability Density Function (PDF). The PDF should be proportional to the integrand function but, since it is unknown, we can approximate it by casting more rays directly toward light sources. This importance sampling method is called \textit{light sampling}, or \textit{Next Event Estimation} (NEE).
 
 NEE makes it so that the ray distribution inside the scene is not uniform, but it is more dense in proximity to light sources. This is a core hypothesis of our work.
 

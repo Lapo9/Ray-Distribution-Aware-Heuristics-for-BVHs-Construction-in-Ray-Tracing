@@ -3,7 +3,6 @@ Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
 The top-level auxiliary file: Thesis.aux
 The style file: abbrvnat.bst
 Database file #1: Bibliography.bib
-Warning--I didn't find a database entry for "curse_of_dimensionality"
 Warning--empty publisher in separating_axis_test
 Warning--empty year in kajiya_equation_drawing
 Warning--empty year in importons
@@ -30,43 +29,43 @@ Warning--empty year in obb_construction
 Warning--can't use both volume and number fields in cache_efficient_bvhs
 You've used 61 entries,
             2773 wiz_defined-function locations,
-            907 strings with 13800 characters,
-and the built_in function-call counts, 26855 in all, are:
-= -- 2379
+            910 strings with 13950 characters,
+and the built_in function-call counts, 26807 in all, are:
+= -- 2376
 > -- 1448
 < -- 58
 + -- 506
 - -- 438
-* -- 1938
-:= -- 4039
-add.period$ -- 208
+* -- 1926
+:= -- 4031
+add.period$ -- 209
 call.type$ -- 61
 change.case$ -- 321
 chr.to.int$ -- 54
 cite$ -- 146
-duplicate$ -- 1314
-empty$ -- 2320
+duplicate$ -- 1309
+empty$ -- 2315
 format.name$ -- 528
-if$ -- 5744
+if$ -- 5736
 int.to.chr$ -- 8
 int.to.str$ -- 1
-missing$ -- 51
-newline$ -- 328
+missing$ -- 50
+newline$ -- 329
 num.names$ -- 244
-pop$ -- 823
+pop$ -- 828
 preamble$ -- 1
 purify$ -- 267
 quote$ -- 0
-skip$ -- 976
+skip$ -- 975
 stack$ -- 0
-substring$ -- 734
+substring$ -- 722
 swap$ -- 201
 text.length$ -- 19
 text.prefix$ -- 0
 top$ -- 0
 type$ -- 636
 warning$ -- 24
-while$ -- 245
+while$ -- 244
 width$ -- 0
-write$ -- 795
-(There were 25 warnings)
+write$ -- 796
+(There were 24 warnings)

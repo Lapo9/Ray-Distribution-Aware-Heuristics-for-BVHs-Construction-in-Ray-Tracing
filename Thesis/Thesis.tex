@@ -104,7 +104,7 @@
 \frontmatter % Use roman page numbering style (i, ii, iii, iv...) for the preamble pages
 
 \puttitle{
-	title=Ray Distribution Aware Heuristics for Bounding Volume Hierarchies Construction,
+	title=Ray Distribution Aware Heuristics for Bounding Volume Hierarchies Construction in Ray Tracing,
 	name=Lapo Falcone,
 	course=Computer Science and Engineering,
 	ID  = 996089,
@@ -145,17 +145,17 @@ However, another optimization used in a previous step of the ray tracing algorit
 
 In this thesis we propose two novel heuristics which are aware of the artifacts in the ray distribution, and leverage them to build potentially better BVHs. We also develop a top level structure enabling the use of the heuristics, along with a modern C++ implementation of the presented ideas. The implementation is eventually used in the testing phase, where we extract experimental results and comment on them.
 
-The first heuristic is called \textbf{Projected Area Heuristic} (PAH), and aims at better estimating the amount of rays that hit each node of the BVH, in order to have a better cost function during its construction.
+The first heuristic is called \textbf{Projected Area Heuristic} (PAH), and aims at better estimating the amount of rays that hits each node of the BVH, in order to have a better cost function during its construction.
 
 The second one, namely \textbf{Splitting Plane Facing Heuristic} (SPFH), aims at reducing the overlap among nodes of the BVH, consequently reducing the number of intersection tests needed during the BVH traversal phase.
 
 \small
-\textit{\textbf{Keywords:} Ray tracing, bounding volume hierarchy, BVH}
+\textit{\textbf{Keywords:} Ray tracing, Bounding volume hierarchy, Heuristics for construction, Monte-Carlo importance sampling}
 \normalsize
 \\\\
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth*\real{0.7}]{Images/abstract_image.png}
+    \includegraphics[width=\textwidth*\real{0.6}]{Images/abstract_image.png}
 	\caption{BVH built with PAH and SPFH on Suzanne the monkey, from our visualizer tool.}
 \end{figure}
 
@@ -167,11 +167,38 @@ The second one, namely \textbf{Splitting Plane Facing Heuristic} (SPFH), aims at
 \polimichapter{Abstract in Lingua Italiana}
 \let\@makechapterhead\savedchap
 \makeatletter
-Abstract Italiano
-\\
-\\
-\textit{\textbf{Parole chiave:} Ray tracing, bounding volume hierarchy, BVH}
 
+\begin{tikzpicture}[remember picture,overlay,shift={(current page.north west)}]
+	\node[anchor=north west]{\includegraphics[width=20.7cm]{banner.png}};
+\end{tikzpicture}
+
+Negli ultimi anni, la grafica in tempo reale sta passando da una pipeline basata sulla rasterizzazione a una che utilizza il ray tracing. Il ray tracing consente di simulare accuratamente il comportamento fisico dei raggi di luce, permettendo agli sviluppatori di contenuti grafici di riprodurre scene in modo realistico, senza utilizzare una miriade di tecniche per imitare il comportamento della luce.
+
+Se il ray tracing è ampiamente utilizzato per il rendering off-line, come ad esempio per gli effetti CGI nei film o nei cartoni animati, lo stesso non si può dire per le applicazioni on-line, come i videogiochi. Il problema principale del ray tracing è che simulare il trasporto della luce è computazionalmente costoso, motivo per cui nei videogiochi recenti il ray tracing è utilizzato solo su piccole porzioni della scena, o per simulare alcuni effetti (come riflessi, ombre o occlusione ambientale).
+
+Per aumentare la diffusione del ray tracing anche nelle applicazioni di rendering in tempo reale, la ricerca si sta muovendo in due macro direzioni. La prima è costruire GPU con un'architettura più adatta al ray tracing, come i core RT delle GPU Ampere di Nvidia. La seconda, ma non meno importante, è progettare ottimizzazioni software per rendere il ray tracing meno costoso.
+
+Uno dei problemi onnipresenti nell'ambiente del ray tracing è rilevare le collisioni tra un raggio e la geometria della scena da renderizzare. Data la grande quantità di primitive presenti nelle moderne applicazioni grafiche, è necessario utilizzare una struttura dati per accelerare il processo di rilevamento delle collisioni dei raggi. La struttura usata allo stato dell'arte è la Bounding Volume Hierarchy (BVH), un albero binario spaziale che organizza gerarchicamente le primitive, rendendo possibile saltare intere sezioni della scena che sono lontane dal raggio che viene tracciato.
+
+Costruire un BVH ottimale è un problema NP-completo, quindi nelle applicazioni di uso comune si utilizzano algoritmi \textit{greedy} ed euristiche. Le due euristiche utilizzate allo stato dell'arte, ovvero la Surface Area Heuristic (SAH) e la Longest Splitting Plane Heuristic (LSPH), si basano su alcune assunzioni, la più rilevante delle quali è che la distribuzione dei raggi nella scena sia uniforme.
+
+Tuttavia, un'altra ottimizzazione utilizzata in una fase precedente dell'algoritmo di ray tracing, chiamata Monte Carlo Importance Sampling, genera artefatti nella distribuzione dei raggi nella scena, rendendo l'ipotesi su cui si basano SAH e LSPH non accurata.
+
+In questa tesi proponiamo due nuove euristiche che tengono in cosiderazione gli artefatti nella distribuzione dei raggi e li sfruttano per costruire BVH potenzialmente migliori. Sviluppiamo anche una struttura \textit{top-level} che consente l'uso delle euristiche, insieme a un'implementazione in C++ moderno delle idee presentate. L'implementazione viene infine utilizzata nella fase di test, dove estraiamo i risultati sperimentali e li commentiamo.
+
+La prima euristica è chiamata \textbf{Projected Area Heuristic} (PAH), e mira a stimare meglio la quantità di raggi che colpisce ciascun nodo del BVH, al fine di avere una \textit{cost function} migliore durante la sua costruzione.
+
+La seconda, denominata \textbf{Splitting Plane Facing Heuristic} (SPFH), cerca di ridurre la sovrapposizione tra i nodi del BVH, riducendo di conseguenza anche il numero di test di intersezione necessari durante la fase di attraversamento del BVH.
+
+\small
+\textit{\textbf{Keywords:} Ray tracing, Bounding volume hierarchy, Euristiche per la costruzione, Monte-Carlo importance sampling}
+\normalsize
+\\\\
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth*\real{0.6}]{Images/abstract_image.png}
+	\caption{BVH costruito con PAH e SPFH su Suzanne la scimmia, preso dal nostro strumento di visualizzazione.}
+\end{figure}
 
 % === Table of contents ===
 \thispagestyle{empty}
@@ -203,7 +230,7 @@ The core algorithm of ray tracing is conceptually simple. First, we cast some ra
 
 The process described above is a simplification of the behavior of the light in real world, and the way in which our brain can see. A lot of different specializations of the ray tracing algorithm exist. Some of them are designed to simulate light very precisely, such as bidirectional path tracing techniques \cite{bidirectional_path_tracing}. Others are designed to be fast. A very common implementation of ray tracing is backward ray tracing. With this technique rays are cast from the camera toward the scene. Given the light reciprocity principle \cite{light_reciprocity}, which states that light transmits in the same way in both directions, this process is equivalent to the forward ray tracing method, with the advantage that we don't waste the rays that don't hit the camera, and therefore don't contribute to the final color of the pixels. From now on in this introductory chapter, we will always refer to backward ray tracing.
 
-What all the techniques have in common is the fact that simulating light is an expensive task. The main reason lies in the number of rays that must be cast in order to obtain an accurate rendering of the scene. In the real-world a $100W$ lightbulb is estimated to produce $10^{20}$ photons each second \cite{TODO}. Of course, even in a non real-time scenario, it is computationally impossible to ray trace an image with such an high amount of rays per light. Therefore, one of the most studied research directions in ray tracing is how to reduce the number of photons, while still obtaining an high quality image.
+What all the techniques have in common is the fact that simulating light is an expensive task. The main reason lies in the number of rays that must be cast in order to obtain an accurate rendering of the scene. In the real-world a $100W$ lightbulb is estimated to produce $10^{20}$ photons each second\footnote{This is just a very rough estimate based on the formula of the energy carried by a photon: $E_{photon}=K_{planck}\cdot f$, and on the peak frequency of a lightbulb of $231THz$. $\# photons = \frac{100W}{6.6\cdot 10^{-34}\frac{J}{Hz} \cdot 231THz} = 6.6\cdot 10^{20}Hz$}. Of course, even in a non real-time scenario, it is computationally impossible to ray trace an image with such an high amount of rays per light. Therefore, one of the most studied research directions in ray tracing is how to reduce the number of photons, while still obtaining an high quality image.
 
 \section*{Monte-Carlo and Kajiya Rendering Equation}
 The tool used to achieve this result is Monte-Carlo integration \cite{monte_carlo_integration}. With Monte-Carlo methods it is possible to integrate an arbitrary function with a given amount of random samples. In our case, the function to integrate is inside the Kajiya's rendering equation \cite{rendering_equation}.
@@ -311,13 +338,13 @@ Once we know that a ray origin is inside a certain ray distribution region, it i
 
 \chapter{Background Theory}
 \label{ch:background_theory}
-In this chapter we summarize the background knowledge needed to fully comprehend this work.
+In this chapter we will summarize the background knowledge needed to fully comprehend this work.
 
-In section \ref{sec:ray_tracing_principles} we introduce ray tracing in simple terms, and list some of its advantages, disadvantages and its today's applications.
+In section \ref{sec:ray_tracing_principles} we will introduce ray tracing in simple terms, and list some of its advantages, disadvantages and its today's applications.
 
-In section \ref{sec:monte_carlo_and_variance_reduction_techniques} we analyze from a mathematical standpoint how the most used ray tracing algorithms work.
+In section \ref{sec:monte_carlo_and_variance_reduction_techniques} we will analyze from a mathematical standpoint how the most used ray tracing algorithms work.
 
-Last, in section \ref{sec:ray_tracing_acceleration_structures}, we describe the state-of-the-art acceleration structure to make a fundamental ray tracing procedure (ray-scene intersection) faster.
+Last, in section \ref{sec:ray_tracing_acceleration_structures}, we will describe the state-of-the-art acceleration structure to make a fundamental ray tracing procedure (ray-scene intersection) faster.
 
 \section{Ray Tracing Principles} \label{sec:ray_tracing_principles}
 Ray tracing is a family of rendering algorithms that is used in computer graphics to transition from a mathematical representation of a scene to an image on the screen.
@@ -690,7 +717,7 @@ These are the most prominent spatial data structures used for ray tracing. Howev
 \subsection{The Bounding Volume Hierarchy} \label{ssec:the_bounding_volume_hierarchy}
 A BVH \cite{bvh_primer} is a binary tree\footnote{Technically it can be a tree with any breadth, but binary trees are the most common ones.} where each node wraps some of the triangles in the scene in a bounding volume. Given a node $A$ wrapping the triangles in the set $T_A$, then the two children of $A$, called $B$ and $C$, wrap the triangles in the sets $T_B$ and $T_C$ such that $T_B \cup T_C = T_A$. Thanks to this structure, if a ray doesn't intersect a bounding volume, we deduce that it will not intersect any of the triangles contained in the bounding volume too, making it possible to discard them without having to perform any additional intersection test.
 
-Assuming the best-case scenario where a ray always hits only one of the 2 children of a given node during traversal, if the BVH is balanced and has one triangle per leaf, then the complexity of finding an intersection between a ray and the scene is $\mathcal{O}(log_2(n))$, where $n$ is the number of triangles. This is not always the case, since it often happens that a ray hits both the children of a given node. One of the heuristics that we propose in this thesis in chapter \ref{ch:splitting_plane_facing_technique}, aims at reducing the number of this expensive situation, by building the BVH in a smart way.
+Assuming the best-case scenario where a ray always hits only one of the 2 children of a given node during traversal, if the BVH is balanced and has one triangle per leaf, then the complexity of finding an intersection between a ray and the scene is $\mathcal{O}(log_2(n))$, where $n$ is the number of triangles. This is not always the case, since it often happens that a ray hits both the children of a given node. One of the heuristics that we propose in this thesis in chapter \ref{ch:splitting_plane_facing_heuristic}, aims at reducing the number of this expensive situation, by building the BVH in a smart way.
 
 The bounding volume in which a BVH encloses triangles should have a form that is cheap to intersect with a ray, and also cheap to build given a set of triangles.
 
@@ -795,9 +822,9 @@ In order to split the triangles into two subsets, a plane is chosen, and based o
     \label{fig:triangles_splitting}
 \end{figure}
 
-As shown by \cite{bvh_overlapping_metric} too much overlapping between children nodes leads to a decrease in the quality of the final BVH. For this reason, in chapter \ref{ch:splitting_plane_facing_technique} we propose a novel technique trying to take into account the overlapping during this phase of BVH construction.
+As shown by \cite{bvh_overlapping_metric} too much overlapping between children nodes leads to a decrease in the quality of the final BVH. For this reason, in chapter \ref{ch:splitting_plane_facing_heuristic} we propose a novel technique trying to take into account the overlapping during this phase of BVH construction.
 
-In order to choose which plane to use to split the triangles, some optimizations can be employed. In BVHs based on AABBs it is useful to try to split the triangles only in the 3 cartesian directions. Usually just one of the directions is chosen, in order to further optimize the process. The way in which the direction is chosen can vary based on the methods used. An often employed technique is to cut along the longest dimension of the parent AABB. Another one is to cut in a round-robin fashion, similar to what is done in kd-trees. In chapter \ref{ch:splitting_plane_facing_technique} we propose a novel method, as mentioned above.
+In order to choose which plane to use to split the triangles, some optimizations can be employed. In BVHs based on AABBs it is useful to try to split the triangles only in the 3 cartesian directions. Usually just one of the directions is chosen, in order to further optimize the process. The way in which the direction is chosen can vary based on the methods used. An often employed technique is to cut along the longest dimension of the parent AABB. Another one is to cut in a round-robin fashion, similar to what is done in kd-trees. In chapter \ref{ch:splitting_plane_facing_heuristic} we propose a novel method, as mentioned above.
 
 Another advantage of using only the 3 cartesian directions is that, in order to detect the half-space a point falls into, it is sufficient to compare one of its coordinates with the coordinates of a point the plane is passing through. This is an optimization compared to computing the cross-product, like in the case where the plane has an arbitrary normal direction.
 
@@ -1009,7 +1036,7 @@ However, in a scene, there likely is more than a single and global ray distribut
 \end{figure}
 
 \chapter{Multiple Influence Areas and the Top Level Structure} \label{ch:multi_influence_areas}
-In this chapter we will show how it is possible to deal with a scene where there are multiple localized ray distributions. We will first introduce the problem in detail and with visual examples, then we will define the concept of ray affinity to region where a relevant ray distribution is present. Eventually we will show how a scene with multiple ray distributions can be traversed by a ray. In this chapter we won't explain all the implementation details of the solution we propose, that will instead be discussed in section \ref{sec:top_level}.
+In this chapter we will show how it is possible to deal with a scene where there are multiple localized ray distributions. We will first introduce the problem in detail and with visual examples, then we will define the concept of ray affinity to regions where a relevant ray distribution is present. Eventually we will show how a scene with multiple ray distributions can be traversed by a ray. In this chapter we won't explain all the implementation details of the solution we propose, that will instead be discussed in section \ref{sec:top_level}.
 
 As we have touched on in the last chapter, while ray tracing a scene, it is likely that more than a single relevant ray distribution appears. It is even more likely that, even if only one relevant distribution is present, it doesn't cover the entirety of the scene. For cases like these, it is necessary to be able to recognize whether a ray is affine to a certain ray distribution present in a scene. In case the ray is affine, we can use the BVH built with PAH on that part of the scene to find the first intersection. In case it is not affine, we must fall back to a global BVH, covering the whole scene. The definition of the term \textit{affine} is given in the next section (\ref{sec:ray_influence_area_affinity}).
 
@@ -1022,7 +1049,7 @@ As we have touched on in the last chapter, while ray tracing a scene, it is like
 
 From this point on, we will refer to a 3D region of a scene where a relevant ray distribution is present as influence area. If the ray distribution is parallel (section \ref{sec:parallel_ray_distribution}), we call the region \textit{plane influence area}. If the ray distribution is radial (section \ref{sec:point_ray_distribution}), the influence area is qualified as \textit{point influence area}. Each influence area has an associated BVH (also called local BVH) built with PAH, where the projection method (orthographic or perspective) is the corresponding one to the ray distribution of the influence area.
 
-Influence areas must first be localized in the scene. To do so, we decided to encode a plane influence area as an oriented bounding box (section \ref{ssec:obb}). The rays start from one of the faces of the OBB, and are perpendicular to it. For what concerns point influence areas, the most natural bounding volume to localize them is 3D is a frustum (section \ref{ssec:frustum}). Rays start from the near plane of the frustum, and go toward the far plane. The direction of any of the ray can be obtained by connecting the origin of the ray on the near plane to the focal point of the frustum.
+Influence areas must first be localized in the scene. To do so, we decided to encode a plane influence area as an oriented bounding box (section \ref{ssec:obb}). The rays start from one of the faces of the OBB, and are perpendicular to it. For what concerns point influence areas, the most natural bounding volume to localize them in 3D is a frustum (section \ref{ssec:frustum}). Rays start from the near plane of the frustum, and go toward the far plane. The direction of any of the ray can be obtained by connecting the origin of the ray on the near plane to the focal point of the frustum.
 
 \begin{figure}[H]
     \centering
@@ -1049,7 +1076,7 @@ If a ray is affine to an influence area, it can use the BVH associated with the 
 \begin{figure}[]
     \centering
     \includegraphics[width=\textwidth*\real{0.35}]{Images/direction_affinity.png}
-    \caption{Visualization of the method to verify if the direction of a ray is affine with a point influence area.}
+    \caption{Visualization of the method to verify if the direction of a ray is affine with a point influence area. Purple ray is affine, whereas blue one is not.}
     \label{fig:affine_direction}
 \end{figure}
 
@@ -1082,7 +1109,7 @@ In our implementation we tried to tackle this problem by using two different app
 
 The first approach is to use algorithms described in appendices \ref{sec:point_inside_aabb} and \ref{sec:point_inside_frustum}, and each time we want to check if a point is inside any influence area, iterate over all the influence areas present in the scene. The complexity of this method linearly depends on the amount of influence areas present in the scene. Moreover, the algorithms to find out if a point is inside an OBB or a frustum are not cheap, especially in a scenario where they must be used for every single ray. On the other hand, all the influence areas can be easily stored in an array, therefore there is no overhead in building an ad-hoc structure.
 
-On the opposite side of the spectrum there is the second method we propose. In this case we build an octree, where each leaf contains the influence areas that overlap with it. Building such an octree is not trivial, and it is diffusely described in section \ref{ssec:top_level_octree}. However, once the octree is built, it is extremely cheap to find out what are the influence areas containing any given 3D point. It is indeed sufficient to traverse the octree and read the data in the leaf. Considering that it is not necessary to have extremely fine-grained octrees to achieve good results with PAH, we consider octrees the better choice as top level structure. More on the performance can be found in chapter \ref{ch:experimental_results}.
+On the opposite side of the spectrum there is the second method we propose. In this case we build an octree, where each leaf contains the influence areas that overlap with it. Building such an octree is not trivial, and it is diffusely described in section \ref{ssec:top_level_octree}. However, once the octree is built, it is extremely cheap to find out what are the influence areas containing any given 3D point. It is indeed sufficient to traverse the octree and read the data in the leaf. Considering that it is not necessary to have extremely fine-grained octrees to achieve good results with PAH, we consider octrees the better choice as top level structure. A thorough comparison of the performances of the naive method and the octree can be found in section \ref{sec:octree_vs_aabbs}.
 
 \begin{figure}[H]
     \centering
@@ -1092,7 +1119,7 @@ On the opposite side of the spectrum there is the second method we propose. In t
 \end{figure}
 
 \chapter{Splitting Plane Facing Heuristic} \label{ch:splitting_plane_facing_heuristic}
-In chapter \ref{ch:projected_area_heuristic} we described the first heuristic we propose in this thesis. With PAH it is possible to estimate better the probability a ray hits AABBs in a region of the scene where relevant ray distributions are present. This enables us to have more accurate information on how to split a node at each level, during BVH construction. However, as we stated in section \ref{ssec:triangles_splitting}, another important step in building high-quality BVHs is the choosing of the orientation of the splitting plane. In this chapter we will propose a novel method to select the splitting plane, whose main aim is to reduce the overlapping of the projected area of the children nodes. Its name is Splitting Plane Facing Heuristic (SPFH).
+In chapter \ref{ch:projected_area_heuristic} we described the first heuristic we propose in this thesis. With PAH it is possible to estimate better the probability a ray hits AABBs in a region of the scene where relevant ray distributions are present. This enables us to have more accurate information on how to split a node at each level, during BVH construction. However, as we stated in section \ref{ssec:triangles_splitting}, another important step in building high-quality BVHs is the choosing of the orientation of the splitting plane. In this chapter we will propose a novel method to select the splitting plane, whose main aim is to reduce the overlapping of the projected area of the children nodes. We named it Splitting Plane Facing Heuristic (SPFH).
 
 As extensively discussed in section \ref{ssec:triangles_splitting}, in today's BVH builders, during the triangles splitting phase, usually only one plane orientation is selected. With this strategy it is possible to trade build time for accuracy. Indeed, fewer splitting planes must be attempted at each step, but, at the same time, it is possible to miss some relevant splits. Moreover, since the majority of BVHs use AABBs, the possible splitting plane orientations among which to choose one are only 3, parallel to each cartesian axis.
 
@@ -1168,11 +1195,11 @@ The discussion about the quality of the BVHs built with the splitting plane faci
 In this chapter we will analyze how we built the framework that allowed us to test the novel techniques we explained in previous chapters, and to compare the results with other methods.
 We will explain all the implementation details we skipped in previous chapters, however we won't dwell on the performance, which is the main subject of chapter \ref{ch:experimental_results}.
 
-At the beginning of the development we used to write prototypes in C\#, in order to be able to immediately visualize the results in Unity. However, as we were convinced of the validity of our ideas, we decided to write code in C++, in order to have more control over it and be independent from a specific engine for visualization purposes. The code of our project can be found on this GitHub repository: \url{TODO}.
+At the beginning of the development we used to write prototypes in C\#, in order to be able to immediately visualize the results in Unity. However, as we were convinced of the validity of our ideas, we decided to write code in C++, in order to have more control over it and be independent from a specific engine for visualization purposes. The code of our project can be found on this GitHub repository: \url{https://github.com/Lapo9/Ray-Distribution-Aware-Heuristics-for-BVHs-Construction-in-Ray-Tracing}.
 
-Furthermore, it is possible to read the documentation of our code, generated with Doxygen\footnote{\url{https://www.doxygen.nl/}}, at this address: \url{TODO}. We decided to provide the documentation in order to help future developments. As explained in the next chapters, we tried to make the framework generic and flexible, in order to be able to test different algorithms without completely rewriting the system.
+Furthermore, it is possible to read the documentation of our code, generated with Doxygen\footnote{\url{https://www.doxygen.nl/}}, at this address: \url{https://autocorrelationcuda.neocities.org/ray_distribution_aware_BVHs/}. We decided to provide the documentation in order to help future developments. As explained in the next chapters, we tried to make the framework generic and flexible, in order to be able to test different algorithms without completely rewriting the system.
 
-In parallel with the development of the framework to test our algorithms, we also developed an independent visualizer in Unity. The visualizer receives a JSON generated by the C++ framework, and shows the generated data structures over a scene (usually the BVHs). We decided to build the Unity visualizer in order to help us graphically visualize the results of our algorithms. This approach proved very useful to fix bugs and identify pitfalls in our approaches. We won't describe the Unity visualizer in this thesis, but the code can be found at this address: \url{TODO}.
+In parallel with the development of the framework to test our algorithms, we also developed an independent visualizer in Unity. The visualizer receives a JSON generated by the C++ framework, and shows the generated data structures over a scene (usually the BVHs). We decided to build the Unity visualizer in order to help us graphically visualize the results of our algorithms. This approach proved very useful to fix bugs and identify pitfalls in our approaches. We won't describe the Unity visualizer in this thesis, but the code can be found at this address: \url{https://github.com/Lapo9/BVHs-Visualizer}.
 
 Despite the framework being written in C++, in the next sections we will present the algorithms in a language-agnostic way: our focus is on the concepts rather than the idiosyncrasies of a specific language.
 
@@ -1411,7 +1438,7 @@ To check if an AABB is fully contained in another AABB, it is enough to check th
 \end{subequations}
 
 \subsection{AABB for OBB} \label{ssec:aabb_for_obb}
-AABBs for OBBs are a data structure that optimize the ray-OBB intersection test cost in some scenarios, at the expense of a bigger memory footprint. As the name suggests, an AABB for OBB is an OBB where the tightest enclosing AABB is cached the first time it is computed:
+AABB for OBB is a data structure that optimize the ray-OBB intersection test cost in some scenarios, at the expense of a bigger memory footprint. As the name suggests, an AABB for OBB is an OBB where the tightest enclosing AABB is cached the first time it is computed:
 \begin{algorithm}[H]
 	\begin{algorithmic}
 		\Class{$AabbForObb$}
@@ -1420,7 +1447,7 @@ AABBs for OBBs are a data structure that optimize the ray-OBB intersection test 
 	\end{algorithmic}
 \end{algorithm} 
 
-In our implementation, virtually every time we could use an $Obb$, we instead use an $AabbForObb$. In all the predicate functions derived from $Region$, the $Aabb$ implementation works as refutation test. It means that a negative response from the $Aabb$ implementation implies a negative response from the $Obb$ implementation too. In symbols:
+In our implementation, virtually every time we could use an $Obb$, we instead use an $AabbForObb$. In all the predicate functions derived from $Region$, the $Aabb$ implementation works as a refutation test. It means that a negative response from the $Aabb$ implementation implies a negative response from the $Obb$ implementation too. In symbols:
 
 $$\neg Aabb.function \implies \neg Obb.function$$
 
@@ -1801,7 +1828,7 @@ Once the octree is built, it is possible to use it to detect which regions are p
 \section{Additional Structures} \label{sec:additional_structures}
 In the previous sections of this chapter we described the main structures used in our framework to test the validity of the theoretical claims of this thesis. In the framework many other structures and algorithms are present. However, since these other structures are not as strongly related to the theory of our thesis as the ones we described above, we will only briefly list some of them and their responsibilities.
 
-More information about their usage can be found at \url{TODO}.
+More information about their usage can be found at \url{https://autocorrelationcuda.neocities.org/ray_distribution_aware_BVHs/}.
 
 \subsection{Test Scene}
 In the previous sections we have seen what are the structures used to represent a BVH, an influence area and a top level structure. The $TestScene$ class is the glue among all these other structures. It is possible to create a $TestScene$ by specifying the $InfluenceArea$s present in the scene, the top level structure type to use, and a list of $RayCasters$ (section \ref{ssec:ray_caster}).
@@ -2252,7 +2279,7 @@ The octree is the structure that scales better with the amount of influence area
 
 As it can be observed in chart \ref{fig:octree_scaling_with_influence_areas_chart}, with a small amount of influence areas ($4$), an octree with $7$ levels is $36\%$ slower than the AABBs for regions structure at detecting the influence areas a point is contained into. As the amount of influence areas increases, the AABBs for regions structure becomes slower and slower, while the octree keeps its query time constant. This is expected, since the query time of the octree is independent from the amount of influence areas, and only depends on the number of levels. Already with $10$ influence areas, the octree is $20\%$ faster, and the discrepancy keeps increasing. 
 
-Last, we wanted to quantify the error an octree introduces. The octree is indeed an approximation of of the influence areas. As we mentioned in chapter \ref{sec:top_level_structure}, it is a conservative approximation, meaning that the volume of the influence areas is overestimated, but never underestimated.
+Last, we wanted to quantify the error an octree introduces. The octree is indeed an approximation of the influence areas. As we mentioned in chapter \ref{sec:top_level_structure}, it is a conservative approximation, meaning that the volume of the influence areas is overestimated, but never underestimated.
 
 \begin{figure}[H] 
 	\centering
@@ -2444,7 +2471,7 @@ In case the previous development produces acceptable results, the next step to m
 Another possible development is to try a different top level structure. For example, one structure that could bring some benefits over the octree is the kd-tree \cite{kd_trees}.
 
 \section{Closing Thoughts} \label{sec:closing_thoughts}
-Designing and developing two new heuristics for BVH construction, in a field with such a long history of development was a challenge, and a very instructive one. In this last section we will only summarize our work, and evaluate it from a more subjective point of view.
+Designing and developing two new heuristics for BVH construction, in a field with such a long history of development, was a challenge, and a very instructive one. In this last section we will only summarize our work, and evaluate it from a more subjective point of view.
 
 Before starting the ideation of the two heuristics, we carried out a detailed phase of studying the state-of-the-art of the rendering methods used nowadays. The study started from a general overview of the most used real-time rendering techniques, from sources like \cite{real_time_rendering_book}, \cite{pbr_book} and \cite{ray_tracing_gems_book}. Then we focused more on ray tracing. First, we studied the mathematical theory behind ray tracing, in particular Monte-Carlo and variance reduction methods, culminating with the study of more recent papers on modern techniques, such as ReStir \cite{restir}. After this, we moved on to studying the more concrete part about acceleration structures, in particular BVHs. Starting from the basis and studying both the theory and the concrete structures, allowed us to put them together and find the small gap in the hypotheses of SAH.
 
@@ -2455,12 +2482,6 @@ At this point, we started writing the actual code in C++, without forgetting how
 The last part was to test our methods in more concrete scenes, and extrapolate some indicators in order to be able to understand and present our results.
 
 Our work, while it has been tested on concrete scenes, is mostly a theoretical one. We showed how the novel heuristics we proposed can indeed work in some specific scenarios. However, we think that the way to actually use them is realistically long, but, as we described in section \ref{sec:future_developments}, we believe it is worth it to travel it.
-
-
-% === Bibliography ===
-\addtocontents{toc}{\vspace{2em}} % Add a gap in the Contents, for aesthetics
-\bibliography{Bibliography} % The references information are stored in the file named "Bibliography.bib"
-
 
 % === Appendices ===
 \cleardoublepage
@@ -2946,7 +2967,7 @@ Now that we obtained the ICDF, we can get uniform random samples $X_{uniform}$, 
 
 $$X_{pdf} = icdf(X_{uniform})$$
 
-Until now we have shown how to get the yaw rotation angle. The second step to sample a point uniformly from a sphere cap, is to rotate the new vector by a uniform random angle in the range $o$ to $2\pi$. The axis of rotation is parallel to the original vector.
+Until now we have shown how to get the yaw rotation angle. The second step to sample a point uniformly from a sphere cap is to rotate the new vector by a uniform random angle in the range $o$ to $2\pi$. The axis of rotation is parallel to the original vector.
 
 \begin{figure}[H]
     \centering
@@ -2959,32 +2980,48 @@ Until now we have shown how to get the yaw rotation angle. The second step to sa
 \listoffigures
 \listoftables
 
+% Table of resources
+\chapter*{List of Resources}
+\begin{description}
+	\item[Main GitHub repository] \hfill\\ \url{https://github.com/Lapo9/}\\\url{Ray-Distribution-Aware-Heuristics-for-BVHs-Construction-in-Ray-Tracing}
+	\item[GitHub repository of the Unity visualizer] \hfill\\ \url{https://github.com/Lapo9/BVHs-Visualizer}
+	\item[Code documentation] \hfill\\ \url{https://autocorrelationcuda.neocities.org/ray_distribution_aware_BVHs}
+	\item[Interactive sphere cap square sampling visualization] \hfill\\ \url{https://www.geogebra.org/m/bzswwgvj}
+	\item[Interactive sphere cap sampling visualization] \hfill\\ \url{https://www.geogebra.org/m/aqcepkrz}
+	\item[Interactive Ray-AABB intersection slab algorithm visualization] \hfill\\ \url{https://www.geogebra.org/m/np3tnjvb}
+	\item[Interactive 2D frustum visualization] \hfill\\ \url{https://www.geogebra.org/m/ammj5mxd}
+\end{description}
+\textit{We produced the majority of the figures by using Adobe Illustrator.}
+
 % Table of symbols
-
-
-\chapter*{List of Symbols} % You have to include a chapter for your list of symbols (
+\chapter*{List of Symbols}
 \begin{table}[H]
     \centering
-    \begin{tabular}{lll}
+    \begin{tabular}{ll}
         \textbf{Symbol} & \textbf{Description}\\\hline\\[-9px]
+        $\bm{BVH}$ & Bounding Volume Hierarchy\\[2px]
+        $\bm{AABB}$ & Axis-Aligned Bounding Box\\[2px]
+        $\bm{OBB}$ & Oriented Bounding Box\\[2px]
         $\bm{PAH}$ & Projected Area Heuristic\\[2px]
         $\bm{SAH}$ & Surface Area Heuristic\\[2px]
         $\bm{SPFH}$ & Splitting Plane Facing Heuristic\\[2px]
         $\bm{LSPH}$ & Longest Splitting Plane Heuristic\\[2px]
-        $\bm{BVH}$ & Bounding Volume Hierarchy\\[2px]
-        $\bm{AABB}$ & Axis-Aligned Bounding Box\\[2px]
-        $\bm{OBB}$ & Oriented Bounding Box\\[2px]
+        $\bm{NEE}$ & Next Event Estimation\\[2px]
+        $\bm{TLAS}$ & Top Level Acceleration Structure\\[2px]
+        $\bm{BLAS}$ & Bottom Level Acceleration Structure\\[2px]
         $\bm{SAT}$ & Separating Axis Test\\[2px]
+        $\bm{NDC}$ & Normalized Device Coordinates\\[2px]
+        $\bm{PDF}$ & Probability Density Function\\[2px]
+        $\bm{CDF}$ & Cumulative Density Function\\[2px]
+        $\bm{iCDF}$ & Inverse Cumulative Density Function\\[2px]
+        $\bm{PoV}$ & Point of View\\[2px]
     \end{tabular}
 \end{table}
 
-% === Ringraziamenti ===
-\chapter*{Ringraziamenti}
-\small
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ultricies integer quis auctor elit sed vulputate mi. Accumsan sit amet nulla facilisi morbi. Suspendisse potenti nullam ac tortor vitae purus faucibus. Ultricies lacus sed turpis tincidunt id. Sit amet mauris commodo quis imperdiet. Arcu bibendum at varius vel. Venenatis urna cursus eget nunc. Mus mauris vitae ultricies leo integer malesuada nunc vel. Sodales neque sodales ut etiam sit. Pellentesque dignissim enim sit amet venenatis urna cursus eget nunc. Condimentum mattis pellentesque id nibh tortor id aliquet lectus. Ultrices gravida dictum fusce ut placerat orci nulla pellentesque dignissim. Faucibus pulvinar elementum integer enim neque. Morbi tincidunt augue interdum velit euismod in pellentesque massa.
+% === Bibliography ===
+\addtocontents{toc}{\vspace{2em}} % Add a gap in the Contents, for aesthetics
+\bibliography{Bibliography} % The references information are stored in the file named "Bibliography.bib"
 
-A diam maecenas sed enim ut sem viverra aliquet eget. Viverra aliquet eget sit amet tellus cras. Tellus at urna condimentum mattis pellentesque. Quis viverra nibh cras pulvinar. Posuere morbi leo urna molestie at elementum. Aenean euismod elementum nisi quis eleifend quam. In hac habitasse platea dictumst vestibulum rhoncus. Nullam non nisi est sit amet facilisis magna etiam tempor. Neque laoreet suspendisse interdum consectetur libero. Vitae auctor eu augue ut lectus arcu bibendum. Ipsum consequat nisl vel pretium lectus quam. Velit dignissim sodales ut eu sem. Odio morbi quis commodo odio. Lectus nulla at volutpat diam. Neque gravida in fermentum et sollicitudin ac. Nunc non blandit massa enim nec dui nunc. Quisque id diam vel quam elementum pulvinar etiam non quam. Consequat id porta nibh venenatis cras sed felis. Vitae justo eget magna fermentum iaculis eu non diam. Mi sit amet mauris commodo.
-\normalsize
 
 \ClearShipoutPicture
 

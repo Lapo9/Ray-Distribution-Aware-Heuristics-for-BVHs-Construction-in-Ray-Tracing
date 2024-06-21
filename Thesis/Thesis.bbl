@@ -216,6 +216,12 @@ A.~Shelankov and G.~Pikus.
 \newblock Reciprocity in reflection and transmission of light.
 \newblock \emph{Physical Review B}, 46\penalty0 (6):\penalty0 3326, 1992.
 
+\bibitem[Shirley(2018)]{curse_of_dimensionality}
+P.~Shirley.
+\newblock Flavors of sampling in ray tracing.
+\newblock \url{https://psgraphics.blogspot.com/2018/10/flavors-of-sampling-in-ray-tracing.html}, 2018.
+\newblock Accessed: (10/06/2023).
+
 \bibitem[Shusterman and Feder(1994)]{image_compression_quadtree}
 E.~Shusterman and M.~Feder.
 \newblock Image compression via improved quadtree decomposition algorithms.
@@ -237,11 +243,6 @@ J.~Soch.
 M.~Stich, H.~Friedrich, and A.~Dietrich.
 \newblock Spatial splits in bounding volume hierarchies.
 \newblock In \emph{Proceedings of the Conference on High Performance Graphics 2009}, pages 7--13, 2009.
-
-\bibitem[TODO(TODO)]{TODO}
-TODO.
-\newblock Todo.
-\newblock \emph{TODO}, TODO\penalty0 (TODO):\penalty0 TODO, TODO.
 
 \bibitem[Veach({\natexlab{a}})]{mis}
 E.~Veach.
