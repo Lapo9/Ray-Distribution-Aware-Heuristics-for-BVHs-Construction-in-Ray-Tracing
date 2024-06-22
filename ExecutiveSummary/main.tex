@@ -54,7 +54,7 @@
 \usepackage{comment} % Comment part of code
 \usepackage{fancyhdr} % Fancy headers and footers
 \usepackage{lipsum} % Insert dummy text
-\usepackage{tcolorbox} % Create coloured boxes (e.g. the one for the key-words)
+\usepackage{tcolorbox} % Create colored boxes (e.g. the one for the keywords)
 \usepackage{stfloats} % Correct position of the tables
 
 % === New commands ===
@@ -67,9 +67,9 @@
 % === Title settings ===
 \input{Configuration_files/config}
 
-\renewcommand{\title}{Ray Distribution Aware Heuristics for Bounding Volume Hierarchies Construction}
+\renewcommand{\title}{Ray Distribution Aware Heuristics for Bounding Volume Hierarchies Construction in Ray Tracing}
 \renewcommand{\author}{Lapo Falcone}
-\newcommand{\course}{Computer Science and Engineering}
+\newcommand{\course}{Computer Science and Engineering - Ingegneria Informatica}
 \newcommand{\advisor}{Prof. Marco Gribaudo}
 \newcommand{\YEAR}{2023-24}
 
@@ -111,7 +111,7 @@ Ray tracing is a family of techniques that, starting from a mathematical represe
 
 Many of the rays cast from light sources end up not hitting the camera, therefore they are wasted. For this reason, in many ray tracing techniques the process is carried out in the opposite direction: the light rays are cast from the camera, and bounce around the scene until they hit a light source. These techniques fall under the name of backward ray tracing, and work thanks to the light reciprocity principle, which states that light transmits in the same way in both directions. From now on, when we refer to ray tracing, we implicitly reference backward ray tracing.
 
-While ray tracing, at its core, is very simple, a lot of research effort has been put into making it faster. The main problem with light simulation is that, in the real-world, a huge amount of rays\footnote{A $100W$ lightbulb produces around $10^{20}$ photons per second.} is cast, in the form of photons, and are then captured by our eyes or a digital camera to produce an image. For this reason, one important family of optimizations has as its main goal to reduce the number of rays needed to produce an accurate image.
+While ray tracing, at its core, is very simple, a lot of research effort has been put into making it faster. The main problem with light simulation is that, in the real world, a huge amount of rays\footnote{A $100W$ lightbulb produces around $10^{20}$ photons per second.} is cast, in the form of photons, and are then captured by our eyes or a digital camera to produce an image. For this reason, one important family of optimizations has as its main goal to reduce the number of rays needed to produce an accurate image.
 
 \subsection{Kajiya and Monte-Carlo}
 In order to understand better how these optimizations work, we first have to understand the Kajiya's rendering equation \cite{rendering_equation}, which concisely describes how light transport works:
@@ -157,7 +157,7 @@ With a balanced BVH, finding the ray-scene intersection becomes logarithmic with
 
 Building the BVH optimally is an NP-complete problem, therefore, in real-world applications, a greedy algorithm and heuristics are used to make the problem tractable. In particular, the heuristics are used to decide along which axis to cut the AABB, and to decide how to split the triangles into the two children nodes.
 
-The first heuristic used in state-of-the-art applications is the Longsest Splitting Plane Heuristic (LSPH), where the AABB is cut with a plane perpendicular to its longest dimension. It is worth noting that, in all the state-of-the-art builders, only the three cartesian plane orientations are taken into consideration. In other words, it is not possible to cut the AABB with an oblique plane, as it wouldn't make sense when the AABBs are, indeed, axis-aligned.
+The first heuristic used in state-of-the-art applications is the Longest Splitting Plane Heuristic (LSPH), where the AABB is cut with a plane perpendicular to its longest dimension. It is worth noting that, in all the state-of-the-art builders, only the three cartesian plane orientations are taken into consideration. In other words, it is not possible to cut the AABB with an oblique plane, as it wouldn't make sense when the AABBs are, indeed, axis-aligned.
 
 The second heuristic is Surface Area Heuristic (SAH). With SAH, when the builder has to split the triangles by using the plane orientation selected by LSPH, it tries many different options\footnote{Binned approach.}, and assigns to each one a cost, which can be computed via this formula:
 
@@ -194,11 +194,11 @@ If one of these ray distributions is present in a given region of the scene, the
 \begin{figure}[H]
     \centering 
     \subfloat[Orthographic]{
-        \includegraphics[width=\textwidth*\real{0.15}]{Images/ortho_projection.png}
+        \includegraphics[width=\textwidth*\real{0.12}]{Images/ortho_projection.png}
 	}
 	\qquad
 	\subfloat[Perspective]{
-        \includegraphics[width=\textwidth*\real{0.15}]{Images/perspective_projection.png} %TODO improve image
+        \includegraphics[width=\textwidth*\real{0.17}]{Images/perspective_projection.png} %TODO improve image
     }
     \caption{Projections.}
     \label{fig:projections}
@@ -311,7 +311,7 @@ The top level structure we implemented, apart from the naive one, is the octree.
 	\subfloat[Not leaves]{
         \includegraphics[width=\textwidth*\real{0.15}]{Images/non_leaf.png}
     }
-    \caption{Octree leaf criterium.}
+    \caption{Octree leaf criteria.}
     \label{fig:leaves}
 \end{figure}
 

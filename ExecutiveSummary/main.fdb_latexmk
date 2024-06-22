@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex main"] 1718983416.19237 "main.aux" "main.bbl" "main" 1718983464.53259 0
-  "../Thesis/Bibliography.bib" 1718294748 18139 72b119a915381dc85430f792f2c1a8aa ""
-  "main.aux" 1718983463 6858 babae8083fd51892585c5efdfae1b72a "pdflatex"
+["bibtex main"] 1719060400.80671 "main.aux" "main.bbl" "main" 1719062031.78325 0
+  "../Thesis/Bibliography.bib" 1718984740 18470 42b9f9c9241424d139a6c1be10feb004 ""
+  "main.aux" 1719062029 6858 babae8083fd51892585c5efdfae1b72a "pdflatex"
   "p:/Program Files/texlive/2024/texmf-dist/bibtex/bst/base/plain.bst" 1711737418 20613 bd3fbfa9f64872b81ac57a0dd2ed855f ""
   (generated)
   "main.bbl"
   "main.blg"
   (rewritten before read)
-["pdflatex"] 1718983459.81377 "d:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/ExecutiveSummary/main.tex" "main.pdf" "main" 1718983464.53319 0
+["pdflatex"] 1719062023.38332 "d:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/ExecutiveSummary/main.tex" "main.pdf" "main" 1719062031.78415 0
   "Configuration_files/config.tex" 1717943740 3088 64ceb8e4e692dc2c0da9f43e2944fc2c ""
   "Configuration_files/title_page.tex" 1717944559 1085 608ed1a01db80981c688d68b50e1e9d6 ""
   "Images/direction_affinity.png" 1717843476 63929 71da1e616405569757458b3f090e9f2f ""
@@ -20,7 +20,7 @@
   "Images/octree_error_faster_chart.png" 1717103870 100489 5d752c564ec45f92acb2369f3dc06cda ""
   "Images/octree_for_influence_areas.png" 1717388154 26811 e835f3561b47f30d685f703b57d55324 ""
   "Images/ortho_projection.png" 1717333656 38238 d1facf6b971d87f29c353e85846aec91 ""
-  "Images/perspective_projection.png" 1717781807 52030 025b56e43a84ea4800a5950ed261dbf2 ""
+  "Images/perspective_projection.png" 1719060312 39076 df8798f34d02273706f85226a21a29e2 ""
   "Images/plane_light_rays.png" 1717781466 23498 cd5fc3d37203b9c457b343a4524f2fcb ""
   "Images/point_light_rays.png" 1717333656 31466 e39b9fae313ffef4e961abfdec294a4c ""
   "Images/raggiera_polimi.eps" 1711810612 1813066 68b21695bbcbb6d7e09839c06406f8f3 ""
@@ -29,11 +29,11 @@
   "Images/triangle_logo.png" 1713477428 9137 e8104c7cc8b315a9bebf5d63cef6a707 ""
   "Images/x_axis_plane.png" 1717388154 78646 fe11e127b1bea0d1a86844a6e56d9716 ""
   "Images/z_axis_plane.png" 1717388154 73849 1a46132f22a9d8f1820e1aa541e478cd ""
-  "d:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/ExecutiveSummary/main.tex" 1718983458 31721 9df5ee81876855753be3816b2bf63e9f ""
-  "main.aux" 1718983463 6858 babae8083fd51892585c5efdfae1b72a "pdflatex"
-  "main.bbl" 1718983416 874 b1ca668750d0e0626979a26bbdf99d24 "bibtex main"
-  "main.out" 1718983463 1787 5370aba4d5f325b06492cc0e5f411eb7 "pdflatex"
-  "main.tex" 1718983458 31721 9df5ee81876855753be3816b2bf63e9f ""
+  "d:/Users/lapof/Documents/Development/ProjectedAreaHeuristic/ExecutiveSummary/main.tex" 1719062021 31761 345bffe33964dedcb3e80515f706fa84 ""
+  "main.aux" 1719062029 6858 babae8083fd51892585c5efdfae1b72a "pdflatex"
+  "main.bbl" 1719060401 874 b1ca668750d0e0626979a26bbdf99d24 "bibtex main"
+  "main.out" 1719062029 1787 5370aba4d5f325b06492cc0e5f411eb7 "pdflatex"
+  "main.tex" 1719062021 31761 345bffe33964dedcb3e80515f706fa84 ""
   "p:/Program Files/texlive/2024/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc" 1711737852 2971 def0b6c1f0b107b3b936def894055589 ""
   "p:/Program Files/texlive/2024/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc" 1711737852 2900 1537cc8184ad1792082cd229ecc269f4 ""
   "p:/Program Files/texlive/2024/texmf-dist/fonts/map/fontname/texfonts.map" 1711739095 3524 cb3e574dea2d1052e39280babc910dc8 ""
