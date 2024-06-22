@@ -137,7 +137,7 @@ While ray tracing is widely used for off-line rendering, such as for CGI effects
 
 In order to increase the spread of ray tracing in on-line rendering applications too, research is moving in two macro directions. The first one is to build GPUs with an architecture more suited for ray tracing, such as the RT cores from Turing Nvidia GPUs. The second, but not least important one, is to design software optimizations to make ray tracing cheaper.
 
-One of the problems that is ubiquitous in the ray tracing environment is to detect collisions between a ray and the geometry of the scene to render. Given the huge amount of primitives present in modern graphic applications, it is necessary to use a data structure to accelerate the ray collision retrieval process. The state-of-the-art structure is the Bounding Volume Hierarchy (BVH), a spatial binary tree which hierarchically organizes primitives, making it possible to skip entire sections of the scene that are spatially far away from the ray that is being traced. 
+One of the problems that is ubiquitous in the ray tracing environment is to detect collisions between a ray and the geometry of the scene to render. Given the huge amount of primitives present in modern graphic applications, it is necessary to use a data structure to accelerate the ray collision retrieval process. The state-of-the-art structure is the \textbf{Bounding Volume Hierarchy} (BVH), a spatial binary tree which hierarchically organizes primitives, making it possible to skip entire sections of the scene that are spatially far away from the ray that is being traced. 
 
 Building an optimal BVH is an NP-complete problem, therefore greedy algorithms and heuristics are used to construct them in real-world applications. The two heuristics used in state-of-the-art, namely Surface Area Heuristic (SAH) and Longest Splitting Plane Heuristic (LSPH), lay their foundations on some assumptions, the most relevant of which is that the ray distribution of the scene is uniform.
 
@@ -178,13 +178,13 @@ Se il ray tracing è ampiamente utilizzato per il rendering off-line, come ad es
 
 Per aumentare la diffusione del ray tracing anche nelle applicazioni di rendering in tempo reale, la ricerca si sta muovendo in due macro direzioni. La prima è costruire GPU con un'architettura più adatta al ray tracing, come i core RT delle GPU Turing di Nvidia. La seconda, ma non meno importante, è progettare ottimizzazioni software per rendere il ray tracing meno costoso.
 
-Uno dei problemi onnipresenti nell'ambiente del ray tracing è rilevare le collisioni tra un raggio e la geometria della scena da renderizzare. Data la grande quantità di primitive presenti nelle moderne applicazioni grafiche, è necessario utilizzare una struttura dati per accelerare il processo di rilevamento delle collisioni dei raggi. La struttura usata allo stato dell'arte è la Bounding Volume Hierarchy (BVH), un albero binario spaziale che organizza gerarchicamente le primitive, rendendo possibile saltare intere sezioni della scena che sono lontane dal raggio che viene tracciato.
+Uno dei problemi onnipresenti nell'ambiente del ray tracing è rilevare le collisioni tra un raggio e la geometria della scena da renderizzare. Data la grande quantità di primitive presenti nelle moderne applicazioni grafiche, è necessario utilizzare una struttura dati per accelerare il processo di rilevamento delle collisioni dei raggi. La struttura usata allo stato dell'arte è la \textbf{Bounding Volume Hierarchy} (BVH), un albero binario spaziale che organizza gerarchicamente le primitive, rendendo possibile saltare intere sezioni della scena che sono lontane dal raggio che viene tracciato.
 
 Costruire un BVH ottimale è un problema NP-completo, quindi nelle applicazioni di uso comune si utilizzano algoritmi \textit{greedy} ed euristiche. Le due euristiche utilizzate allo stato dell'arte, ovvero la Surface Area Heuristic (SAH) e la Longest Splitting Plane Heuristic (LSPH), si basano su alcune assunzioni, la più rilevante delle quali è che la distribuzione dei raggi nella scena sia uniforme.
 
 Tuttavia, un'altra ottimizzazione utilizzata in una fase precedente dell'algoritmo di ray tracing, chiamata Monte Carlo Importance Sampling, genera artefatti nella distribuzione dei raggi nella scena, rendendo l'ipotesi su cui si basano SAH e LSPH non accurata.
 
-In questa tesi proponiamo due nuove euristiche che tengono in cosiderazione gli artefatti nella distribuzione dei raggi e li sfruttano per costruire BVH potenzialmente migliori, migliorando dunque le prestazioni di qualunque applicazione usi il ray tracing. Sviluppiamo anche una struttura \textit{top-level} che consente l'uso delle euristiche, insieme a un'implementazione in C++ moderno delle idee presentate. L'implementazione viene infine utilizzata nella fase di test, dove estraiamo i risultati sperimentali e li commentiamo.
+In questa tesi proponiamo due nuove euristiche che tengono in considerazione gli artefatti nella distribuzione dei raggi e li sfruttano per costruire BVH potenzialmente migliori, migliorando dunque le prestazioni di qualunque applicazione usi il ray tracing. Sviluppiamo anche una struttura \textit{top-level} che consente l'uso delle euristiche, insieme a un'implementazione in C++ moderno delle idee presentate. L'implementazione viene infine utilizzata nella fase di test, dove estraiamo i risultati sperimentali e li commentiamo.
 
 La prima euristica è chiamata \textbf{Projected Area Heuristic} (PAH), e mira a stimare meglio la quantità di raggi che colpisce ciascun nodo del BVH, al fine di avere una \textit{cost function} migliore durante la sua costruzione.
 
@@ -3022,6 +3022,31 @@ Until now we have shown how to get the yaw rotation angle. The second step to sa
 \addtocontents{toc}{\vspace{2em}} % Add a gap in the Contents, for aesthetics
 \bibliography{Bibliography} % The references information are stored in the file named "Bibliography.bib"
 
+% === Ringraziamenti ===
+\chapter*{Ringraziamenti}
+\small
+In nessun ordine particolare vorrei ringraziare:
+
+Il Prof. Marco Gribaudo, per avermi guidato durante la (lunga) scelta e lo sviluppo tesi, pur lasciandomi tutta la libertà di affrontare argomenti di cui sono appassionato.
+
+La mia famiglia, per avermi sempre sostenuto e fatto crescere in un bellissimo clima, e lasciato scegliere autonomamente.
+
+La mia ragazza, Sara, per avermi reso sereno e felice in questi anni di Magistrale.
+
+I miei tre gruppi di amici a cui, dove appropriato, mi riferirò con il nome del gruppo Whatsapp dove quotidianamente ci sentiamo:
+
+\textit{Addio bel carlino pt.2}: Peppis, Dado, Tuccio, Nizzo, Spuè, Pred, Bordi, Borgi e Luca, ci conosciamo da così tanto che con voi è come se avessi iniziato il mio percorso fino ad oggi. Ci siamo visti per 6 ore al giorno 5 volte a settimana per 5 anni al Liceo, ed è in quegli anni che si cresce e si fanno le scelte che mi hanno portato qui.
+
+\textit{******** 1978 (2023 al ****)}: Marco, Adà, Patrick e Giacomo, ci siamo conosciuti i primi giorni di Triennale, e grazie a voi, ai viaggi che abbiamo fatto, al ping pong e alle ca**ate che diciamo ho superato un momento delicato. Mi avete fatto divertire e continuare a studiare in un momento in cui non mi interessava farlo.
+
+\textit{Pikkoli ancieli}: Chiara, Frank01001, Manu, Silvia, Fra, Francè, Marco, Giovà ed Elisa, il gruppo si è creato pian piano dall'inizio della Magistrale, ed è grazie a voi se mi è ritornata la passione per quello che studio. Uscire con voi alla Forgia e parlare spesso di cose successe in Università e della vostra passione per quello che facevamo mi ha spinto a impegnarmi ancora di più e a dare il 100$\%$. Non è facile trovare persone a cui si è così affini.
+
+Infine ringrazio anche il me stesso di questi 5 anni, per aver sempre scelto obiettivi che gli piacessero davvero, per quanto, spesso, fossero più difficili da raggiungere (questa tesi ne è un esempio), e per aver affrontato l'Università serenamente, anche durante i periodi più tosti. 
+\normalsize
+
+\begin{tikzpicture}[remember picture,overlay,shift={(current page.south west)}]
+	\node[anchor=south west, xshift=12cm, yshift=2.25cm]{\includegraphics[width=6cm]{grazie_Lapo.jpg}};
+\end{tikzpicture}
 
 \ClearShipoutPicture
 
