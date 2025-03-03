@@ -420,3 +420,6 @@ Results/*/*
 # Include .obj files in exampleData folder
 !ProjectedAreaHeuristic/exampleData/*.obj
 *.mtl
+
+# Paper related
+"Cover Letter.md"

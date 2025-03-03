@@ -1,0 +1,324 @@
+@article{sah,
+  title={Heuristics for ray tracing using space subdivision},
+  author={MacDonald, J David and Booth, Kellogg S},
+  journal={The Visual Computer},
+  volume={6},
+  pages={153--166},
+  year={1990},
+  publisher={Springer}
+}
+
+@article{sah_primer,
+  title={Automatic creation of object hierarchies for ray tracing},
+  author={Goldsmith, Jeffrey and Salmon, John},
+  journal={IEEE Computer Graphics and Applications},
+  volume={7},
+  number={5},
+  pages={14--20},
+  year={1987},
+  publisher={IEEE}
+}
+
+@article{importance_sampling,
+  title={Monte carlo methods},
+  author={Kroese, Dirk P and Rubinstein, Reuven Y},
+  journal={Wiley Interdisciplinary Reviews: Computational Statistics},
+  volume={4},
+  number={1},
+  pages={113--118},
+  year={2012},
+  publisher={Wiley Online Library}
+}
+
+@article{monte_carlo,
+  title={Monte carlo and quasi-monte carlo methods},
+  author={Caflisch, Russel E},
+  journal={Acta numerica},
+  volume={7},
+  pages={4--8},
+  year={1998},
+  publisher={Cambridge University Press}
+}
+
+@inproceedings{kajiya,
+author = {Kajiya, James T.},
+title = {The rendering equation},
+year = {1986},
+isbn = {0897911962},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/15922.15902},
+doi = {10.1145/15922.15902},
+abstract = {We present an integral equation which generalizes a variety of known rendering algorithms. In the course of discussing a monte carlo solution we also present a new form of variance reduction, called Hierarchical sampling and give a number of elaborations shows that it may be an efficient new technique for a wide variety of monte carlo procedures. The resulting rendering algorithm extends the range of optical phenomena which can be effectively simulated.},
+booktitle = {Proceedings of the 13th Annual Conference on Computer Graphics and Interactive Techniques},
+pages = {143–150},
+numpages = {8},
+series = {SIGGRAPH '86}
+}
+
+@inproceedings{tlas_blas,
+author = {Parker, Steven G. and Bigler, James and Dietrich, Andreas and Friedrich, Heiko and Hoberock, Jared and Luebke, David and McAllister, David and McGuire, Morgan and Morley, Keith and Robison, Austin and Stich, Martin},
+title = {OptiX: a general purpose ray tracing engine},
+year = {2010},
+isbn = {9781450302104},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/1833349.1778803},
+doi = {10.1145/1833349.1778803},
+abstract = {The NVIDIA® OptiX™ ray tracing engine is a programmable system designed for NVIDIA GPUs and other highly parallel architectures. The OptiX engine builds on the key observation that most ray tracing algorithms can be implemented using a small set of programmable operations. Consequently, the core of OptiX is a domain-specific just-in-time compiler that generates custom ray tracing kernels by combining user-supplied programs for ray generation, material shading, object intersection, and scene traversal. This enables the implementation of a highly diverse set of ray tracing-based algorithms and applications, including interactive rendering, offline rendering, collision detection systems, artificial intelligence queries, and scientific simulations such as sound propagation. OptiX achieves high performance through a compact object model and application of several ray tracing-specific compiler optimizations. For ease of use it exposes a single-ray programming model with full support for recursion and a dynamic dispatch mechanism similar to virtual function calls.},
+booktitle = {ACM SIGGRAPH 2010 Papers},
+articleno = {66},
+numpages = {13},
+keywords = {graphics hardware, graphics systems, ray tracing},
+location = {Los Angeles, California},
+series = {SIGGRAPH '10}
+}
+
+@article{embree,
+author = {Wald, Ingo and Woop, Sven and Benthin, Carsten and Johnson, Gregory S. and Ernst, Manfred},
+title = {Embree: a kernel framework for efficient CPU ray tracing},
+year = {2014},
+issue_date = {July 2014},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {33},
+number = {4},
+issn = {0730-0301},
+url = {https://doi.org/10.1145/2601097.2601199},
+doi = {10.1145/2601097.2601199},
+abstract = {We describe Embree, an open source ray tracing framework for x86 CPUs. Embree is explicitly designed to achieve high performance in professional rendering environments in which complex geometry and incoherent ray distributions are common. Embree consists of a set of low-level kernels that maximize utilization of modern CPU architectures, and an API which enables these kernels to be used in existing renderers with minimal programmer effort. In this paper, we describe the design goals and software architecture of Embree, and show that for secondary rays in particular, the performance of Embree is competitive with (and often higher than) existing state-of-the-art methods on CPUs and GPUs.},
+journal = {ACM Trans. Graph.},
+month = {jul},
+articleno = {143},
+numpages = {8},
+keywords = {CPU, SIMD, SPMD, coprocessor, ray tracing}
+}
+
+@article{octree,
+  title={An overview of quadtrees, octrees, and related hierarchical data structures},
+  author={Samet, Hanan},
+  journal={Theoretical Foundations of Computer Graphics and CAD},
+  pages={51--68},
+  year={1988},
+  publisher={Springer}
+}
+
+@article{sat,
+  title={Intersection of convex objects: The method of separating axes},
+  author={Eberly, David},
+  journal={WWW page},
+  pages={2--3},
+  year={2001}
+}
+
+@article{point_inside_test,
+  title={Point in polygon test},
+  author={Taylor, G},
+  journal={Survey Review},
+  volume={32},
+  number={254},
+  pages={479--484},
+  year={1994},
+  publisher={Taylor \& Francis}
+}
+
+@article{segments_intersection,
+  title={Line segment intersection testing},
+  author={Zhu, Y-K and Yong, J-H and Zheng, G-Q},
+  journal={Computing},
+  volume={75},
+  pages={337--357},
+  year={2005},
+  publisher={Springer}
+}
+
+@article{shoelace,
+  title={Shoelace formula: Connecting the area of a polygon and the vector cross product},
+  author={Lee, Younhee and Lim, Woong},
+  journal={The Mathematics Teacher},
+  volume={110},
+  number={8},
+  pages={631--636},
+  year={2017},
+  publisher={National Council of Teachers of Mathematics}
+}
+
+@article{light_sampling,
+  title={On the Importance of Sampling},
+  author={Pharr, Matt},
+  journal={Ray Tracing Gems: High-Quality and Real-Time Rendering with DXR and Other APIs},
+  pages={207--222},
+  year={2019},
+  publisher={Springer}
+}
+
+@inproceedings{bvh_survey,
+  title={A survey on bounding volume hierarchies for ray tracing},
+  author={Meister, Daniel and Ogaki, Shinji and Benthin, Carsten and Doyle, Michael J and Guthe, Michael and Bittner, Ji{\v{r}}{\'\i}},
+  booktitle={Computer Graphics Forum},
+  volume={40},
+  number={2},
+  pages={683--712},
+  year={2021},
+  organization={Wiley Online Library}
+}
+
+@inproceedings{lsph,
+  title={The Minimal Bounding Volume Hierarchy.},
+  author={Bauszat, Pablo and Eisemann, Martin and Magnor, Marcus A},
+  booktitle={VMV},
+  pages={227--234},
+  year={2010}
+}
+
+@book{kd_trees,
+  title={Fast ray tracing using kd trees},
+  author={Fussell, Donald and Subramanian, Kalpathi R},
+  year={1988},
+  publisher={University of Texas at Austin, Department of Computer Sciences}
+}
+
+@inproceedings{overlapping_heuristic,
+author = {Aila, Timo and Karras, Tero and Laine, Samuli},
+title = {On quality metrics of bounding volume hierarchies},
+year = {2013},
+isbn = {9781450321358},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/2492045.2492056},
+doi = {10.1145/2492045.2492056},
+abstract = {The surface area heuristic (SAH) is widely used as a predictor for ray tracing performance, and as a heuristic to guide the construction of spatial acceleration structures. We investigate how well SAH actually predicts ray tracing performance of a bounding volume hierarchy (BVH), observe that this relationship is far from perfect, and then propose two new metrics that together with SAH almost completely explain the measured performance. Our observations shed light on the increasingly common situation that a supposedly good tree construction algorithm produces trees that are slower to trace than expected. We also note that the trees constructed using greedy top-down algorithms are consistently faster to trace than SAH indicates and are also more SIMD-friendly than competing approaches.},
+booktitle = {Proceedings of the 5th High-Performance Graphics Conference},
+pages = {101–107},
+numpages = {7},
+keywords = {acceleration structures, quality metrics, ray tracing},
+location = {Anaheim, California},
+series = {HPG '13}
+}
+
+@article{obb_projection,
+  title={Fast projected area computation for three-dimensional bounding boxes},
+  author={Schmalstieg, Dieter and Tobler, Robert F},
+  journal={Journal of graphics tools},
+  volume={4},
+  number={2},
+  pages={37--43},
+  year={1999},
+  publisher={Taylor \& Francis}
+}
+
+@inproceedings{bvh_spatial_splits,
+author = {Stich, Martin and Friedrich, Heiko and Dietrich, Andreas},
+title = {Spatial splits in bounding volume hierarchies},
+year = {2009},
+isbn = {9781605586038},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/1572769.1572771},
+doi = {10.1145/1572769.1572771},
+abstract = {Bounding volume hierarchies (BVH) have become a widely used alternative to kD-trees as the acceleration structure of choice in modern ray tracing systems. However, BVHs adapt poorly to non-uniformly tessellated scenes, which leads to increased ray shooting costs. This paper presents a novel and practical BVH construction algorithm, which addresses the issue by utilizing spatial splitting similar to kD-trees. In contrast to previous preprocessing approaches, our method uses the surface area heuristic to control primitive splitting during tree construction. We show that our algorithm produces significantly more efficient hierarchies than other techniques. In addition, user parameters that directly influence splitting are eliminated, making the algorithm easily controllable.},
+booktitle = {Proceedings of the Conference on High Performance Graphics 2009},
+pages = {7–13},
+numpages = {7},
+keywords = {bounding volume hierarchy, ray tracing},
+location = {New Orleans, Louisiana},
+series = {HPG '09}
+}
+
+@inproceedings{stochastic_bvh_construction,
+  title={Stochastic Subsets for BVH Construction},
+  author={Tessari, Lorenzo and Dittebrand, A and Doyle, Michael J and Benthin, Carsten},
+  booktitle={Computer Graphics Forum},
+  volume={42},
+  number={2},
+  pages={255--267},
+  year={2023},
+  organization={Wiley Online Library}
+}
+
+@inproceedings{parallel_bvh,
+author = {Karras, Tero and Aila, Timo},
+title = {Fast parallel construction of high-quality bounding volume hierarchies},
+year = {2013},
+isbn = {9781450321358},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/2492045.2492055},
+doi = {10.1145/2492045.2492055},
+abstract = {We propose a new massively parallel algorithm for constructing high-quality bounding volume hierarchies (BVHs) for ray tracing. The algorithm is based on modifying an existing BVH to improve its quality, and executes in linear time at a rate of almost 40M triangles/sec on NVIDIA GTX Titan. We also propose an improved approach for parallel splitting of triangles prior to tree construction. Averaged over 20 test scenes, the resulting trees offer over 90\% of the ray tracing performance of the best offline construction method (SBVH), while previous fast GPU algorithms offer only about 50\%. Compared to state-of-the-art, our method offers a significant improvement in the majority of practical workloads that need to construct the BVH for each frame. On the average, it gives the best overall performance when tracing between 7 million and 60 billion rays per frame. This covers most interactive applications, product and architectural design, and even movie rendering.},
+booktitle = {Proceedings of the 5th High-Performance Graphics Conference},
+pages = {89–99},
+numpages = {11},
+keywords = {ray tracing, bounding volume hierarchies},
+location = {Anaheim, California},
+series = {HPG '13}
+}
+
+@inproceedings{contractions,
+  title={Ray specialized contraction on bounding volume hierarchies},
+  author={Gu, Yan and He, Yong and Blelloch, Guy E},
+  booktitle={Computer Graphics Forum},
+  volume={34},
+  number={7},
+  pages={309--318},
+  year={2015},
+  organization={Wiley Online Library}
+}
+
+@inproceedings{interior_rays,
+  title={A Cost Metric for Scene-Interior Ray Origins.},
+  author={Fabianowski, Bartosz and Fowler, Colin and Dingliana, John},
+  booktitle={Eurographics (Short Papers)},
+  pages={49--52},
+  year={2009}
+}
+
+@inproceedings{mailboxing,
+  title={Corrections to the surface area metric with respect to mail-boxing},
+  author={Hunt, Warren A},
+  booktitle={2008 IEEE Symposium on Interactive Ray Tracing},
+  pages={77--80},
+  year={2008},
+  organization={IEEE}
+}
+
+@inproceedings{perspective_planes,
+  title={Ray-specialized acceleration structures for ray tracing},
+  author={Hunt, Warren and Mark, William R},
+  booktitle={2008 IEEE Symposium on Interactive Ray Tracing},
+  pages={3--10},
+  year={2008},
+  organization={IEEE}
+}
+
+@inproceedings{srdh,
+author = {Feltman, Nicolas and Lee, Minjae and Fatahalian, Kayvon},
+title = {SRDH: specializing BVH construction and traversal order using representative shadow ray sets},
+year = {2012},
+isbn = {9783905674415},
+publisher = {Eurographics Association},
+address = {Goslar, DEU},
+abstract = {We derive the Shadow Ray Distribution Heuristic (SRDH), an accurate cost estimator for shadow ray traversal through a bounding volume hierarchy (BVH). The SRDH leverages up-front knowledge of the distribution and intersection results of previously traced shadow rays to construct a shadow-ray-specialized BVH and choose an associated traversal order policy which together promote early termination by quickly finding occlusions. In scenes containing large amounts of occlusion, SRDH reduces the number of BVH node traversal steps needed for shadow computations between 22\% and 56\% compared to average-case traversal through SAH-constructed trees. Evaluating the SRDH using a sparse shadow ray set recorded from a 16 x16 pixel rendering of the scene consistently produces BVHs whose traversal cost is within 6\% of those built when all shadow rays are available to the metric at the time of construction. The benefits of the SRDH come at the cost of storing an additional BVH in memory and a 2.4x increase (on average) in BVH construction time.},
+booktitle = {Proceedings of the Fourth ACM SIGGRAPH / Eurographics Conference on High-Performance Graphics},
+pages = {49–55},
+numpages = {7},
+location = {Paris, France},
+series = {EGGH-HPG'12}
+}
+
+@inproceedings{bittner_havran,
+author = {Bittner, Ji\v{r}\'{\i} and Havran, Vlastimil},
+title = {RDH: ray distribution heuristics for construction of spatial data structures},
+year = {2009},
+isbn = {9781450307697},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/1980462.1980475},
+doi = {10.1145/1980462.1980475},
+abstract = {Surface area heuristics is currently the most popular method for view independent construction of spatial hierarchies for ray tracing. We present a method which modifies the surface area heuristics by taking into account the actual distribution of rays in the scene. This is achieved by subsampling the rays to be cast and using these rays in order to estimate the probabilities of rays traversing through nodes of the constructed hierarchy. The main aim of our paper is to analyze the potential of taking the ray distribution into account. The results indicate that we can achieve a minor speedup of ray traversal compared to standard SAH. For large densely occluded scene we can also save the construction time and memory consumption of the hierarchy by not subdividing parts of the scene where no rays are traced.},
+booktitle = {Proceedings of the 25th Spring Conference on Computer Graphics},
+pages = {51–58},
+numpages = {8},
+location = {Budmerice, Slovakia},
+series = {SCCG '09}
+}
